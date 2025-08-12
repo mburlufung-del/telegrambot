@@ -183,6 +183,21 @@ export class TeleShopBot {
           const productId = parts[2];
           await this.handleProductRating(chatId, userId, productId);
         }
+      } else if (data.startsWith('cart_minus_')) {
+        const parts = data.split('_');
+        const productId = parts[2];
+        const currentQty = parseInt(parts[3]) || 1;
+        await this.handleCartQuantityChange(chatId, userId, productId, currentQty, 'minus');
+      } else if (data.startsWith('cart_plus_')) {
+        const parts = data.split('_');
+        const productId = parts[2];
+        const currentQty = parseInt(parts[3]) || 1;
+        await this.handleCartQuantityChange(chatId, userId, productId, currentQty, 'plus');
+      } else if (data.startsWith('cart_remove_')) {
+        const productId = data.replace('cart_remove_', '');
+        await this.handleCartRemoveItem(chatId, userId, productId);
+      } else if (data === 'clear_cart') {
+        await this.handleClearCart(chatId, userId);
       } else {
         // Unknown callback, show main menu again
         await this.sendMainMenu(chatId);
@@ -297,6 +312,7 @@ export class TeleShopBot {
 
       let cartMessage = '🛒 *Your Shopping Cart*\n\n';
       let totalAmount = 0;
+      const cartButtons: Array<Array<{text: string, callback_data: string}>> = [];
 
       for (let i = 0; i < cartItems.length; i++) {
         const item = cartItems[i];
@@ -308,26 +324,48 @@ export class TeleShopBot {
           
           cartMessage += `${i + 1}. *${product.name}*\n`;
           cartMessage += `   Qty: ${item.quantity} × $${product.price} = $${itemTotal.toFixed(2)}\n\n`;
+
+          // Add quantity control buttons for each item
+          const minusEnabled = item.quantity > 1;
+          const plusEnabled = item.quantity < product.stock;
+          
+          cartButtons.push([
+            { 
+              text: minusEnabled ? '➖' : '🚫', 
+              callback_data: minusEnabled ? `cart_minus_${product.id}_${item.quantity}` : 'disabled'
+            },
+            { 
+              text: `${product.name.length > 15 ? product.name.substring(0, 15) + '...' : product.name} (${item.quantity})`, 
+              callback_data: 'disabled'
+            },
+            { 
+              text: plusEnabled ? '➕' : '🚫', 
+              callback_data: plusEnabled ? `cart_plus_${product.id}_${item.quantity}` : 'disabled'
+            },
+            { 
+              text: '🗑️', 
+              callback_data: `cart_remove_${product.id}` 
+            }
+          ]);
         }
       }
 
       cartMessage += `💰 *Total: $${totalAmount.toFixed(2)}*\n\n`;
       cartMessage += `🚀 *Ready to checkout?*\nComplete your order with delivery, payment, and contact options.`;
 
-      const keyboard = {
-        inline_keyboard: [
-          [
-            { text: '🛒 Proceed to Checkout', callback_data: 'start_checkout' }
-          ],
-          [
-            { text: '🔄 Clear Cart', callback_data: 'clear_cart' },
-            { text: '📋 Continue Shopping', callback_data: 'listings' }
-          ],
-          [
-            { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
-          ]
-        ]
-      };
+      // Add main action buttons
+      cartButtons.push([
+        { text: '🛒 Proceed to Checkout', callback_data: 'start_checkout' }
+      ]);
+      cartButtons.push([
+        { text: '🔄 Clear Cart', callback_data: 'clear_cart' },
+        { text: '📋 Continue Shopping', callback_data: 'listings' }
+      ]);
+      cartButtons.push([
+        { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+      ]);
+
+      const keyboard = { inline_keyboard: cartButtons };
       
       await this.sendAutoVanishMessage(chatId, cartMessage, {
         parse_mode: 'Markdown',
@@ -1178,6 +1216,38 @@ Need help? Our support team is here for you!
 
     // Refresh the quantity selection interface with new quantity
     await this.handleQuantitySelection(chatId, userId, productId, newQty);
+  }
+
+  // Handle cart quantity changes
+  private async handleCartQuantityChange(chatId: number, userId: string, productId: string, currentQty: number, action: string) {
+    const product = await storage.getProduct(productId);
+    
+    if (!product) {
+      await this.handleCartsCommand(chatId, userId);
+      return;
+    }
+
+    let newQty = currentQty;
+    
+    if (action === 'plus' && currentQty < product.stock) {
+      newQty = currentQty + 1;
+    } else if (action === 'minus' && currentQty > 1) {
+      newQty = currentQty - 1;
+    }
+
+    // Update the cart with new quantity
+    await storage.updateCartItem(userId, productId, newQty);
+    
+    // Refresh the cart view
+    await this.handleCartsCommand(chatId, userId);
+  }
+
+  // Handle cart item removal
+  private async handleCartRemoveItem(chatId: number, userId: string, productId: string) {
+    await storage.removeFromCart(userId, productId);
+    
+    // Refresh the cart view
+    await this.handleCartsCommand(chatId, userId);
   }
 
   // Handle advanced quantity selection with dedicated +/- controls (legacy method)
