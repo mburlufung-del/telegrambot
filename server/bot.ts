@@ -353,9 +353,7 @@ export class TeleShopBot {
 
   private async handleOrdersCommand(chatId: number, userId: string) {
     try {
-      console.log(`Getting orders for user: ${userId}`);
       const userOrders = await storage.getUserOrders(userId);
-      console.log(`Found ${userOrders.length} orders for user ${userId}:`, userOrders.map(o => ({id: o.id, status: o.status, total: o.totalAmount})));
       
       if (userOrders.length === 0) {
         const message = '📦 *Your Orders*\n\nYou have no orders yet.\n\nStart shopping to create your first order!';
