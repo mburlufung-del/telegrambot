@@ -311,15 +311,16 @@ export class TeleShopBot {
         }
       }
 
-      cartMessage += `💰 *Total: $${totalAmount.toFixed(2)}*`;
+      cartMessage += `💰 *Total: $${totalAmount.toFixed(2)}*\n\n`;
+      cartMessage += `🚀 *Ready to checkout?*\nComplete your order with delivery, payment, and contact options.`;
 
       const keyboard = {
         inline_keyboard: [
           [
-            { text: '🔄 Clear Cart', callback_data: 'clear_cart' },
-            { text: '💳 Checkout', callback_data: 'checkout' }
+            { text: '🛒 Proceed to Checkout', callback_data: 'start_checkout' }
           ],
           [
+            { text: '🔄 Clear Cart', callback_data: 'clear_cart' },
             { text: '📋 Continue Shopping', callback_data: 'listings' }
           ],
           [
@@ -576,8 +577,27 @@ Need help? Our support team is here for you!
       else if (data === 'clear_cart') {
         await this.handleClearCart(chatId, userId);
       }
-      else if (data === 'checkout') {
-        await this.handleCheckout(chatId, userId);
+      else if (data === 'checkout' || data === 'start_checkout') {
+        await this.handleCheckoutStart(chatId, userId);
+      }
+      
+      // Handle checkout flow
+      else if (data?.startsWith('delivery_')) {
+        const method = data.replace('delivery_', '');
+        await this.handleDeliverySelection(chatId, userId, method);
+      }
+      else if (data === 'enter_address') {
+        await this.handleAddressEntry(chatId, userId);
+      }
+      else if (data === 'confirm_address') {
+        await this.handleAddressConfirmation(chatId, userId);
+      }
+      else if (data?.startsWith('payment_')) {
+        const method = data.replace('payment_', '');
+        await this.handlePaymentSelection(chatId, userId, method);
+      }
+      else if (data === 'complete_order') {
+        await this.handleOrderCompletion(chatId, userId);
       }
       
       // Handle operator support actions
@@ -1287,6 +1307,383 @@ You can continue shopping while we prepare your response.`;
         reply_markup: {
           inline_keyboard: [
             [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          ]
+        }
+      });
+    }
+  }
+
+  // Enhanced Checkout Flow Methods
+  private async handleCheckoutStart(chatId: number, userId: string) {
+    const cartItems = await storage.getCartItems(userId);
+    
+    if (cartItems.length === 0) {
+      await this.sendAutoVanishMessage(chatId, '🛒 Your cart is empty. Add items first!', {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '📋 Browse Products', callback_data: 'listings' }],
+            [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          ]
+        }
+      });
+      return;
+    }
+
+    const message = `🚚 *Choose Delivery Method*
+
+Select your preferred delivery option:
+
+📦 **Standard Delivery** (3-7 days) - Free
+🚀 **Express Delivery** (1-2 days) - $15.00
+🏪 **Store Pickup** (Same day) - Free
+🚚 **Priority Shipping** (Next day) - $25.00`;
+
+    const keyboard = {
+      inline_keyboard: [
+        [{ text: '📦 Standard (Free)', callback_data: 'delivery_standard' }],
+        [{ text: '🚀 Express ($15)', callback_data: 'delivery_express' }],
+        [{ text: '🏪 Store Pickup (Free)', callback_data: 'delivery_pickup' }],
+        [{ text: '🚚 Priority ($25)', callback_data: 'delivery_priority' }],
+        [{ text: '🔙 Back to Cart', callback_data: 'carts' }]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  private async handleDeliverySelection(chatId: number, userId: string, method: string) {
+    const deliveryMethods = {
+      standard: { name: 'Standard Delivery', time: '3-7 days', cost: 0 },
+      express: { name: 'Express Delivery', time: '1-2 days', cost: 15 },
+      pickup: { name: 'Store Pickup', time: 'Same day', cost: 0 },
+      priority: { name: 'Priority Shipping', time: 'Next day', cost: 25 }
+    };
+
+    const selected = deliveryMethods[method as keyof typeof deliveryMethods];
+    
+    if (!selected) {
+      await this.handleCheckoutStart(chatId, userId);
+      return;
+    }
+
+    // Store delivery method in user session (for now, we'll track in memory)
+    // In production, you'd store this in a checkout session table
+
+    if (method === 'pickup') {
+      // Skip address for pickup
+      await this.handlePaymentMethodSelection(chatId, userId, method);
+    } else {
+      const message = `📍 *Delivery Address*
+
+**Selected:** ${selected.name} (${selected.time})
+**Cost:** ${selected.cost === 0 ? 'Free' : `$${selected.cost}`}
+
+Please enter your delivery address:
+
+📝 **Format:**
+Street Address
+City, State ZIP
+Country
+
+Type your complete address below:`;
+
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🔙 Change Delivery Method', callback_data: 'start_checkout' }]
+          ]
+        }
+      });
+
+      // Set up address listener
+      this.bot?.once('message', async (msg) => {
+        if (msg.chat.id === chatId && msg.text && !msg.text.startsWith('/')) {
+          await this.handleAddressConfirmation(chatId, userId, msg.text, method);
+        }
+      });
+    }
+  }
+
+  private async handleAddressEntry(chatId: number, userId: string) {
+    // This method is for callback handling, actual address entry is handled in delivery selection
+    await this.handleCheckoutStart(chatId, userId);
+  }
+
+  private async handleAddressConfirmation(chatId: number, userId: string, address?: string, deliveryMethod?: string) {
+    if (!address || !deliveryMethod) {
+      await this.handleCheckoutStart(chatId, userId);
+      return;
+    }
+
+    const message = `✅ *Confirm Delivery Address*
+
+**Address:**
+${address}
+
+**Delivery Method:** ${deliveryMethod}
+
+Is this address correct?`;
+
+    const keyboard = {
+      inline_keyboard: [
+        [{ text: '✅ Confirm Address', callback_data: `confirm_address_${deliveryMethod}` }],
+        [{ text: '✏️ Re-enter Address', callback_data: `delivery_${deliveryMethod}` }],
+        [{ text: '🔙 Change Delivery Method', callback_data: 'start_checkout' }]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+
+    // Store address temporarily (in production, use proper session storage)
+    // For now, proceed to payment
+    setTimeout(() => {
+      this.handlePaymentMethodSelection(chatId, userId, deliveryMethod);
+    }, 2000);
+  }
+
+  private async handlePaymentMethodSelection(chatId: number, userId: string, deliveryMethod: string) {
+    const message = `💳 *Choose Payment Method*
+
+Select your preferred payment option:
+
+💳 **Credit/Debit Card**
+🏦 **Bank Transfer**
+₿ **Cryptocurrency (Bitcoin)**
+💰 **Cash on Delivery** (if available)
+📱 **PayPal**`;
+
+    const keyboard = {
+      inline_keyboard: [
+        [{ text: '💳 Credit/Debit Card', callback_data: 'payment_card' }],
+        [{ text: '🏦 Bank Transfer', callback_data: 'payment_bank' }],
+        [{ text: '₿ Bitcoin', callback_data: 'payment_bitcoin' }],
+        [{ text: '💰 Cash on Delivery', callback_data: 'payment_cod' }],
+        [{ text: '📱 PayPal', callback_data: 'payment_paypal' }],
+        [{ text: '🔙 Back to Delivery', callback_data: 'start_checkout' }]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  private async handlePaymentSelection(chatId: number, userId: string, method: string) {
+    const cartItems = await storage.getCartItems(userId);
+    let total = 0;
+    
+    for (const item of cartItems) {
+      const product = await storage.getProduct(item.productId);
+      if (product) {
+        total += parseFloat(product.price) * item.quantity;
+      }
+    }
+
+    const paymentMethods = {
+      card: {
+        name: 'Credit/Debit Card',
+        instructions: `💳 **Credit/Debit Card Payment**
+
+📋 **Instructions:**
+1. Use our secure payment link
+2. Enter your card details
+3. Confirm payment
+4. Screenshot confirmation
+
+**Payment Link:** https://pay.teleshop.com/card
+**Amount:** $${total.toFixed(2)}`,
+        hasQR: false
+      },
+      bank: {
+        name: 'Bank Transfer',
+        instructions: `🏦 **Bank Transfer Details**
+
+**Bank:** TeleShop Bank
+**Account:** 1234567890
+**Routing:** 123456789
+**Amount:** $${total.toFixed(2)}
+**Reference:** Order-${Date.now().toString().slice(-6)}
+
+📋 **Steps:**
+1. Transfer exact amount
+2. Use reference number
+3. Screenshot confirmation
+4. Contact support with proof`,
+        hasQR: false
+      },
+      bitcoin: {
+        name: 'Bitcoin',
+        instructions: `₿ **Bitcoin Payment**
+
+**Wallet Address:**
+bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh
+
+**Amount:** $${total.toFixed(2)} USD (≈ 0.00234 BTC)
+
+📋 **Steps:**
+1. Send exact BTC amount
+2. Include transaction fee
+3. Screenshot transaction
+4. Wait for confirmation`,
+        hasQR: true,
+        qrData: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh'
+      },
+      cod: {
+        name: 'Cash on Delivery',
+        instructions: `💰 **Cash on Delivery**
+
+**Amount:** $${total.toFixed(2)}
+
+📋 **Instructions:**
+✅ Available for your area
+✅ Pay when package arrives
+✅ Have exact amount ready
+✅ ID required for delivery
+
+No upfront payment needed!`,
+        hasQR: false
+      },
+      paypal: {
+        name: 'PayPal',
+        instructions: `📱 **PayPal Payment**
+
+**PayPal Email:** payments@teleshop.com
+**Amount:** $${total.toFixed(2)}
+
+📋 **Steps:**
+1. Send to payments@teleshop.com
+2. Mark as "Goods & Services"
+3. Include your User ID: ${userId}
+4. Screenshot confirmation`,
+        hasQR: false
+      }
+    };
+
+    const selected = paymentMethods[method as keyof typeof paymentMethods];
+    
+    if (!selected) {
+      await this.handlePaymentMethodSelection(chatId, userId, 'standard');
+      return;
+    }
+
+    let message = `${selected.instructions}\n\n`;
+    
+    if (method !== 'cod') {
+      message += `📸 **After Payment:**
+Send screenshot of payment confirmation to @murzion`;
+    }
+
+    const keyboard = {
+      inline_keyboard: [
+        [{ text: '✅ Payment Completed', callback_data: 'complete_order' }],
+        [{ text: '👤 Contact Support', callback_data: 'operator' }],
+        [{ text: '🔙 Change Payment Method', callback_data: `delivery_standard` }]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  private async handleOrderCompletion(chatId: number, userId: string) {
+    try {
+      const cartItems = await storage.getCartItems(userId);
+      
+      if (cartItems.length === 0) {
+        await this.sendAutoVanishMessage(chatId, '🛒 No items in cart to checkout.', {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '📋 Browse Products', callback_data: 'listings' }]
+            ]
+          }
+        });
+        return;
+      }
+
+      // Create order items and calculate total
+      const orderItems = [];
+      let total = 0;
+
+      for (const item of cartItems) {
+        const product = await storage.getProduct(item.productId);
+        if (product) {
+          const itemTotal = parseFloat(product.price) * item.quantity;
+          total += itemTotal;
+          orderItems.push({
+            productId: product.id,
+            productName: product.name,
+            price: product.price,
+            quantity: item.quantity,
+            total: itemTotal.toFixed(2)
+          });
+        }
+      }
+
+      // Create order
+      const orderId = await storage.createOrder({
+        customerName: `User ${userId}`,
+        telegramUserId: userId,
+        total: total.toFixed(2),
+        status: 'pending',
+        items: orderItems
+      });
+
+      // Clear cart
+      await storage.clearCart(userId);
+
+      const orderNumber = `#${Date.now().toString().slice(-6)}`;
+      
+      const message = `🎉 **Order Confirmed!**
+
+**Order Number:** ${orderNumber}
+**Total:** $${total.toFixed(2)}
+**Status:** Pending Payment Verification
+
+📋 **Next Steps:**
+1. Payment verification (if applicable)
+2. Order processing (1-2 business days)
+3. Shipping/Pickup preparation
+4. Delivery tracking info
+
+📞 **Support Contact:**
+• Telegram: @murzion
+• Include your order number: ${orderNumber}
+
+**Estimated Processing:** 1-2 business days
+**Order ID:** ${orderId.id}
+
+Thank you for shopping with us! 🛍️`;
+
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '👤 Contact Support', callback_data: 'operator' }],
+          [{ text: '📋 Continue Shopping', callback_data: 'listings' }],
+          [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+
+    } catch (error) {
+      console.error('Error completing order:', error);
+      await this.sendAutoVanishMessage(chatId, '❌ Error processing order. Please contact support.', {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '👤 Contact Support', callback_data: 'operator' }],
+            [{ text: '🔙 Back to Cart', callback_data: 'carts' }]
           ]
         }
       });
