@@ -111,17 +111,18 @@ Preferred communication style: Simple, everyday language.
 
 ### Enhanced User Experience
 - **Auto-Vanish Functionality**: Bot automatically deletes previous messages to maintain clean chat interface
-- **Persistent Welcome Interface**: Clean welcome message with 5 command buttons always visible
+- **Persistent Welcome Interface**: Clean welcome message with 6 command buttons always visible
 - **Inline Keyboard Navigation**: Modern button-based interaction replacing text commands
 
 ### Command Button Interface
-The bot now features a streamlined interface with 5 primary command buttons:
+The bot now features a streamlined interface with 6 primary command buttons:
 
 1. **📋 Listings** - Browse product catalog with categories and search
-2. **🛒 Carts** - View shopping cart with checkout and clear options  
-3. **❤️ Wishlist** - Save favorite products (feature placeholder)
-4. **⭐ Rating** - Rate shopping experience with 1-5 star system
-5. **👤 Operator** - Contact support via live chat, email, or FAQ
+2. **🛒 Carts** - View shopping cart with checkout and clear options
+3. **📦 Orders** - View order history with status tracking and details
+4. **❤️ Wishlist** - Save favorite products (feature placeholder)
+5. **⭐ Rating** - Rate shopping experience with 1-5 star system
+6. **👤 Operator** - Contact support via live chat, email, or FAQ
 
 ### Auto-Vanish Implementation Features
 - **Message Tracking**: Bot tracks all sent messages per user for selective deletion

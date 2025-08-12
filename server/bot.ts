@@ -155,10 +155,11 @@ class TeleShopBot {
             { text: '🛒 Carts', callback_data: 'carts' }
           ],
           [
-            { text: '❤️ Wishlist', callback_data: 'wishlist' },
-            { text: '⭐ Rating', callback_data: 'rating' }
+            { text: '📦 Orders', callback_data: 'orders' },
+            { text: '❤️ Wishlist', callback_data: 'wishlist' }
           ],
           [
+            { text: '⭐ Rating', callback_data: 'rating' },
             { text: '👤 Operator', callback_data: 'operator' }
           ]
         ]
@@ -189,6 +190,9 @@ class TeleShopBot {
         case 'carts':
           await this.handleCartsCommand(chatId, userId);
           break;
+        case 'orders':
+          await this.handleOrdersCommand(chatId, userId);
+          break;
         case 'wishlist':
           await this.handleWishlistCommand(chatId, userId);
           break;
@@ -216,10 +220,11 @@ class TeleShopBot {
           { text: '🛒 Carts', callback_data: 'carts' }
         ],
         [
-          { text: '❤️ Wishlist', callback_data: 'wishlist' },
-          { text: '⭐ Rating', callback_data: 'rating' }
+          { text: '📦 Orders', callback_data: 'orders' },
+          { text: '❤️ Wishlist', callback_data: 'wishlist' }
         ],
         [
+          { text: '⭐ Rating', callback_data: 'rating' },
           { text: '👤 Operator', callback_data: 'operator' }
         ]
       ]
@@ -276,6 +281,66 @@ class TeleShopBot {
     };
 
     await this.sendAutoVanishMessage(chatId, listingsMessage, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  private async handleOrdersCommand(chatId: number, userId: string) {
+    const orders = await storage.getOrders();
+    const userOrders = orders.filter(order => order.telegramUserId === userId);
+
+    if (userOrders.length === 0) {
+      const message = '📦 No orders found.\n\nPlace your first order by adding items to cart and checking out!';
+      const keyboard = {
+        inline_keyboard: [
+          [
+            { text: '📋 Browse Listings', callback_data: 'listings' }
+          ],
+          [
+            { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+          ]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, { reply_markup: keyboard });
+      return;
+    }
+
+    let ordersMessage = '📦 *Your Orders:*\n\n';
+    
+    userOrders.slice(0, 5).forEach((order, index) => {
+      const orderDate = new Date(order.createdAt).toLocaleDateString();
+      const statusEmoji = order.status === 'pending' ? '⏳' : 
+                         order.status === 'confirmed' ? '✅' : 
+                         order.status === 'shipped' ? '🚚' : 
+                         order.status === 'delivered' ? '📦' : '❌';
+      
+      ordersMessage += `${index + 1}. *Order #${order.id.substring(0, 8)}*\n`;
+      ordersMessage += `   ${statusEmoji} ${order.status.toUpperCase()}\n`;
+      ordersMessage += `   💰 Total: $${order.totalAmount}\n`;
+      ordersMessage += `   📅 ${orderDate}\n\n`;
+    });
+
+    if (userOrders.length > 5) {
+      ordersMessage += `... and ${userOrders.length - 5} more orders.`;
+    }
+
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: '🔄 Refresh Orders', callback_data: 'orders' }
+        ],
+        [
+          { text: '📋 Continue Shopping', callback_data: 'listings' }
+        ],
+        [
+          { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+        ]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, ordersMessage, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
