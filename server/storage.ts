@@ -51,6 +51,7 @@ export interface IStorage {
   // Orders
   getOrders(): Promise<Order[]>;
   getOrdersByUser(telegramUserId: string): Promise<Order[]>;
+  getUserOrders(telegramUserId: string): Promise<Order[]>; // Alias for getOrdersByUser
   getOrder(id: string): Promise<Order | undefined>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: string, order: Partial<InsertOrder>): Promise<Order | undefined>;
@@ -524,6 +525,11 @@ export class MemStorage implements IStorage {
     return Array.from(this.orders.values())
       .filter(order => order.telegramUserId === telegramUserId)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getUserOrders(telegramUserId: string): Promise<Order[]> {
+    // Alias method for getOrdersByUser
+    return this.getOrdersByUser(telegramUserId);
   }
 
   async getOrder(id: string): Promise<Order | undefined> {

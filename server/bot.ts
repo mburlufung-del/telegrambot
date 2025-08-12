@@ -352,18 +352,72 @@ export class TeleShopBot {
   }
 
   private async handleOrdersCommand(chatId: number, userId: string) {
-    const message = '📦 *Your Orders*\n\nOrder history coming soon!';
-    const keyboard = {
-      inline_keyboard: [
-        [{ text: '📋 Browse Products', callback_data: 'listings' }],
-        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
-      ]
-    };
-    
-    await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
-      reply_markup: keyboard
-    });
+    try {
+      const userOrders = await storage.getUserOrders(userId);
+      
+      if (userOrders.length === 0) {
+        const message = '📦 *Your Orders*\n\nYou have no orders yet.\n\nStart shopping to create your first order!';
+        const keyboard = {
+          inline_keyboard: [
+            [{ text: '📋 Browse Products', callback_data: 'listings' }],
+            [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          ]
+        };
+        
+        await this.sendAutoVanishMessage(chatId, message, {
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+        return;
+      }
+
+      let message = '📦 *Your Orders*\n\n';
+      
+      // Show only successful orders
+      const successfulOrders = userOrders.filter(order => order.status === 'completed' || order.status === 'shipped' || order.status === 'delivered');
+      
+      if (successfulOrders.length === 0) {
+        message += 'No completed orders found.\n\nYour pending orders are being processed.';
+      } else {
+        for (let i = 0; i < successfulOrders.length; i++) {
+          const order = successfulOrders[i];
+          const orderDate = new Date(order.createdAt || Date.now()).toLocaleDateString();
+          
+          message += `${i + 1}. *Order ${order.id.slice(-6).toUpperCase()}*\n`;
+          message += `   💰 Total: $${order.total}\n`;
+          message += `   📅 Date: ${orderDate}\n`;
+          message += `   ✅ Status: ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}\n\n`;
+        }
+      }
+
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '📋 Browse Products', callback_data: 'listings' }],
+          [{ text: '🛒 View Cart', callback_data: 'carts' }],
+          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+      
+    } catch (error) {
+      console.error('Error fetching user orders:', error);
+      const message = '📦 *Your Orders*\n\nUnable to load orders. Please try again.';
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '📋 Browse Products', callback_data: 'listings' }],
+          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+    }
   }
 
   private async handleWishlistCommand(chatId: number, userId: string) {
@@ -1444,15 +1498,15 @@ Type your complete information below:`;
 
     const message = `✅ *Confirm Customer Information*
 
-**Order Number:** ${orderNumber}
-**Customer Name:** ${customerName}
-**Phone:** ${customerPhone}
-**Username:** ${username ? `@${username}` : 'Not available'}
+*Order Number:* ${orderNumber}
+*Customer Name:* ${customerName}
+*Phone:* ${customerPhone}
+*Username:* ${username ? `@${username}` : 'Not available'}
 
-**Delivery Address:**
+*Delivery Address:*
 ${customerAddress}
 
-**Delivery Method:** ${deliveryMethod}
+*Delivery Method:* ${deliveryMethod}
 
 Is this information correct?`;
 
