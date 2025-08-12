@@ -106,3 +106,33 @@ Preferred communication style: Simple, everyday language.
 - Replit: Development environment maintained
 
 **Deployment Success Metrics**: 100% compatibility across all platforms, 9-second build time, optimal resource usage, zero security vulnerabilities
+
+## Auto-Vanish Bot Interface (August 2025)
+
+### Enhanced User Experience
+- **Auto-Vanish Functionality**: Bot automatically deletes previous messages to maintain clean chat interface
+- **Persistent Welcome Interface**: Clean welcome message with 5 command buttons always visible
+- **Inline Keyboard Navigation**: Modern button-based interaction replacing text commands
+
+### Command Button Interface
+The bot now features a streamlined interface with 5 primary command buttons:
+
+1. **📋 Listings** - Browse product catalog with categories and search
+2. **🛒 Carts** - View shopping cart with checkout and clear options  
+3. **❤️ Wishlist** - Save favorite products (feature placeholder)
+4. **⭐ Rating** - Rate shopping experience with 1-5 star system
+5. **👤 Operator** - Contact support via live chat, email, or FAQ
+
+### Auto-Vanish Implementation Features
+- **Message Tracking**: Bot tracks all sent messages per user for selective deletion
+- **Clean Interface**: Previous bot responses vanish when user takes new actions
+- **Persistent Navigation**: Main menu remains accessible via "Back to Menu" buttons
+- **Smooth Transitions**: Seamless navigation between different bot functions
+- **Error Recovery**: Auto-fallback to main menu for unknown commands
+
+### Enhanced Shopping Flow
+- **Product Listings**: Enhanced catalog display with inline navigation
+- **Shopping Cart**: Real-time cart management with totals and checkout
+- **Support Integration**: Direct inquiry creation through operator button
+- **Rating System**: Customer feedback collection with star ratings
+- **Responsive Design**: Optimized for mobile Telegram interface

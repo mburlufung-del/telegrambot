@@ -13,6 +13,7 @@ class TeleShopBot {
   private bot: TelegramBot | null = null;
   private isInitialized = false;
   private config: BotConfig | null = null;
+  private userMessages: Map<number, number[]> = new Map(); // Track user messages for auto-vanish
 
   async initialize(customConfig?: Partial<BotConfig>) {
     if (this.isInitialized) return;
@@ -57,6 +58,7 @@ class TeleShopBot {
       }
       
       this.setupCommands();
+      this.setupAdditionalCallbacks();
       this.isInitialized = true;
       console.log('Telegram bot setup completed successfully');
     } catch (error) {
@@ -98,22 +100,373 @@ class TeleShopBot {
     await this.initialize();
   }
 
+  // Auto-vanish helper method
+  private async clearPreviousMessages(chatId: number) {
+    const messages = this.userMessages.get(chatId) || [];
+    for (const messageId of messages) {
+      try {
+        await this.bot?.deleteMessage(chatId, messageId);
+      } catch (error) {
+        // Ignore errors - message might already be deleted
+      }
+    }
+    this.userMessages.set(chatId, []);
+  }
+
+  // Track sent messages for auto-vanish
+  private async sendAutoVanishMessage(chatId: number, text: string, options?: any) {
+    if (!this.bot) return;
+    
+    // Clear previous messages first
+    await this.clearPreviousMessages(chatId);
+    
+    try {
+      const sentMessage = await this.bot.sendMessage(chatId, text, options);
+      const messages = this.userMessages.get(chatId) || [];
+      messages.push(sentMessage.message_id);
+      this.userMessages.set(chatId, messages);
+      return sentMessage;
+    } catch (error) {
+      console.error('Error sending auto-vanish message:', error);
+    }
+  }
+
   private setupCommands() {
     if (!this.bot) return;
 
-    // Start command
-    this.bot.onText(/\/start/, async (msg) => {
+    // Handle any message/command to trigger auto-vanish welcome
+    this.bot.on('message', async (msg) => {
       const chatId = msg.chat.id;
       const userId = msg.from?.id.toString() || '';
+      const text = msg.text || '';
       
-      await storage.incrementUserCount();
+      // Skip if it's a callback query response
+      if (text.startsWith('/callback_')) return;
+      
       await storage.incrementMessageCount();
-
-      const welcomeMessage = await storage.getBotSetting('welcome_message');
-      const message = welcomeMessage?.value || '🛍️ Welcome to TeleShop! Your one-stop shopping destination.\n\n📱 Use /catalog to browse products\n🛒 Use /cart to view your cart\n💬 Use /help for assistance\n\nHappy shopping!';
       
-      this.bot?.sendMessage(chatId, message);
+      // Auto-vanish welcome interface with command buttons
+      const welcomeMessage = '🛍️ Welcome to TeleShop!\n\nChoose an option below:';
+      
+      const keyboard = {
+        inline_keyboard: [
+          [
+            { text: '📋 Listings', callback_data: 'listings' },
+            { text: '🛒 Carts', callback_data: 'carts' }
+          ],
+          [
+            { text: '❤️ Wishlist', callback_data: 'wishlist' },
+            { text: '⭐ Rating', callback_data: 'rating' }
+          ],
+          [
+            { text: '👤 Operator', callback_data: 'operator' }
+          ]
+        ]
+      };
+
+      await this.sendAutoVanishMessage(chatId, welcomeMessage, {
+        reply_markup: keyboard
+      });
     });
+
+    // Handle callback queries for the command buttons
+    this.bot.on('callback_query', async (query) => {
+      const chatId = query.message?.chat.id;
+      const userId = query.from.id.toString();
+      const data = query.data;
+      
+      if (!chatId || !data) return;
+      
+      await storage.incrementMessageCount();
+      
+      // Answer the callback query to remove loading state
+      await this.bot?.answerCallbackQuery(query.id);
+      
+      switch (data) {
+        case 'listings':
+          await this.handleListingsCommand(chatId, userId);
+          break;
+        case 'carts':
+          await this.handleCartsCommand(chatId, userId);
+          break;
+        case 'wishlist':
+          await this.handleWishlistCommand(chatId, userId);
+          break;
+        case 'rating':
+          await this.handleRatingCommand(chatId, userId);
+          break;
+        case 'operator':
+          await this.handleOperatorCommand(chatId, userId);
+          break;
+        default:
+          // Unknown callback, show main menu again
+          await this.sendMainMenu(chatId);
+      }
+    });
+  }
+
+  // Main menu method
+  private async sendMainMenu(chatId: number) {
+    const welcomeMessage = '🛍️ Welcome to TeleShop!\n\nChoose an option below:';
+    
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: '📋 Listings', callback_data: 'listings' },
+          { text: '🛒 Carts', callback_data: 'carts' }
+        ],
+        [
+          { text: '❤️ Wishlist', callback_data: 'wishlist' },
+          { text: '⭐ Rating', callback_data: 'rating' }
+        ],
+        [
+          { text: '👤 Operator', callback_data: 'operator' }
+        ]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, welcomeMessage, {
+      reply_markup: keyboard
+    });
+  }
+
+  // Command handlers for each button
+  private async handleListingsCommand(chatId: number, userId: string) {
+    const products = await storage.getProducts();
+    const activeProducts = products.filter(p => p.isActive);
+
+    if (activeProducts.length === 0) {
+      const message = '📋 No products available at the moment.\n\nCome back later for new listings!';
+      const backButton = {
+        inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, { reply_markup: backButton });
+      return;
+    }
+
+    let listingsMessage = '📋 *Product Listings:*\n\n';
+    
+    activeProducts.slice(0, 8).forEach((product, index) => {
+      const stockStatus = product.stock > 0 ? '✅ In Stock' : '❌ Out of Stock';
+      const priceDisplay = product.compareAtPrice 
+        ? `💰 ~~$${product.compareAtPrice}~~ *$${product.price}*`
+        : `💰 *$${product.price}*`;
+      
+      listingsMessage += `${index + 1}. *${product.name}*\n`;
+      listingsMessage += `   ${product.description.substring(0, 80)}${product.description.length > 80 ? '...' : ''}\n`;
+      listingsMessage += `   ${priceDisplay}\n`;
+      listingsMessage += `   📦 ${stockStatus}\n\n`;
+    });
+
+    if (activeProducts.length > 8) {
+      listingsMessage += `... and ${activeProducts.length - 8} more products.`;
+    }
+
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: '🔍 Search Products', callback_data: 'search_products' },
+          { text: '📂 Categories', callback_data: 'view_categories' }
+        ],
+        [
+          { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+        ]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, listingsMessage, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  private async handleCartsCommand(chatId: number, userId: string) {
+    const cartItems = await storage.getCart(userId);
+
+    if (cartItems.length === 0) {
+      const message = '🛒 Your cart is empty.\n\nBrowse our listings to add items!';
+      const keyboard = {
+        inline_keyboard: [
+          [
+            { text: '📋 View Listings', callback_data: 'listings' }
+          ],
+          [
+            { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+          ]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, { reply_markup: keyboard });
+      return;
+    }
+
+    let cartMessage = '🛒 *Your Shopping Cart:*\n\n';
+    let totalAmount = 0;
+
+    for (const item of cartItems) {
+      const product = await storage.getProduct(item.productId);
+      if (product) {
+        const itemTotal = parseFloat(product.price) * item.quantity;
+        totalAmount += itemTotal;
+        
+        cartMessage += `• *${product.name}*\n`;
+        cartMessage += `  Qty: ${item.quantity} × $${product.price} = $${itemTotal.toFixed(2)}\n\n`;
+      }
+    }
+
+    cartMessage += `💰 *Total: $${totalAmount.toFixed(2)}*`;
+
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: '✅ Checkout', callback_data: 'checkout' },
+          { text: '🗑️ Clear Cart', callback_data: 'clear_cart' }
+        ],
+        [
+          { text: '📋 Continue Shopping', callback_data: 'listings' }
+        ],
+        [
+          { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+        ]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, cartMessage, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  private async handleWishlistCommand(chatId: number, userId: string) {
+    // For now, show a feature coming soon message
+    const message = '❤️ *Wishlist Feature*\n\nSave your favorite products for later!\n\n🚧 This feature is coming soon. Stay tuned for updates!';
+    
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: '📋 Browse Listings', callback_data: 'listings' }
+        ],
+        [
+          { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+        ]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  private async handleRatingCommand(chatId: number, userId: string) {
+    const message = '⭐ *Rate Your Experience*\n\nHow would you rate your shopping experience with us?';
+    
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: '⭐', callback_data: 'rate_1' },
+          { text: '⭐⭐', callback_data: 'rate_2' },
+          { text: '⭐⭐⭐', callback_data: 'rate_3' }
+        ],
+        [
+          { text: '⭐⭐⭐⭐', callback_data: 'rate_4' },
+          { text: '⭐⭐⭐⭐⭐', callback_data: 'rate_5' }
+        ],
+        [
+          { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+        ]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  private async handleOperatorCommand(chatId: number, userId: string) {
+    const message = '👤 *Contact Operator*\n\nNeed help? Our support team is here for you!\n\n📞 Support Options:';
+    
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: '💬 Live Chat', callback_data: 'live_chat' }
+        ],
+        [
+          { text: '📧 Send Email', callback_data: 'send_email' },
+          { text: '❓ FAQ', callback_data: 'view_faq' }
+        ],
+        [
+          { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+        ]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  // Additional callback handlers
+  private setupAdditionalCallbacks() {
+    if (!this.bot) return;
+
+    this.bot.on('callback_query', async (query) => {
+      const chatId = query.message?.chat.id;
+      const data = query.data;
+      
+      if (!chatId || !data) return;
+      
+      await this.bot?.answerCallbackQuery(query.id);
+      
+      // Handle additional callbacks
+      switch (data) {
+        case 'back_to_menu':
+          await this.sendMainMenu(chatId);
+          break;
+        case 'rate_1':
+        case 'rate_2':
+        case 'rate_3':
+        case 'rate_4':
+        case 'rate_5':
+          const rating = data.split('_')[1];
+          const thankYouMessage = `⭐ Thank you for your ${rating}-star rating!\n\nYour feedback helps us improve our service.`;
+          const backButton = {
+            inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
+          };
+          await this.sendAutoVanishMessage(chatId, thankYouMessage, { reply_markup: backButton });
+          break;
+        case 'live_chat':
+          await this.createInquiry(chatId, query.from.id.toString(), 'Live Chat Request', 'Customer requested live chat support');
+          const chatMessage = '💬 Your live chat request has been received!\n\nOur support team will respond shortly.';
+          const chatBackButton = {
+            inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
+          };
+          await this.sendAutoVanishMessage(chatId, chatMessage, { reply_markup: chatBackButton });
+          break;
+      }
+    });
+  }
+
+  // Helper method to create inquiries
+  private async createInquiry(chatId: number, userId: string, subject: string, message: string) {
+    try {
+      await storage.createInquiry({
+        telegramUserId: userId,
+        customerName: subject,
+        message: message,
+        isRead: false
+      });
+    } catch (error) {
+      console.error('Error creating inquiry:', error);
+    }
+  }
+
+  // Legacy command support (optional - can be removed)
+  private setupLegacyCommands() {
+    if (!this.bot) return;
 
     // Help command
     this.bot.onText(/\/help/, async (msg) => {
