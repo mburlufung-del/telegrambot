@@ -121,11 +121,12 @@ export class TeleShopBot {
       
       await storage.incrementMessageCount();
       
-      // Answer the callback query to remove loading state with error handling
+      // Answer the callback query to remove loading state - skip if old query
       try {
         await this.bot?.answerCallbackQuery(query.id);
       } catch (error) {
-        console.log('Callback query response failed, continuing...');
+        // Skip processing old/invalid callback queries
+        return;
       }
       
       // Handle all callback data patterns
@@ -180,7 +181,7 @@ export class TeleShopBot {
         } else {
           // Handle show rating interface: rate_product_productId
           const productId = parts[2];
-          await this.showProductRatingInterface(chatId, userId, productId);
+          await this.handleProductRating(chatId, userId, productId);
         }
       } else {
         // Unknown callback, show main menu again
