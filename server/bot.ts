@@ -176,10 +176,23 @@ export class TeleShopBot {
 
   // Enhanced Listings command with full category → product → details → actions flow
   private async handleListingsCommand(chatId: number, userId: string) {
-    const categories = await storage.getCategories();
+    const allCategories = await storage.getCategories();
 
-    if (categories.length === 0) {
-      const message = '📋 No categories available at the moment.\n\nCome back later for new listings!';
+    // Filter categories to only show those with active products
+    const categoriesWithProducts = [];
+    for (const category of allCategories) {
+      const products = await storage.getProductsByCategory(category.id);
+      const activeProducts = products.filter(p => p.isActive && p.stock > 0);
+      if (activeProducts.length > 0) {
+        categoriesWithProducts.push({
+          ...category,
+          productCount: activeProducts.length
+        });
+      }
+    }
+
+    if (categoriesWithProducts.length === 0) {
+      const message = '📋 No products available at the moment.\n\nCome back later for new listings!';
       const backButton = {
         inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
       };
@@ -191,8 +204,8 @@ export class TeleShopBot {
     let categoriesMessage = '📋 *Choose Product Category:*\n\n';
     
     const categoryButtons: Array<Array<{text: string, callback_data: string}>> = [];
-    categories.forEach((category, index) => {
-      categoriesMessage += `${index + 1}. *${category.name}*\n`;
+    categoriesWithProducts.forEach((category, index) => {
+      categoriesMessage += `${index + 1}. *${category.name}* (${category.productCount} products)\n`;
       if (category.description) {
         categoriesMessage += `   ${category.description}\n`;
       }
