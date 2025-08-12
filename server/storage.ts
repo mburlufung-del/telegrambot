@@ -633,7 +633,9 @@ export class MemStorage implements IStorage {
     };
 
     const key = `${rating.productId}-${rating.telegramUserId}`;
+    console.log(`Adding rating with key: ${key}, rating: ${rating.rating}, created: ${rating.createdAt}`);
     this.productRatings.set(key, rating);
+    console.log(`Total ratings in storage: ${this.productRatings.size}`);
     return rating;
   }
 
@@ -646,8 +648,14 @@ export class MemStorage implements IStorage {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    const weeklyRatings = Array.from(this.productRatings.values())
-      .filter(rating => rating.createdAt >= oneWeekAgo);
+    console.log(`Checking ratings from ${oneWeekAgo.toISOString()} onwards`);
+    console.log(`Total ratings in storage: ${this.productRatings.size}`);
+    
+    const allRatings = Array.from(this.productRatings.values());
+    console.log('All ratings:', allRatings.map(r => ({productId: r.productId, rating: r.rating, createdAt: r.createdAt})));
+    
+    const weeklyRatings = allRatings.filter(rating => rating.createdAt >= oneWeekAgo);
+    console.log(`Weekly ratings count: ${weeklyRatings.length}`);
 
     const ratingsByProduct = new Map<string, ProductRating[]>();
     

@@ -378,7 +378,9 @@ export class TeleShopBot {
   }
 
   private async handleRatingCommand(chatId: number, userId: string) {
+    console.log('Fetching weekly ratings...');
     const weeklyRatings = await storage.getWeeklyProductRatings();
+    console.log('Weekly ratings found:', weeklyRatings.length);
     
     if (weeklyRatings.length === 0) {
       const message = '⭐ *Weekly Product Ratings*\n\nNo products have been rated this week yet.\n\nBe the first to rate a product! Browse our catalog and share your experience.';
@@ -825,11 +827,13 @@ export class TeleShopBot {
     } else {
       // Save the rating to storage
       try {
+        console.log(`Saving rating: Product ${productId}, User ${userId}, Rating ${rating}`);
         await storage.addProductRating({
           productId: productId,
           telegramUserId: userId,
           rating: rating
         });
+        console.log('Rating saved successfully');
 
         // Process the rating
         const stars = '⭐'.repeat(rating);
