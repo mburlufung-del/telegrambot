@@ -534,7 +534,7 @@ export class TeleShopBot {
     });
   }
 
-  // Handle individual product details with full interface
+  // Handle individual product details with enhanced display and image support
   private async handleProductDetails(chatId: number, userId: string, productId: string) {
     const product = await storage.getProduct(productId);
     
@@ -545,9 +545,25 @@ export class TeleShopBot {
 
     const category = await storage.getCategories().then(cats => cats.find(c => c.id === product.categoryId));
     
-    // Build detailed product message
+    // Send product image if available
+    if (product.imageUrl) {
+      try {
+        await this.bot?.sendPhoto(chatId, product.imageUrl, {
+          caption: `📦 *${product.name}*\n\n📝 ${product.description}`,
+          parse_mode: 'Markdown'
+        });
+      } catch (error) {
+        console.log('Image sending failed, continuing with text display');
+      }
+    }
+    
+    // Build comprehensive product message
     let message = `🏷️ *${product.name}*\n\n`;
-    message += `📝 *Description:*\n${product.description}\n\n`;
+    
+    // Enhanced description display
+    if (product.description) {
+      message += `📝 *Description:*\n${product.description}\n\n`;
+    }
     
     // Price information
     if (product.compareAtPrice) {
