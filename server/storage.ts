@@ -42,6 +42,7 @@ export interface IStorage {
   getCartItems(telegramUserId: string): Promise<Cart[]>; // Alias for getCart
   addToCart(cartItem: InsertCart): Promise<Cart>;
   addToWishlist(cartItem: InsertCart): Promise<Cart>; // Add wishlist functionality
+  getWishlistItems(telegramUserId: string): Promise<Cart[]>;
   updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined>;
   removeFromCart(telegramUserId: string, productId: string): Promise<boolean>;
   clearCart(telegramUserId: string): Promise<void>;
@@ -86,6 +87,7 @@ export class MemStorage implements IStorage {
   private products: Map<string, Product>;
   private categories: Map<string, Category>;
   private cart: Map<string, Cart>; // key: `${telegramUserId}-${productId}`
+  private wishlist: Map<string, Cart>; // key: `${telegramUserId}-${productId}`
   private orders: Map<string, Order>;
   private inquiries: Map<string, Inquiry>;
   private botSettings: Map<string, BotSettings>;
@@ -96,6 +98,7 @@ export class MemStorage implements IStorage {
     this.products = new Map();
     this.categories = new Map();
     this.cart = new Map();
+    this.wishlist = new Map();
     this.orders = new Map();
     this.inquiries = new Map();
     this.botSettings = new Map();
@@ -435,9 +438,32 @@ export class MemStorage implements IStorage {
   }
 
   async addToWishlist(cartItem: InsertCart): Promise<Cart> {
-    // For now, wishlist items are stored in the same cart structure
-    // In a real implementation, you might want a separate wishlist table
-    return this.addToCart(cartItem);
+    const key = `${cartItem.telegramUserId}-${cartItem.productId}`;
+    const existing = this.wishlist.get(key);
+    
+    if (existing) {
+      // Update quantity if item already in wishlist
+      existing.quantity += cartItem.quantity || 1;
+      this.wishlist.set(key, existing);
+      return existing;
+    } else {
+      // Add new item to wishlist
+      const newItem: Cart = {
+        id: randomUUID(),
+        telegramUserId: cartItem.telegramUserId,
+        productId: cartItem.productId,
+        quantity: cartItem.quantity || 1,
+        addedAt: new Date(),
+      };
+      this.wishlist.set(key, newItem);
+      return newItem;
+    }
+  }
+
+  async getWishlistItems(telegramUserId: string): Promise<Cart[]> {
+    return Array.from(this.wishlist.values())
+      .filter(item => item.telegramUserId === telegramUserId)
+      .sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
   }
 
   async updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined> {
