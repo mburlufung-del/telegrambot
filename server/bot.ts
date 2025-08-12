@@ -805,7 +805,7 @@ Need help? Our support team is here for you!
     if (product.imageUrl) {
       try {
         await this.bot?.sendPhoto(chatId, product.imageUrl, {
-          caption: `📦 *${product.name}*\n\n📝 ${product.description}`,
+          caption: `📦 *${product.name}*`,
           parse_mode: 'Markdown'
         });
       } catch (error) {
