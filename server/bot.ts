@@ -234,20 +234,80 @@ export class TeleShopBot {
     });
   }
 
-  // Handle other commands (simplified for now)
+  // Handle cart viewing with actual cart items
   private async handleCartsCommand(chatId: number, userId: string) {
-    const message = '🛒 *Your Shopping Cart*\n\nCart functionality coming soon!';
-    const keyboard = {
-      inline_keyboard: [
-        [{ text: '📋 Continue Shopping', callback_data: 'listings' }],
-        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
-      ]
-    };
-    
-    await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
-      reply_markup: keyboard
-    });
+    try {
+      const cartItems = await storage.getCartItems(userId);
+      
+      if (cartItems.length === 0) {
+        const message = '🛒 *Your Shopping Cart*\n\nYour cart is empty. Start shopping to add items!';
+        const keyboard = {
+          inline_keyboard: [
+            [{ text: '📋 Browse Products', callback_data: 'listings' }],
+            [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          ]
+        };
+        
+        await this.sendAutoVanishMessage(chatId, message, {
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+        return;
+      }
+
+      let cartMessage = '🛒 *Your Shopping Cart*\n\n';
+      let totalAmount = 0;
+
+      for (let i = 0; i < cartItems.length; i++) {
+        const item = cartItems[i];
+        const product = await storage.getProduct(item.productId);
+        
+        if (product) {
+          const itemTotal = parseFloat(product.price) * item.quantity;
+          totalAmount += itemTotal;
+          
+          cartMessage += `${i + 1}. *${product.name}*\n`;
+          cartMessage += `   Qty: ${item.quantity} × $${product.price} = $${itemTotal.toFixed(2)}\n\n`;
+        }
+      }
+
+      cartMessage += `💰 *Total: $${totalAmount.toFixed(2)}*`;
+
+      const keyboard = {
+        inline_keyboard: [
+          [
+            { text: '🔄 Clear Cart', callback_data: 'clear_cart' },
+            { text: '💳 Checkout', callback_data: 'checkout' }
+          ],
+          [
+            { text: '📋 Continue Shopping', callback_data: 'listings' }
+          ],
+          [
+            { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+          ]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, cartMessage, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+      
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+      const message = '🛒 *Your Shopping Cart*\n\nUnable to load cart. Please try again.';
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '📋 Browse Products', callback_data: 'listings' }],
+          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+    }
   }
 
   private async handleOrdersCommand(chatId: number, userId: string) {
@@ -375,6 +435,13 @@ export class TeleShopBot {
         const productId = parts[2];
         const rating = parts[3];
         await this.handleProductRating(chatId, userId, productId, rating);
+      }
+      // Handle cart actions
+      else if (data === 'clear_cart') {
+        await this.handleClearCart(chatId, userId);
+      }
+      else if (data === 'checkout') {
+        await this.handleCheckout(chatId, userId);
       }
       // Handle rating responses
       else if (data?.startsWith('rate_')) {
@@ -701,6 +768,93 @@ export class TeleShopBot {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
+    }
+  }
+
+  // Handle cart clearing
+  private async handleClearCart(chatId: number, userId: string) {
+    try {
+      await storage.clearCart(userId);
+      const message = '🗑️ *Cart Cleared*\n\nAll items have been removed from your cart.';
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '📋 Browse Products', callback_data: 'listings' }],
+          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      await this.sendMainMenu(chatId);
+    }
+  }
+
+  // Handle checkout process
+  private async handleCheckout(chatId: number, userId: string) {
+    try {
+      const cartItems = await storage.getCartItems(userId);
+      
+      if (cartItems.length === 0) {
+        const message = '🛒 Your cart is empty. Add items before checkout.';
+        await this.sendAutoVanishMessage(chatId, message);
+        setTimeout(() => this.sendMainMenu(chatId), 2000);
+        return;
+      }
+
+      // Create order and clear cart
+      let totalAmount = 0;
+      const orderItems = [];
+
+      for (const item of cartItems) {
+        const product = await storage.getProduct(item.productId);
+        if (product) {
+          const itemTotal = parseFloat(product.price) * item.quantity;
+          totalAmount += itemTotal;
+          orderItems.push({
+            productName: product.name,
+            quantity: item.quantity,
+            price: product.price,
+            total: itemTotal.toFixed(2)
+          });
+        }
+      }
+
+      // Create order record
+      await storage.createOrder({
+        telegramUserId: userId,
+        customerName: `User ${userId}`,
+        totalAmount: totalAmount.toString(),
+        status: 'pending',
+        items: JSON.stringify(orderItems)
+      });
+
+      // Clear cart after successful order
+      await storage.clearCart(userId);
+
+      const message = `✅ *Order Placed Successfully!*\n\nOrder Total: $${totalAmount.toFixed(2)}\nStatus: Pending\n\nThank you for your purchase! We'll process your order shortly.`;
+      
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '📦 View Orders', callback_data: 'orders' }],
+          [{ text: '📋 Continue Shopping', callback_data: 'listings' }],
+          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+
+    } catch (error) {
+      console.error('Error during checkout:', error);
+      const message = '❌ Checkout failed. Please try again or contact support.';
+      await this.sendAutoVanishMessage(chatId, message);
+      setTimeout(() => this.sendMainMenu(chatId), 2000);
     }
   }
 
