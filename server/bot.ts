@@ -1719,7 +1719,8 @@ Include your Order Number: ${orderNumber}`;
       const orderId = await storage.createOrder({
         customerName: `User ${userId}`,
         telegramUserId: userId,
-        total: total.toFixed(2),
+        contactInfo: 'Telegram contact',
+        totalAmount: total.toFixed(2),
         status: 'pending',
         items: JSON.stringify(orderItems)
       });

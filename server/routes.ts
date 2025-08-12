@@ -361,8 +361,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const config = teleShopBot.getConfig();
       res.json({ 
         status: isReady ? 'online' : 'offline',
-        ready: isReady,
-        mode: config?.useWebhook ? 'webhook' : 'polling',
+        ready: isReady ? {} : false,
+        mode: config?.mode || 'polling',
         environment: process.env.NODE_ENV || 'development'
       });
     } catch (error) {
