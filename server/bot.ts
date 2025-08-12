@@ -42,7 +42,7 @@ export class TeleShopBot {
       }
 
       this.setupMessageHandlers();
-      this.setupAdditionalCallbacks();
+      // setupAdditionalCallbacks() removed to prevent duplicate callback processing
       return true;
     } catch (error) {
       console.error('Failed to initialize Telegram bot:', error);
@@ -198,6 +198,36 @@ export class TeleShopBot {
         await this.handleCartRemoveItem(chatId, userId, productId);
       } else if (data === 'clear_cart') {
         await this.handleClearCart(chatId, userId);
+      } else if (data === 'send_support_message') {
+        await this.handleSendSupportMessage(chatId, userId);
+      } else if (data?.startsWith('select_qty_')) {
+        const parts = data.split('_');
+        const productId = parts[2];
+        const quantity = parseInt(parts[3]);
+        await this.handleAdvancedQuantitySelection(chatId, userId, productId, quantity);
+      } else if (data === 'no_action') {
+        // Do nothing - this is for the current quantity display button
+        return;
+      } else if (data === 'checkout' || data === 'start_checkout') {
+        await this.handleCheckoutStart(chatId, userId);
+      } else if (data?.startsWith('delivery_')) {
+        const parts = data.replace('delivery_', '').split('_');
+        const method = parts[0];
+        const orderNumber = parts.length > 1 ? `#${parts[1]}` : `#${Date.now().toString().slice(-6)}`;
+        await this.handleDeliverySelection(chatId, userId, method, orderNumber);
+      } else if (data === 'enter_address') {
+        await this.handleAddressEntry(chatId, userId);
+      } else if (data === 'confirm_address') {
+        await this.handleAddressConfirmation(chatId, userId);
+      } else if (data?.startsWith('payment_')) {
+        const parts = data.replace('payment_', '').split('_');
+        const method = parts[0];
+        const orderNumber = parts.length > 1 ? `#${parts[1]}` : `#${Date.now().toString().slice(-6)}`;
+        await this.handlePaymentSelection(chatId, userId, method, orderNumber);
+      } else if (data?.startsWith('complete_order')) {
+        const parts = data.split('_');
+        const orderNumber = parts.length > 2 ? `#${parts[2]}` : `#${Date.now().toString().slice(-6)}`;
+        await this.handleOrderCompletion(chatId, userId, orderNumber);
       } else {
         // Unknown callback, show main menu again
         await this.sendMainMenu(chatId);
