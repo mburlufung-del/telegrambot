@@ -121,31 +121,68 @@ export class TeleShopBot {
       
       await storage.incrementMessageCount();
       
-      // Answer the callback query to remove loading state
-      await this.bot?.answerCallbackQuery(query.id);
+      // Answer the callback query to remove loading state with error handling
+      try {
+        await this.bot?.answerCallbackQuery(query.id);
+      } catch (error) {
+        console.log('Callback query response failed, continuing...');
+      }
       
-      switch (data) {
-        case 'listings':
-          await this.handleListingsCommand(chatId, userId);
-          break;
-        case 'carts':
-          await this.handleCartsCommand(chatId, userId);
-          break;
-        case 'orders':
-          await this.handleOrdersCommand(chatId, userId);
-          break;
-        case 'wishlist':
-          await this.handleWishlistCommand(chatId, userId);
-          break;
-        case 'rating':
-          await this.handleRatingCommand(chatId, userId);
-          break;
-        case 'operator':
-          await this.handleOperatorCommand(chatId, userId);
-          break;
-        default:
-          // Unknown callback, show main menu again
-          await this.sendMainMenu(chatId);
+      // Handle all callback data patterns
+      if (data === 'listings') {
+        await this.handleListingsCommand(chatId, userId);
+      } else if (data === 'carts') {
+        await this.handleCartsCommand(chatId, userId);
+      } else if (data === 'orders') {
+        await this.handleOrdersCommand(chatId, userId);
+      } else if (data === 'wishlist') {
+        await this.handleWishlistCommand(chatId, userId);
+      } else if (data === 'rating') {
+        await this.handleRatingCommand(chatId, userId);
+      } else if (data === 'operator') {
+        await this.handleOperatorCommand(chatId, userId);
+      } else if (data === 'back_to_menu') {
+        await this.sendMainMenu(chatId);
+      } else if (data.startsWith('category_')) {
+        const categoryId = data.replace('category_', '');
+        await this.handleCategoryProducts(chatId, userId, categoryId);
+      } else if (data.startsWith('product_')) {
+        const productId = data.replace('product_', '');
+        await this.handleProductDetails(chatId, userId, productId);
+      } else if (data.startsWith('select_qty_')) {
+        const parts = data.split('_');
+        const productId = parts[2];
+        const currentQty = parseInt(parts[3]) || 1;
+        await this.handleQuantitySelection(chatId, userId, productId, currentQty);
+      } else if (data.startsWith('qty_change_')) {
+        const parts = data.split('_');
+        const action = parts[2]; // 'plus' or 'minus'
+        const productId = parts[3];
+        const currentQty = parseInt(parts[4]) || 1;
+        await this.handleQuantityChange(chatId, userId, productId, currentQty, action);
+      } else if (data.startsWith('addcart_')) {
+        const parts = data.split('_');
+        const productId = parts[1];
+        const quantity = parseInt(parts[2]) || 1;
+        await this.handleAddToCart(chatId, userId, productId, quantity);
+      } else if (data.startsWith('wishlist_')) {
+        const parts = data.split('_');
+        const productId = parts[1];
+        const quantity = parseInt(parts[2]) || 1;
+        await this.handleAddToWishlist(chatId, userId, productId, quantity);
+      } else if (data.startsWith('rate_product_')) {
+        const productId = data.replace('rate_product_', '');
+        await this.handleProductRating(chatId, userId, productId);
+      } else if (data.startsWith('rating_')) {
+        const rating = data.split('_')[1];
+        const thankYouMessage = `⭐ Thank you for your ${rating}-star rating!\n\nYour feedback helps us improve our service.`;
+        const backButton = {
+          inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
+        };
+        await this.sendAutoVanishMessage(chatId, thankYouMessage, { reply_markup: backButton });
+      } else {
+        // Unknown callback, show main menu again
+        await this.sendMainMenu(chatId);
       }
     });
   }
@@ -831,6 +868,7 @@ export class TeleShopBot {
       await storage.createOrder({
         telegramUserId: userId,
         customerName: `User ${userId}`,
+        contactInfo: `Telegram User ID: ${userId}`, // Add required contactInfo field
         totalAmount: totalAmount.toString(),
         status: 'pending',
         items: JSON.stringify(orderItems)
@@ -862,8 +900,8 @@ export class TeleShopBot {
     }
   }
 
-  // Handle advanced quantity selection with dedicated +/- controls
-  private async handleAdvancedQuantitySelection(chatId: number, userId: string, productId: string, quantity: number) {
+  // Handle quantity selection interface
+  private async handleQuantitySelection(chatId: number, userId: string, productId: string, currentQty: number) {
     const product = await storage.getProduct(productId);
     
     if (!product) {
@@ -871,60 +909,86 @@ export class TeleShopBot {
       return;
     }
 
-    if (quantity > product.stock) {
-      quantity = product.stock;
+    // Validate quantity bounds
+    if (currentQty > product.stock) {
+      currentQty = product.stock;
     }
-    if (quantity < 1) {
-      quantity = 1;
+    if (currentQty < 1) {
+      currentQty = 1;
     }
 
     const message = `🔢 *Quantity Selection*\n\n📦 *${product.name}*\n\n` +
-                   `Current Selection: *${quantity}*\n` +
+                   `Current Selection: *${currentQty}*\n` +
                    `💰 Price: $${product.price} each\n` +
-                   `💵 Total: $${(parseFloat(product.price) * quantity).toFixed(2)}\n` +
+                   `💵 Total: $${(parseFloat(product.price) * currentQty).toFixed(2)}\n` +
                    `📦 Available: ${product.stock}`;
 
-    // Create quantity control buttons
+    // Create quantity control buttons with +/- system
     const quantityControls = [];
     
-    // Decrease button
-    if (quantity > 1) {
-      quantityControls.push({ text: '➖', callback_data: `select_qty_${productId}_${quantity - 1}` });
-    } else {
-      quantityControls.push({ text: '➖', callback_data: 'no_action' }); // Disabled state
-    }
+    // Quantity adjustment row
+    const minusEnabled = currentQty > 1;
+    const plusEnabled = currentQty < product.stock;
     
-    // Current quantity display
-    quantityControls.push({ text: `${quantity}`, callback_data: 'no_action' });
-    
-    // Increase button
-    if (quantity < product.stock) {
-      quantityControls.push({ text: '➕', callback_data: `select_qty_${productId}_${quantity + 1}` });
-    } else {
-      quantityControls.push({ text: '➕', callback_data: 'no_action' }); // Disabled state
-    }
+    quantityControls.push([
+      { 
+        text: minusEnabled ? '➖' : '🚫', 
+        callback_data: minusEnabled ? `qty_change_minus_${productId}_${currentQty}` : 'disabled'
+      },
+      { 
+        text: `${currentQty}`, 
+        callback_data: 'disabled'
+      },
+      { 
+        text: plusEnabled ? '➕' : '🚫', 
+        callback_data: plusEnabled ? `qty_change_plus_${productId}_${currentQty}` : 'disabled'
+      }
+    ]);
 
-    const keyboard = {
-      inline_keyboard: [
-        quantityControls, // +/- controls row
-        [
-          { text: `🛒 Add ${quantity} to Cart`, callback_data: `addcart_${productId}_${quantity}` }
-        ],
-        [
-          { text: `❤️ Add ${quantity} to Wishlist`, callback_data: `wishlist_${productId}_${quantity}` },
-          { text: `⭐ Rate Product`, callback_data: `rate_product_${productId}_${quantity}` }
-        ],
-        [
-          { text: '🔙 Back to Product', callback_data: `product_${productId}` },
-          { text: '🏠 Main Menu', callback_data: 'back_to_menu' }
-        ]
-      ]
-    };
+    // Action buttons with current quantity
+    quantityControls.push([
+      { text: '🛒 Add to Cart', callback_data: `addcart_${productId}_${currentQty}` },
+      { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}_${currentQty}` }
+    ]);
+
+    // Navigation buttons
+    quantityControls.push([
+      { text: '🔙 Back to Product', callback_data: `product_${productId}` }
+    ]);
+
+    const keyboard = { inline_keyboard: quantityControls };
 
     await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
+  }
+
+  // Handle quantity changes (+ or -)
+  private async handleQuantityChange(chatId: number, userId: string, productId: string, currentQty: number, action: string) {
+    const product = await storage.getProduct(productId);
+    
+    if (!product) {
+      await this.sendMainMenu(chatId);
+      return;
+    }
+
+    let newQty = currentQty;
+    
+    if (action === 'plus' && currentQty < product.stock) {
+      newQty = currentQty + 1;
+    } else if (action === 'minus' && currentQty > 1) {
+      newQty = currentQty - 1;
+    }
+
+    // Refresh the quantity selection interface with new quantity
+    await this.handleQuantitySelection(chatId, userId, productId, newQty);
+  }
+
+  // Handle advanced quantity selection with dedicated +/- controls (legacy method)
+  private async handleAdvancedQuantitySelection(chatId: number, userId: string, productId: string, quantity: number) {
+    // Redirect to the new quantity selection method
+    await this.handleQuantitySelection(chatId, userId, productId, quantity);
   }
 
   async isReady(): Promise<boolean> {

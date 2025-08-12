@@ -37,7 +37,9 @@ export interface IStorage {
 
   // Cart
   getCart(telegramUserId: string): Promise<Cart[]>;
+  getCartItems(telegramUserId: string): Promise<Cart[]>; // Alias for getCart
   addToCart(cartItem: InsertCart): Promise<Cart>;
+  addToWishlist(cartItem: InsertCart): Promise<Cart>; // Add wishlist functionality
   updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined>;
   removeFromCart(telegramUserId: string, productId: string): Promise<boolean>;
   clearCart(telegramUserId: string): Promise<void>;
@@ -359,6 +361,11 @@ export class MemStorage implements IStorage {
       .sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
   }
 
+  async getCartItems(telegramUserId: string): Promise<Cart[]> {
+    // Alias method for getCart
+    return this.getCart(telegramUserId);
+  }
+
   async addToCart(cartItem: InsertCart): Promise<Cart> {
     const key = `${cartItem.telegramUserId}-${cartItem.productId}`;
     const existing = this.cart.get(key);
@@ -380,6 +387,12 @@ export class MemStorage implements IStorage {
       this.cart.set(key, newItem);
       return newItem;
     }
+  }
+
+  async addToWishlist(cartItem: InsertCart): Promise<Cart> {
+    // For now, wishlist items are stored in the same cart structure
+    // In a real implementation, you might want a separate wishlist table
+    return this.addToCart(cartItem);
   }
 
   async updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined> {
