@@ -135,13 +135,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/bot/status", async (req, res) => {
     try {
       const isReady = teleShopBot.isReady();
+      const config = teleShopBot.getConfig();
       res.json({ 
         status: isReady ? 'online' : 'offline',
-        ready: isReady 
+        ready: isReady,
+        mode: config?.useWebhook ? 'webhook' : 'polling',
+        environment: process.env.NODE_ENV || 'development'
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to check bot status" });
     }
+  });
+
+  // Bot restart route
+  app.post("/api/bot/restart", async (req, res) => {
+    try {
+      await teleShopBot.restart();
+      res.json({ message: "Bot restarted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to restart bot" });
+    }
+  });
+
+  // Webhook endpoint for production deployments
+  app.post("/webhook", (req, res) => {
+    teleShopBot.handleWebhookUpdate(req, res);
   });
 
   const httpServer = createServer(app);

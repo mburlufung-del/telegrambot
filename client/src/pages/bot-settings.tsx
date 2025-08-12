@@ -54,6 +54,7 @@ export default function BotSettingsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bot/settings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bot/status"] });
       toast({
         title: "Settings updated",
         description: "Bot settings have been successfully updated.",
@@ -63,6 +64,26 @@ export default function BotSettingsPage() {
       toast({
         title: "Error",
         description: "Failed to update bot settings. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const restartBotMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("POST", "/api/bot/restart");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/bot/status"] });
+      toast({
+        title: "Bot restarted",
+        description: "The bot has been restarted with new settings.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to restart bot. Please try again.",
         variant: "destructive",
       });
     },
@@ -127,7 +148,7 @@ export default function BotSettingsPage() {
           {botStatus?.ready ? (
             <Badge variant="default" className="bg-green-100 text-green-800">
               <CheckCircle className="mr-1 h-3 w-3" />
-              Online
+              Online ({botStatus.mode})
             </Badge>
           ) : (
             <Badge variant="destructive">
@@ -135,6 +156,14 @@ export default function BotSettingsPage() {
               Offline
             </Badge>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => restartBotMutation.mutate()}
+            disabled={restartBotMutation.isPending}
+          >
+            {restartBotMutation.isPending ? "Restarting..." : "Restart Bot"}
+          </Button>
         </div>
       </div>
 
@@ -156,8 +185,8 @@ export default function BotSettingsPage() {
                 </p>
                 <p className="text-sm text-gray-600">
                   {botStatus?.ready 
-                    ? 'Your bot is successfully connected to Telegram and ready to receive messages'
-                    : 'Check your bot token and internet connection'
+                    ? `Connected via ${botStatus.mode} mode in ${botStatus.environment} environment`
+                    : 'Check your bot token and restart the bot'
                   }
                 </p>
               </div>

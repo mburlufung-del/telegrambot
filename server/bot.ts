@@ -1,27 +1,101 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { storage } from './storage';
 
+interface BotConfig {
+  token: string;
+  useWebhook?: boolean;
+  webhookUrl?: string;
+  webhookSecret?: string;
+  port?: number;
+}
+
 class TeleShopBot {
   private bot: TelegramBot | null = null;
   private isInitialized = false;
+  private config: BotConfig | null = null;
 
-  async initialize() {
+  async initialize(customConfig?: Partial<BotConfig>) {
     if (this.isInitialized) return;
 
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    // Get bot token from storage first, fallback to environment variable
+    const storedToken = await storage.getBotSetting('bot_token');
+    const botToken = customConfig?.token || storedToken?.value || process.env.TELEGRAM_BOT_TOKEN;
+    
     if (!botToken) {
       console.warn('TELEGRAM_BOT_TOKEN not provided. Bot functionality will be disabled.');
       return;
     }
 
+    // Configure bot based on environment
+    this.config = {
+      token: botToken,
+      useWebhook: process.env.NODE_ENV === 'production' && !!process.env.WEBHOOK_URL,
+      webhookUrl: process.env.WEBHOOK_URL,
+      webhookSecret: process.env.WEBHOOK_SECRET,
+      port: parseInt(process.env.PORT || '5000', 10),
+      ...customConfig
+    };
+
     try {
-      this.bot = new TelegramBot(botToken, { polling: true });
+      if (this.config.useWebhook && this.config.webhookUrl) {
+        // Production: Use webhook
+        this.bot = new TelegramBot(this.config.token, { webHook: false });
+        await this.setupWebhook();
+        console.log('Telegram bot initialized with webhook for production');
+      } else {
+        // Development: Use polling
+        this.bot = new TelegramBot(this.config.token, { 
+          polling: {
+            interval: 1000,
+            autoStart: true,
+            params: {
+              timeout: 10
+            }
+          }
+        });
+        console.log('Telegram bot initialized with polling for development');
+      }
+      
       this.setupCommands();
       this.isInitialized = true;
-      console.log('Telegram bot initialized successfully');
+      console.log('Telegram bot setup completed successfully');
     } catch (error) {
       console.error('Failed to initialize Telegram bot:', error);
+      this.isInitialized = false;
     }
+  }
+
+  private async setupWebhook() {
+    if (!this.bot || !this.config?.webhookUrl) return;
+
+    try {
+      await this.bot.setWebHook(this.config.webhookUrl, {
+        secret_token: this.config.webhookSecret
+      });
+      console.log(`Webhook set to: ${this.config.webhookUrl}`);
+    } catch (error) {
+      console.error('Failed to set webhook:', error);
+    }
+  }
+
+  async restart() {
+    if (this.bot) {
+      try {
+        await this.bot.stopPolling();
+        if (this.config?.useWebhook) {
+          await this.bot.deleteWebHook();
+        }
+      } catch (error) {
+        console.error('Error stopping bot:', error);
+      }
+    }
+    
+    this.bot = null;
+    this.isInitialized = false;
+    this.config = null;
+    
+    // Reinitialize with updated settings
+    await this.initialize();
   }
 
   private setupCommands() {
@@ -156,6 +230,62 @@ class TeleShopBot {
   isReady(): boolean {
     return this.isInitialized && this.bot !== null;
   }
+
+  getConfig() {
+    return this.config;
+  }
+
+  // Webhook handler for production deployment
+  handleWebhookUpdate(req: any, res: any) {
+    if (!this.bot || !this.config?.useWebhook) {
+      return res.status(400).send('Webhook not configured');
+    }
+
+    try {
+      // Verify webhook secret if configured
+      if (this.config.webhookSecret) {
+        const receivedSecret = req.headers['x-telegram-bot-api-secret-token'];
+        if (receivedSecret !== this.config.webhookSecret) {
+          return res.status(401).send('Invalid secret token');
+        }
+      }
+
+      this.bot.processUpdate(req.body);
+      res.sendStatus(200);
+    } catch (error) {
+      console.error('Webhook processing error:', error);
+      res.status(500).send('Webhook processing failed');
+    }
+  }
+
+  // Graceful shutdown
+  async shutdown() {
+    if (this.bot) {
+      try {
+        if (this.config?.useWebhook) {
+          await this.bot.deleteWebHook();
+        } else {
+          await this.bot.stopPolling();
+        }
+        console.log('Bot shutdown completed');
+      } catch (error) {
+        console.error('Error during bot shutdown:', error);
+      }
+    }
+  }
 }
 
 export const teleShopBot = new TeleShopBot();
+
+// Graceful shutdown handling
+process.on('SIGINT', async () => {
+  console.log('Received SIGINT, shutting down gracefully...');
+  await teleShopBot.shutdown();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('Received SIGTERM, shutting down gracefully...');
+  await teleShopBot.shutdown();
+  process.exit(0);
+});

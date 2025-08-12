@@ -40,18 +40,22 @@ Preferred communication style: Simple, everyday language.
 ### Development Environment
 - **Build Tool**: Vite for fast development server and optimized production builds
 - **Development**: Hot module replacement and runtime error overlay for developer experience
-- **Deployment**: Separate client and server builds with static file serving
-- **Environment**: Replit-optimized configuration with development banners and cartographer integration
+- **Deployment**: Multi-platform support with Docker, Railway, Vercel, and VPS configurations
+- **Environment**: Auto-detection of development/production modes with appropriate bot configurations
+- **Platform Agnostic**: Designed for seamless deployment across multiple hosting providers
 
 ## External Dependencies
 
 ### Database Services
-- **Neon PostgreSQL**: Serverless PostgreSQL database hosting with connection pooling
-- **Database URL**: Environment variable-based connection configuration
+- **In-Memory Storage**: Default development storage with automatic initialization
+- **PostgreSQL Support**: Optional production database with Neon or custom hosting
+- **Environment-based Configuration**: Automatic detection and connection setup
 
 ### Telegram Integration
-- **Telegram Bot API**: Official Telegram bot framework for messaging functionality
-- **Bot Token**: Environment variable-based authentication for Telegram API access
+- **Telegram Bot API**: Official Telegram bot framework with polling and webhook support
+- **Multi-Environment Support**: Development polling mode and production webhook mode
+- **Dynamic Configuration**: Bot token manageable through admin dashboard or environment variables
+- **Platform Compatibility**: Supports Railway, Vercel, DigitalOcean, Docker, and VPS deployments
 
 ### UI and Styling
 - **Radix UI**: Headless component primitives for accessibility and keyboard navigation
