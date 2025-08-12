@@ -22,6 +22,8 @@ import type { BotSettings } from "@shared/schema";
 interface BotStatus {
   status: string;
   ready: boolean;
+  mode?: string;
+  environment?: string;
 }
 
 export default function BotSettingsPage() {

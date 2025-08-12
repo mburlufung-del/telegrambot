@@ -8,5 +8,14 @@ healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 
 [env]
-NODE_ENV = "production"
+NODE_ENV = { default = "production" }
 PORT = { default = "5000" }
+
+# Telegram Bot Configuration
+# Add these in Railway dashboard:
+# TELEGRAM_BOT_TOKEN = "your_bot_token"
+# WEBHOOK_URL = "https://your-app.railway.app/webhook"
+# WEBHOOK_SECRET = "your_secret" (optional)
+
+# Database (if using Railway PostgreSQL)
+# DATABASE_URL = "${{Postgres.DATABASE_URL}}"
