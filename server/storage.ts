@@ -768,6 +768,30 @@ export class MemStorage implements IStorage {
         items: JSON.stringify([
           { productId: products[2]?.id, productName: products[2]?.name, quantity: 3, price: products[2]?.price }
         ])
+      },
+      {
+        telegramUserId: "7996630474", // Current test user
+        customerName: "Test User",
+        contactInfo: "+1-555-7890",
+        deliveryAddress: "789 Test St, Test City, TC 12345",
+        totalAmount: "199.99",
+        status: "delivered",
+        paymentMethod: "card",
+        items: JSON.stringify([
+          { productId: products[1]?.id, productName: products[1]?.name, quantity: 1, price: products[1]?.price }
+        ])
+      },
+      {
+        telegramUserId: "7996630474", // Current test user
+        customerName: "Test User",
+        contactInfo: "+1-555-7890", 
+        deliveryAddress: "789 Test St, Test City, TC 12345",
+        totalAmount: "324.98",
+        status: "shipped",
+        paymentMethod: "bitcoin",
+        items: JSON.stringify([
+          { productId: products[0]?.id, productName: products[0]?.name, quantity: 2, price: products[0]?.price }
+        ])
       }
     ];
 
