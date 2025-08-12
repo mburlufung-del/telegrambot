@@ -124,13 +124,13 @@ export class MemStorage implements IStorage {
   }
 
   private initializeSampleData() {
-    // Create sample categories
+    // Create sample categories  
     const categories = [
-      { name: "Electronics", description: "Latest gadgets and electronic devices" },
-      { name: "Fashion", description: "Trendy clothes and accessories" },
-      { name: "Home & Garden", description: "Home improvement and garden supplies" },
-      { name: "Books", description: "Educational and entertainment books" },
-      { name: "Sports", description: "Sports equipment and fitness gear" }
+      { name: "Steroids Powder", description: "High-quality steroid powder compounds" },
+      { name: "Acetate Powder", description: "Premium acetate-based powder formulations" },
+      { name: "Injectable Solutions", description: "Ready-to-use injectable compounds" },
+      { name: "PCT Products", description: "Post Cycle Therapy supplements" },
+      { name: "Fat Burners", description: "Advanced fat burning compounds" }
     ];
 
     categories.forEach(cat => {
@@ -145,84 +145,85 @@ export class MemStorage implements IStorage {
     });
 
     // Create sample products
-    const electronicsCategory = Array.from(this.categories.values()).find(c => c.name === "Electronics");
-    const fashionCategory = Array.from(this.categories.values()).find(c => c.name === "Fashion");
-    const homeCategory = Array.from(this.categories.values()).find(c => c.name === "Home & Garden");
+    const steroidsCategory = Array.from(this.categories.values()).find(c => c.name === "Steroids Powder");
+    const acetateCategory = Array.from(this.categories.values()).find(c => c.name === "Acetate Powder");
+    const injectableCategory = Array.from(this.categories.values()).find(c => c.name === "Injectable Solutions");
 
     const sampleProducts = [
       {
-        name: "Wireless Bluetooth Headphones",
-        description: "Premium noise-canceling wireless headphones with 30-hour battery life. Perfect for music, calls, and travel.",
+        name: "Testosterone Enanthate Powder",
+        description: "High-purity testosterone enanthate powder for advanced users. Pharmaceutical grade quality with full lab testing results included.",
         price: "89.99",
         compareAtPrice: "129.99",
         stock: 25,
-        categoryId: electronicsCategory?.id || null,
-        tags: JSON.stringify(["electronics", "audio", "wireless", "bluetooth"]),
+        categoryId: steroidsCategory?.id || null,
+        tags: JSON.stringify(["testosterone", "enanthate", "powder", "bulking"]),
         specifications: JSON.stringify({
-          "Battery Life": "30 hours",
-          "Noise Canceling": "Yes",
-          "Bluetooth Version": "5.0",
-          "Weight": "250g"
+          "Purity": "99.5%+",
+          "CAS Number": "315-37-7",
+          "Molecular Weight": "400.6 g/mol",
+          "Storage": "Cool, dry place"
         }),
         isFeatured: true,
       },
       {
-        name: "Smart Fitness Watch",
-        description: "Track your health and fitness with this advanced smartwatch. Heart rate monitor, GPS, and 7-day battery.",
+        name: "Trenbolone Acetate Powder",
+        description: "Premium trenbolone acetate powder. Highly potent compound for experienced users seeking maximum results.",
         price: "199.99",
         compareAtPrice: "249.99", 
         stock: 15,
-        categoryId: electronicsCategory?.id || null,
-        tags: JSON.stringify(["smartwatch", "fitness", "health", "gps"]),
+        categoryId: acetateCategory?.id || null,
+        tags: JSON.stringify(["trenbolone", "acetate", "cutting", "strength"]),
         specifications: JSON.stringify({
-          "Display": "1.4 inch AMOLED",
-          "Battery": "7 days",
-          "Water Resistant": "50m",
-          "GPS": "Yes"
+          "Purity": "99.8%+",
+          "CAS Number": "10161-34-9",
+          "Half-life": "3 days",
+          "Melting Point": "94-97°C"
         }),
         isFeatured: true,
       },
       {
-        name: "Organic Cotton T-Shirt",
-        description: "Comfortable and sustainable organic cotton t-shirt. Available in multiple colors and sizes.",
-        price: "24.99",
-        stock: 50,
-        categoryId: fashionCategory?.id || null,
-        tags: JSON.stringify(["fashion", "organic", "cotton", "sustainable"]),
+        name: "Masteron Propionate Powder",
+        description: "High-quality drostanolone propionate powder. Excellent for cutting cycles and muscle hardening effects.",
+        price: "124.99",
+        stock: 30,
+        categoryId: acetateCategory?.id || null,
+        tags: JSON.stringify(["masteron", "propionate", "cutting", "hardening"]),
         specifications: JSON.stringify({
-          "Material": "100% Organic Cotton",
-          "Sizes": "XS, S, M, L, XL, XXL",
-          "Colors": "White, Black, Navy, Gray",
-          "Care": "Machine washable"
+          "Purity": "99.2%+",
+          "CAS Number": "521-12-0",
+          "Molecular Formula": "C23H36O3",
+          "Appearance": "White crystalline powder"
         }),
       },
       {
-        name: "LED Desk Lamp",
-        description: "Modern LED desk lamp with adjustable brightness and color temperature. USB charging port included.",
+        name: "Sustanon 250 Injectable",
+        description: "Ready-to-inject testosterone blend. Four different testosterone esters for sustained release and stable blood levels.",
         price: "45.99",
         stock: 20,
-        categoryId: homeCategory?.id || null,
-        tags: JSON.stringify(["lighting", "led", "desk", "adjustable"]),
+        categoryId: injectableCategory?.id || null,
+        tags: JSON.stringify(["sustanon", "injectable", "testosterone", "blend"]),
         specifications: JSON.stringify({
-          "Power": "12W LED",
-          "Brightness": "3 levels",
-          "Color Temperature": "3000K-6500K",
-          "USB Port": "Yes"
+          "Concentration": "250mg/ml",
+          "Volume": "10ml vial",
+          "Carrier Oil": "Grape seed oil",
+          "Sterility": "Lab tested"
         }),
       },
       {
-        name: "Premium Coffee Beans",
-        description: "Single-origin premium coffee beans, freshly roasted. Rich flavor with chocolate notes.",
-        price: "18.99",
-        stock: 30,
-        categoryId: homeCategory?.id,
-        tags: JSON.stringify(["coffee", "premium", "organic", "single-origin"]),
+        name: "Anavar Oxandrolone Powder",
+        description: "Pure oxandrolone powder. Mild yet effective compound perfect for beginners and cutting phases.",
+        price: "159.99",
+        stock: 40,
+        categoryId: steroidsCategory?.id || null,
+        tags: JSON.stringify(["anavar", "oxandrolone", "mild", "cutting"]),
         specifications: JSON.stringify({
-          "Origin": "Colombia",
-          "Roast": "Medium",
-          "Weight": "500g",
-          "Notes": "Chocolate, Caramel"
+          "Purity": "99.3%+",
+          "CAS Number": "53-39-4",
+          "Molecular Formula": "C19H30O3",
+          "Bioavailability": "High oral"
         }),
+        isFeatured: true,
       }
     ];
 

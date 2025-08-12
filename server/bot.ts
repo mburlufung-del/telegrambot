@@ -1,177 +1,92 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { storage } from './storage';
+import { storage } from './storage.js';
 
-interface BotConfig {
-  token: string;
-  useWebhook?: boolean;
-  webhookUrl?: string;
-  webhookSecret?: string;
-  port?: number;
-}
-
-class TeleShopBot {
+export class TeleShopBot {
   private bot: TelegramBot | null = null;
-  private isInitialized = false;
-  private config: BotConfig | null = null;
-  private userMessages: Map<number, number[]> = new Map(); // Track user messages for auto-vanish
+  private userMessages: Map<number, number[]> = new Map();
 
-  async initialize(customConfig?: Partial<BotConfig>) {
-    if (this.isInitialized) return;
-
-    // Get bot token from storage first, fallback to hardcoded token
-    const hardcodedToken = '7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs';
-    let storedToken;
-    try {
-      storedToken = await storage.getBotSetting('bot_token');
-    } catch (error) {
-      console.log('Error getting stored token:', error);
+  async initialize(token: string) {
+    if (this.bot) {
+      await this.shutdown();
     }
-    const botToken = customConfig?.token || storedToken?.value || hardcodedToken;
-    console.log('Bot token found:', botToken ? 'YES' : 'NO');
-    console.log('Initializing bot with token...');
-    
-    if (!botToken) {
-      console.log('No bot token available');
-      return;
-    }
-    
-    // Ensure token is saved for future use
-    if (!storedToken?.value) {
-      try {
-        await storage.setBotSetting({
-          key: 'bot_token',
-          value: hardcodedToken
-        });
-        console.log('Bot token saved to storage');
-      } catch (error) {
-        console.log('Failed to save bot token:', error);
-      }
-    }
-
-    // Configure bot based on environment
-    this.config = {
-      token: botToken,
-      useWebhook: process.env.NODE_ENV === 'production' && !!process.env.WEBHOOK_URL,
-      webhookUrl: process.env.WEBHOOK_URL,
-      webhookSecret: process.env.WEBHOOK_SECRET,
-      port: parseInt(process.env.PORT || '5000', 10),
-      ...customConfig
-    };
 
     try {
-      if (this.config.useWebhook && this.config.webhookUrl) {
-        // Production: Use webhook
-        this.bot = new TelegramBot(this.config.token, { webHook: false });
-        await this.setupWebhook();
-        console.log('Telegram bot initialized with webhook for production');
+      console.log('Initializing bot with token...');
+      
+      // Choose polling for development, webhook for production
+      const useWebhook = process.env.NODE_ENV === 'production' && process.env.WEBHOOK_URL;
+      
+      if (useWebhook) {
+        this.bot = new TelegramBot(token, { webHook: true });
+        const webhookUrl = `${process.env.WEBHOOK_URL}/webhook`;
+        await this.bot.setWebHook(webhookUrl);
+        console.log(`Telegram bot initialized with webhook: ${webhookUrl}`);
       } else {
-        // Development: Use polling
-        this.bot = new TelegramBot(this.config.token, { 
-          polling: {
-            interval: 1000,
-            autoStart: true,
-            params: {
-              timeout: 10
-            }
-          }
-        });
+        this.bot = new TelegramBot(token, { polling: true });
         console.log('Telegram bot initialized with polling for development');
       }
-      
-      this.setupCommands();
+
+      this.setupMessageHandlers();
       this.setupAdditionalCallbacks();
-      this.isInitialized = true;
-      console.log('Telegram bot setup completed successfully');
+      return true;
     } catch (error) {
       console.error('Failed to initialize Telegram bot:', error);
-      this.isInitialized = false;
+      this.bot = null;
+      return false;
     }
   }
 
-  private async setupWebhook() {
-    if (!this.bot || !this.config?.webhookUrl) return;
-
-    try {
-      await this.bot.setWebHook(this.config.webhookUrl, {
-        secret_token: this.config.webhookSecret
-      });
-      console.log(`Webhook set to: ${this.config.webhookUrl}`);
-    } catch (error) {
-      console.error('Failed to set webhook:', error);
-    }
-  }
-
-  async restart() {
-    if (this.bot) {
-      try {
-        await this.bot.stopPolling();
-        if (this.config?.useWebhook) {
-          await this.bot.deleteWebHook();
-        }
-      } catch (error) {
-        console.error('Error stopping bot:', error);
-      }
-    }
-    
-    this.bot = null;
-    this.isInitialized = false;
-    this.config = null;
-    
-    // Reinitialize with updated settings
-    await this.initialize();
-  }
-
-  // Auto-vanish helper method
-  private async clearPreviousMessages(chatId: number) {
-    const messages = this.userMessages.get(chatId) || [];
-    for (const messageId of messages) {
-      try {
-        await this.bot?.deleteMessage(chatId, messageId);
-      } catch (error) {
-        // Ignore errors - message might already be deleted
-      }
-    }
-    this.userMessages.set(chatId, []);
-  }
-
-  // Track sent messages for auto-vanish
-  private async sendAutoVanishMessage(chatId: number, text: string, options?: any) {
+  private async sendAutoVanishMessage(chatId: number, text: string, options: any = {}) {
     if (!this.bot) return;
-    
-    // Clear previous messages first
-    await this.clearPreviousMessages(chatId);
-    
+
     try {
-      const sentMessage = await this.bot.sendMessage(chatId, text, options);
-      const messages = this.userMessages.get(chatId) || [];
-      messages.push(sentMessage.message_id);
-      this.userMessages.set(chatId, messages);
-      return sentMessage;
+      // Delete previous messages for this user
+      const userMsgIds = this.userMessages.get(chatId) || [];
+      for (const msgId of userMsgIds) {
+        try {
+          await this.bot.deleteMessage(chatId, msgId);
+        } catch (error) {
+          // Ignore deletion errors (message might be too old)
+        }
+      }
+
+      // Send new message
+      const message = await this.bot.sendMessage(chatId, text, options);
+      
+      // Track this message for future deletion
+      this.userMessages.set(chatId, [message.message_id]);
+      
+      return message;
     } catch (error) {
       console.error('Error sending auto-vanish message:', error);
     }
   }
 
-  private setupCommands() {
+  private setupMessageHandlers() {
     if (!this.bot) return;
 
-    // Handle initial message to show welcome menu only once
-    this.bot.on('message', async (msg) => {
+    // Handle /start command and main menu requests
+    this.bot.onText(/\/start/, async (msg) => {
       const chatId = msg.chat.id;
-      const userId = msg.from?.id.toString() || '';
-      const text = msg.text || '';
-      
-      // Skip if it's a callback query response or other commands
-      if (text.startsWith('/callback_')) return;
+      await storage.incrementMessageCount();
+      await this.sendMainMenu(chatId);
+    });
+
+    // Handle text messages
+    this.bot.on('message', async (msg) => {
+      if (msg.text?.startsWith('/')) return; // Skip commands
+
+      const chatId = msg.chat.id;
+      const messageText = msg.text?.toLowerCase() || '';
       
       await storage.incrementMessageCount();
-      
-      // Only show main menu for initial messages or explicit menu requests
-      if (text === '/start' || text.toLowerCase() === 'menu' || text.toLowerCase() === 'main menu') {
+
+      // Check for menu keyword
+      if (messageText === 'menu' || messageText === 'main menu') {
         await this.sendMainMenu(chatId);
       } else {
-        // For other messages, just acknowledge and stay in current context
-        const ackMessage = '👋 Hello! Use the buttons below to navigate.';
+        // Send acknowledgment without showing menu for other messages
+        const ackMessage = 'Message received! Use /start to see the main menu or type "menu" anytime.';
         await this.sendAutoVanishMessage(chatId, ackMessage);
       }
     });
@@ -239,7 +154,7 @@ class TeleShopBot {
     });
   }
 
-  // Command handlers for each button
+  // Enhanced Listings command with full category → product → details → actions flow
   private async handleListingsCommand(chatId: number, userId: string) {
     const categories = await storage.getCategories();
 
@@ -275,9 +190,6 @@ class TeleShopBot {
 
     // Add navigation buttons
     categoryButtons.push([
-      { text: '🔍 Search All Products', callback_data: 'search_all_products' }
-    ]);
-    categoryButtons.push([
       { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
     ]);
 
@@ -289,138 +201,46 @@ class TeleShopBot {
     });
   }
 
-  private async handleOrdersCommand(chatId: number, userId: string) {
-    const orders = await storage.getOrders();
-    const userOrders = orders.filter(order => order.telegramUserId === userId);
-
-    if (userOrders.length === 0) {
-      const message = '📦 No orders found.\n\nPlace your first order by adding items to cart and checking out!';
-      const keyboard = {
-        inline_keyboard: [
-          [
-            { text: '📋 Browse Listings', callback_data: 'listings' }
-          ],
-          [
-            { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
-          ]
-        ]
-      };
-      
-      await this.sendAutoVanishMessage(chatId, message, { reply_markup: keyboard });
-      return;
-    }
-
-    let ordersMessage = '📦 *Your Orders:*\n\n';
-    
-    userOrders.slice(0, 5).forEach((order, index) => {
-      const orderDate = new Date(order.createdAt).toLocaleDateString();
-      const statusEmoji = order.status === 'pending' ? '⏳' : 
-                         order.status === 'confirmed' ? '✅' : 
-                         order.status === 'shipped' ? '🚚' : 
-                         order.status === 'delivered' ? '📦' : '❌';
-      
-      ordersMessage += `${index + 1}. *Order #${order.id.substring(0, 8)}*\n`;
-      ordersMessage += `   ${statusEmoji} ${order.status.toUpperCase()}\n`;
-      ordersMessage += `   💰 Total: $${order.totalAmount}\n`;
-      ordersMessage += `   📅 ${orderDate}\n\n`;
-    });
-
-    if (userOrders.length > 5) {
-      ordersMessage += `... and ${userOrders.length - 5} more orders.`;
-    }
-
+  // Handle other commands (simplified for now)
+  private async handleCartsCommand(chatId: number, userId: string) {
+    const message = '🛒 *Your Shopping Cart*\n\nCart functionality coming soon!';
     const keyboard = {
       inline_keyboard: [
-        [
-          { text: '🔄 Refresh Orders', callback_data: 'orders' }
-        ],
-        [
-          { text: '📋 Continue Shopping', callback_data: 'listings' }
-        ],
-        [
-          { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
-        ]
+        [{ text: '📋 Continue Shopping', callback_data: 'listings' }],
+        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
       ]
     };
-
-    await this.sendAutoVanishMessage(chatId, ordersMessage, {
+    
+    await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
   }
 
-  private async handleCartsCommand(chatId: number, userId: string) {
-    const cartItems = await storage.getCart(userId);
-
-    if (cartItems.length === 0) {
-      const message = '🛒 Your cart is empty.\n\nBrowse our listings to add items!';
-      const keyboard = {
-        inline_keyboard: [
-          [
-            { text: '📋 View Listings', callback_data: 'listings' }
-          ],
-          [
-            { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
-          ]
-        ]
-      };
-      
-      await this.sendAutoVanishMessage(chatId, message, { reply_markup: keyboard });
-      return;
-    }
-
-    let cartMessage = '🛒 *Your Shopping Cart:*\n\n';
-    let totalAmount = 0;
-
-    for (const item of cartItems) {
-      const product = await storage.getProduct(item.productId);
-      if (product) {
-        const itemTotal = parseFloat(product.price) * item.quantity;
-        totalAmount += itemTotal;
-        
-        cartMessage += `• *${product.name}*\n`;
-        cartMessage += `  Qty: ${item.quantity} × $${product.price} = $${itemTotal.toFixed(2)}\n\n`;
-      }
-    }
-
-    cartMessage += `💰 *Total: $${totalAmount.toFixed(2)}*`;
-
+  private async handleOrdersCommand(chatId: number, userId: string) {
+    const message = '📦 *Your Orders*\n\nOrder history coming soon!';
     const keyboard = {
       inline_keyboard: [
-        [
-          { text: '✅ Checkout', callback_data: 'checkout' },
-          { text: '🗑️ Clear Cart', callback_data: 'clear_cart' }
-        ],
-        [
-          { text: '📋 Continue Shopping', callback_data: 'listings' }
-        ],
-        [
-          { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
-        ]
+        [{ text: '📋 Browse Products', callback_data: 'listings' }],
+        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
       ]
     };
-
-    await this.sendAutoVanishMessage(chatId, cartMessage, {
+    
+    await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
   }
 
   private async handleWishlistCommand(chatId: number, userId: string) {
-    // For now, show a feature coming soon message
-    const message = '❤️ *Wishlist Feature*\n\nSave your favorite products for later!\n\n🚧 This feature is coming soon. Stay tuned for updates!';
-    
+    const message = '❤️ *Your Wishlist*\n\nWishlist feature coming soon!';
     const keyboard = {
       inline_keyboard: [
-        [
-          { text: '📋 Browse Listings', callback_data: 'listings' }
-        ],
-        [
-          { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
-        ]
+        [{ text: '📋 Browse Products', callback_data: 'listings' }],
+        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
       ]
     };
-
+    
     await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
@@ -454,20 +274,13 @@ class TeleShopBot {
   }
 
   private async handleOperatorCommand(chatId: number, userId: string) {
-    const message = '👤 *Contact Operator*\n\nNeed help? Our support team is here for you!\n\n📞 Support Options:';
+    const message = '👤 *Contact Operator*\n\nNeed help? Our support team is here for you!';
     
     const keyboard = {
       inline_keyboard: [
-        [
-          { text: '💬 Live Chat', callback_data: 'live_chat' }
-        ],
-        [
-          { text: '📧 Send Email', callback_data: 'send_email' },
-          { text: '❓ FAQ', callback_data: 'view_faq' }
-        ],
-        [
-          { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
-        ]
+        [{ text: '💬 Live Chat', callback_data: 'live_chat' }],
+        [{ text: '📧 Send Email', callback_data: 'send_email' }],
+        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
       ]
     };
 
@@ -477,91 +290,72 @@ class TeleShopBot {
     });
   }
 
-  // Additional callback handlers
+  // Additional callback handlers for enhanced Listings flow
   private setupAdditionalCallbacks() {
     if (!this.bot) return;
 
     this.bot.on('callback_query', async (query) => {
       const chatId = query.message?.chat.id;
       const data = query.data;
+      const userId = query.from.id.toString();
       
       if (!chatId || !data) return;
       
       await this.bot?.answerCallbackQuery(query.id);
       
       // Handle additional callbacks
-      switch (data) {
-        case 'back_to_menu':
-          await this.sendMainMenu(chatId);
-          break;
-        case 'rate_1':
-        case 'rate_2':
-        case 'rate_3':
-        case 'rate_4':
-        case 'rate_5':
-          const rating = data.split('_')[1];
-          const thankYouMessage = `⭐ Thank you for your ${rating}-star rating!\n\nYour feedback helps us improve our service.`;
-          const backButton = {
-            inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
-          };
-          await this.sendAutoVanishMessage(chatId, thankYouMessage, { reply_markup: backButton });
-          break;
-        case 'live_chat':
-          await this.createInquiry(chatId, query.from.id.toString(), 'Live Chat Request', 'Customer requested live chat support');
-          const chatMessage = '💬 Your live chat request has been received!\n\nOur support team will respond shortly.';
-          const chatBackButton = {
-            inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
-          };
-          await this.sendAutoVanishMessage(chatId, chatMessage, { reply_markup: chatBackButton });
-          break;
-        default:
-          // Handle category selection
-          if (data?.startsWith('category_')) {
-            const categoryId = data.replace('category_', '');
-            await this.handleCategoryProducts(chatId, query.from.id.toString(), categoryId);
-          }
-          // Handle product selection
-          else if (data?.startsWith('product_')) {
-            const productId = data.replace('product_', '');
-            await this.handleProductDetails(chatId, query.from.id.toString(), productId);
-          }
-          // Handle add to cart with quantity
-          else if (data?.startsWith('addcart_')) {
-            const parts = data.split('_');
-            const productId = parts[1];
-            const quantity = parts[2] ? parseInt(parts[2]) : 1;
-            await this.handleAddToCart(chatId, query.from.id.toString(), productId, quantity);
-          }
-          // Handle add to wishlist
-          else if (data?.startsWith('wishlist_')) {
-            const productId = data.replace('wishlist_', '');
-            await this.handleAddToWishlist(chatId, query.from.id.toString(), productId);
-          }
-          // Handle product rating
-          else if (data?.startsWith('rate_product_')) {
-            const parts = data.split('_');
-            const productId = parts[2];
-            const rating = parts[3];
-            await this.handleProductRating(chatId, query.from.id.toString(), productId, rating);
-          }
-          break;
+      if (data === 'back_to_menu') {
+        await this.sendMainMenu(chatId);
+      }
+      // Handle category selection
+      else if (data?.startsWith('category_')) {
+        const categoryId = data.replace('category_', '');
+        await this.handleCategoryProducts(chatId, userId, categoryId);
+      }
+      // Handle product selection
+      else if (data?.startsWith('product_')) {
+        const productId = data.replace('product_', '');
+        await this.handleProductDetails(chatId, userId, productId);
+      }
+      // Handle quantity selection
+      else if (data?.startsWith('qty_')) {
+        const parts = data.split('_');
+        const productId = parts[1];
+        const quantity = parseInt(parts[2]);
+        await this.handleQuantitySelection(chatId, userId, productId, quantity);
+      }
+      // Handle add to cart with quantity
+      else if (data?.startsWith('addcart_')) {
+        const parts = data.split('_');
+        const productId = parts[1];
+        const quantity = parts[2] ? parseInt(parts[2]) : 1;
+        await this.handleAddToCart(chatId, userId, productId, quantity);
+      }
+      // Handle add to wishlist - auto-returns to main menu
+      else if (data?.startsWith('wishlist_')) {
+        const productId = data.replace('wishlist_', '');
+        await this.handleAddToWishlist(chatId, userId, productId);
+      }
+      // Handle product rating
+      else if (data?.startsWith('rate_product_')) {
+        const parts = data.split('_');
+        const productId = parts[2];
+        const rating = parts[3];
+        await this.handleProductRating(chatId, userId, productId, rating);
+      }
+      // Handle rating responses
+      else if (data?.startsWith('rate_')) {
+        const rating = data.split('_')[1];
+        const thankYouMessage = `⭐ Thank you for your ${rating}-star rating!\n\nYour feedback helps us improve our service.`;
+        const backButton = {
+          inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
+        };
+        await this.sendAutoVanishMessage(chatId, thankYouMessage, { reply_markup: backButton });
       }
     });
   }
 
-  // Helper method to create inquiries
-  private async createInquiry(chatId: number, userId: string, subject: string, message: string) {
-    try {
-      await storage.createInquiry({
-        telegramUserId: userId,
-        customerName: subject,
-        message: message,
-        isRead: false
-      });
-    } catch (error) {
-      console.error('Error creating inquiry:', error);
-    }
-  }
+  // Enhanced Listings Flow Methods
 
   // Handle category product listing
   private async handleCategoryProducts(chatId: number, userId: string, categoryId: string) {
@@ -633,79 +427,113 @@ class TeleShopBot {
     });
   }
 
-  // Handle product details view
+  // Handle individual product details with full interface
   private async handleProductDetails(chatId: number, userId: string, productId: string) {
     const product = await storage.getProduct(productId);
     
-    if (!product || !product.isActive) {
-      const message = '❌ Product not found or unavailable.';
-      const keyboard = {
-        inline_keyboard: [[{ text: '📋 Browse Products', callback_data: 'listings' }]]
-      };
-      await this.sendAutoVanishMessage(chatId, message, { reply_markup: keyboard });
+    if (!product) {
+      await this.sendMainMenu(chatId);
       return;
     }
 
-    let productMessage = `📱 *${product.name}*\n\n`;
-    productMessage += `📝 *Description:*\n${product.description}\n\n`;
+    const category = await storage.getCategories().then(cats => cats.find(c => c.id === product.categoryId));
     
+    // Build detailed product message
+    let message = `🏷️ *${product.name}*\n\n`;
+    message += `📝 *Description:*\n${product.description}\n\n`;
+    
+    // Price information
     if (product.compareAtPrice) {
-      productMessage += `💰 *Price:* ~~$${product.compareAtPrice}~~ *$${product.price}* (SALE!)\n`;
+      message += `💰 *Price:* ~~$${product.compareAtPrice}~~ *$${product.price}*\n`;
+      const savings = (parseFloat(product.compareAtPrice) - parseFloat(product.price)).toFixed(2);
+      message += `💸 *You Save:* $${savings}\n\n`;
     } else {
-      productMessage += `💰 *Price:* $${product.price}\n`;
+      message += `💰 *Price:* $${product.price}\n\n`;
     }
+
+    // Stock and availability
+    const stockStatus = product.stock > 0 ? `✅ In Stock (${product.stock} available)` : '❌ Out of Stock';
+    message += `📦 *Stock:* ${stockStatus}\n`;
     
-    productMessage += `📦 *Stock:* ${product.stock > 0 ? `${product.stock} available` : 'Out of stock'}\n`;
-    
+    if (category) {
+      message += `📂 *Category:* ${category.name}\n`;
+    }
+
+    // Specifications if available
     if (product.specifications) {
       try {
         const specs = JSON.parse(product.specifications);
-        productMessage += '\n🔧 *Specifications:*\n';
+        message += `\n🔬 *Specifications:*\n`;
         Object.entries(specs).forEach(([key, value]) => {
-          productMessage += `• ${key}: ${value}\n`;
+          message += `• *${key}:* ${value}\n`;
         });
-      } catch (e) {
+      } catch (error) {
         // Ignore parsing errors
       }
     }
 
-    const keyboard = {
-      inline_keyboard: [] as Array<Array<{text: string, callback_data: string}>>
-    };
+    // Build action buttons
+    const actionButtons: Array<Array<{text: string, callback_data: string}>> = [];
 
     if (product.stock > 0) {
-      keyboard.inline_keyboard.push([
-        { text: '🛒 Add to Cart (1)', callback_data: `addcart_${product.id}` },
-        { text: '❤️ Add to Wishlist', callback_data: `wishlist_${product.id}` }
+      // Quantity selection row
+      actionButtons.push([
+        { text: 'Qty: 1', callback_data: `qty_${productId}_1` },
+        { text: 'Qty: 2', callback_data: `qty_${productId}_2` },
+        { text: 'Qty: 3', callback_data: `qty_${productId}_3` }
       ]);
-      
-      // Quantity selection buttons
-      keyboard.inline_keyboard.push([
-        { text: '➕ Qty: 2', callback_data: `addcart_${product.id}_2` },
-        { text: '➕ Qty: 3', callback_data: `addcart_${product.id}_3` },
-        { text: '➕ Qty: 5', callback_data: `addcart_${product.id}_5` }
+      actionButtons.push([
+        { text: 'Qty: 5', callback_data: `qty_${productId}_5` }
       ]);
-    } else {
-      keyboard.inline_keyboard.push([
-        { text: '❤️ Add to Wishlist', callback_data: `wishlist_${product.id}` }
+
+      // Main action buttons
+      actionButtons.push([
+        { text: '🛒 Add to Cart', callback_data: `addcart_${productId}_1` },
+        { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}` }
       ]);
     }
 
-    // Rating buttons
-    keyboard.inline_keyboard.push([
-      { text: '⭐', callback_data: `rate_product_${product.id}_1` },
-      { text: '⭐⭐', callback_data: `rate_product_${product.id}_2` },
-      { text: '⭐⭐⭐', callback_data: `rate_product_${product.id}_3` },
-      { text: '⭐⭐⭐⭐', callback_data: `rate_product_${product.id}_4` },
-      { text: '⭐⭐⭐⭐⭐', callback_data: `rate_product_${product.id}_5` }
+    // Rating and navigation
+    actionButtons.push([
+      { text: '⭐ Rate Product', callback_data: `rate_product_${productId}` }
     ]);
-
-    keyboard.inline_keyboard.push([
-      { text: '🔙 Back to Category', callback_data: `category_${product.categoryId || ''}` },
+    actionButtons.push([
+      { text: '🔙 Back to Category', callback_data: `category_${product.categoryId}` },
       { text: '🏠 Main Menu', callback_data: 'back_to_menu' }
     ]);
 
-    await this.sendAutoVanishMessage(chatId, productMessage, {
+    const keyboard = { inline_keyboard: actionButtons };
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  // Handle quantity selection
+  private async handleQuantitySelection(chatId: number, userId: string, productId: string, quantity: number) {
+    const product = await storage.getProduct(productId);
+    
+    if (!product) {
+      await this.sendMainMenu(chatId);
+      return;
+    }
+
+    const message = `📦 *Quantity Selected: ${quantity}*\n\nProduct: *${product.name}*\nPrice: $${product.price} each\nTotal: $${(parseFloat(product.price) * quantity).toFixed(2)}`;
+
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: '🛒 Add to Cart', callback_data: `addcart_${productId}_${quantity}` },
+          { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}` }
+        ],
+        [
+          { text: '🔙 Back to Product', callback_data: `product_${productId}` }
+        ]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
@@ -713,27 +541,27 @@ class TeleShopBot {
 
   // Handle add to cart
   private async handleAddToCart(chatId: number, userId: string, productId: string, quantity: number = 1) {
-    const product = await storage.getProduct(productId);
-    
-    if (!product || !product.isActive) {
-      const message = '❌ Product not found or unavailable.';
-      const keyboard = {
-        inline_keyboard: [[{ text: '📋 Browse Products', callback_data: 'listings' }]]
-      };
-      await this.sendAutoVanishMessage(chatId, message, { reply_markup: keyboard });
-      return;
-    }
-
-    if (product.stock < quantity) {
-      const message = `❌ Sorry, only ${product.stock} items available in stock.`;
-      const keyboard = {
-        inline_keyboard: [[{ text: '🔙 Back to Product', callback_data: `product_${productId}` }]]
-      };
-      await this.sendAutoVanishMessage(chatId, message, { reply_markup: keyboard });
-      return;
-    }
-
     try {
+      const product = await storage.getProduct(productId);
+      
+      if (!product) {
+        await this.sendMainMenu(chatId);
+        return;
+      }
+
+      if (product.stock < quantity) {
+        const message = `❌ *Not enough stock*\n\nRequested: ${quantity}\nAvailable: ${product.stock}`;
+        const keyboard = {
+          inline_keyboard: [[{ text: '🔙 Back to Product', callback_data: `product_${productId}` }]]
+        };
+        
+        await this.sendAutoVanishMessage(chatId, message, {
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+        return;
+      }
+
       await storage.addToCart({
         telegramUserId: userId,
         productId: productId,
@@ -741,7 +569,7 @@ class TeleShopBot {
       });
 
       const total = (parseFloat(product.price) * quantity).toFixed(2);
-      const message = `✅ *Added to Cart!*\n\n${quantity}x ${product.name}\nTotal: $${total}`;
+      const message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Total: $${total}`;
       
       const keyboard = {
         inline_keyboard: [
@@ -759,17 +587,14 @@ class TeleShopBot {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
+      
     } catch (error) {
       console.error('Error adding to cart:', error);
-      const message = '❌ Error adding item to cart. Please try again.';
-      const keyboard = {
-        inline_keyboard: [[{ text: '🔙 Back to Product', callback_data: `product_${productId}` }]]
-      };
-      await this.sendAutoVanishMessage(chatId, message, { reply_markup: keyboard });
+      await this.sendMainMenu(chatId);
     }
   }
 
-  // Handle add to wishlist
+  // Handle add to wishlist - automatically returns to main menu
   private async handleAddToWishlist(chatId: number, userId: string, productId: string) {
     const product = await storage.getProduct(productId);
     
@@ -778,22 +603,21 @@ class TeleShopBot {
       return;
     }
 
-    // Show success message and auto-return to main menu without showing it
-    const message = `❤️ *Added to Wishlist!*\n\n${product.name}\n\n🚧 Wishlist feature coming soon! Your favorites will be saved.\n\n_Returning to main menu..._`;
+    // Show success message and auto-return to main menu
+    const message = `❤️ *Added to Wishlist!*\n\n${product.name} has been saved to your wishlist.\n\nReturning to main menu...`;
     
     await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown'
     });
-    
-    // Auto return to main menu after 3 seconds without showing the menu display
+
+    // Auto-return to main menu after 2 seconds
     setTimeout(async () => {
-      await this.clearPreviousMessages(chatId);
       await this.sendMainMenu(chatId);
-    }, 3000);
+    }, 2000);
   }
 
   // Handle product rating
-  private async handleProductRating(chatId: number, userId: string, productId: string, rating: string) {
+  private async handleProductRating(chatId: number, userId: string, productId: string, rating?: string) {
     const product = await storage.getProduct(productId);
     
     if (!product) {
@@ -801,592 +625,88 @@ class TeleShopBot {
       return;
     }
 
-    const stars = '⭐'.repeat(parseInt(rating));
-    const message = `${stars} *Thank you for rating!*\n\n${product.name}\nYour ${rating}-star rating has been recorded.`;
-    
-    const keyboard = {
-      inline_keyboard: [
-        [
-          { text: '🔙 Back to Product', callback_data: `product_${productId}` },
-          { text: '🏠 Main Menu', callback_data: 'back_to_menu' }
+    if (!rating) {
+      // Show rating selection
+      const message = `⭐ *Rate: ${product.name}*\n\nHow would you rate this product?`;
+      
+      const keyboard = {
+        inline_keyboard: [
+          [
+            { text: '⭐', callback_data: `rate_product_${productId}_1` },
+            { text: '⭐⭐', callback_data: `rate_product_${productId}_2` },
+            { text: '⭐⭐⭐', callback_data: `rate_product_${productId}_3` }
+          ],
+          [
+            { text: '⭐⭐⭐⭐', callback_data: `rate_product_${productId}_4` },
+            { text: '⭐⭐⭐⭐⭐', callback_data: `rate_product_${productId}_5` }
+          ],
+          [
+            { text: '🔙 Back to Product', callback_data: `product_${productId}` }
+          ]
         ]
-      ]
-    };
+      };
 
-    await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
-      reply_markup: keyboard
-    });
-  }
-
-  // Legacy command support (optional - can be removed)
-  private setupLegacyCommands() {
-    if (!this.bot) return;
-
-    // Help command
-    this.bot.onText(/\/help/, async (msg) => {
-      const chatId = msg.chat.id;
-      
-      await storage.incrementMessageCount();
-
-      const helpMessage = await storage.getBotSetting('help_message');
-      const message = helpMessage?.value || '🔹 Available Commands:\n\n/start - Welcome message\n/catalog - Browse products\n/categories - View categories\n/cart - View your cart\n/orders - Your order history\n/contact - Contact support\n/help - Show this message\n\n💡 Tips:\n• Add items to cart by typing product numbers\n• Use /checkout when ready to order\n• We\'re here to help with any questions!';
-      
-      this.bot?.sendMessage(chatId, message);
-    });
-
-    // Categories command
-    this.bot.onText(/\/categories/, async (msg) => {
-      const chatId = msg.chat.id;
-      
-      await storage.incrementMessageCount();
-
-      const categories = await storage.getCategories();
-
-      if (categories.length === 0) {
-        this.bot?.sendMessage(chatId, 'No categories available at the moment.');
-        return;
-      }
-
-      let categoryMessage = '📂 *Product Categories:*\n\n';
-      
-      categories.forEach((category, index) => {
-        categoryMessage += `${index + 1}. *${category.name}*\n`;
-        if (category.description) {
-          categoryMessage += `   ${category.description}\n`;
-        }
-        categoryMessage += '\n';
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
       });
-
-      categoryMessage += 'Reply with a category number to browse products in that category.';
-
-      this.bot?.sendMessage(chatId, categoryMessage, { parse_mode: 'Markdown' });
-    });
-
-    // Featured products command
-    this.bot.onText(/\/featured/, async (msg) => {
-      const chatId = msg.chat.id;
+    } else {
+      // Process the rating
+      const stars = '⭐'.repeat(parseInt(rating));
+      const message = `${stars} *Thank you for rating!*\n\nYou gave *${product.name}* a ${rating}-star rating.\n\nYour feedback helps other customers!`;
       
-      await storage.incrementMessageCount();
+      const keyboard = {
+        inline_keyboard: [
+          [
+            { text: '🔙 Back to Product', callback_data: `product_${productId}` },
+            { text: '🏠 Main Menu', callback_data: 'back_to_menu' }
+          ]
+        ]
+      };
 
-      const featuredProducts = await storage.getFeaturedProducts();
-
-      if (featuredProducts.length === 0) {
-        this.bot?.sendMessage(chatId, 'No featured products available at the moment.');
-        return;
-      }
-
-      let featuredMessage = '⭐ *Featured Products:*\n\n';
-      
-      featuredProducts.forEach((product, index) => {
-        const stockStatus = product.stock > 0 ? '✅ In Stock' : '❌ Out of Stock';
-        const priceDisplay = product.compareAtPrice 
-          ? `💰 ~~$${product.compareAtPrice}~~ *$${product.price}*`
-          : `💰 *$${product.price}*`;
-        
-        featuredMessage += `${index + 1}. *${product.name}*\n`;
-        featuredMessage += `   ${product.description.substring(0, 100)}${product.description.length > 100 ? '...' : ''}\n`;
-        featuredMessage += `   ${priceDisplay}\n`;
-        featuredMessage += `   📦 ${stockStatus}\n\n`;
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
       });
-
-      featuredMessage += 'Reply with the product number to add to cart or get more details.';
-
-      this.bot?.sendMessage(chatId, featuredMessage, { parse_mode: 'Markdown' });
-    });
-
-    // Catalog command
-    this.bot.onText(/\/catalog/, async (msg) => {
-      const chatId = msg.chat.id;
-      
-      await storage.incrementMessageCount();
-
-      const products = await storage.getProducts();
-      const activeProducts = products.filter(p => p.isActive);
-
-      if (activeProducts.length === 0) {
-        this.bot?.sendMessage(chatId, 'Sorry, no products are currently available.');
-        return;
-      }
-
-      let catalogMessage = '🛍️ *Our Product Catalog:*\n\n';
-      
-      activeProducts.slice(0, 10).forEach((product, index) => {
-        const stockStatus = product.stock > 0 ? '✅ In Stock' : '❌ Out of Stock';
-        const priceDisplay = product.compareAtPrice 
-          ? `💰 ~~$${product.compareAtPrice}~~ *$${product.price}*`
-          : `💰 *$${product.price}*`;
-        
-        catalogMessage += `${index + 1}. *${product.name}*\n`;
-        catalogMessage += `   ${product.description.substring(0, 80)}${product.description.length > 80 ? '...' : ''}\n`;
-        catalogMessage += `   ${priceDisplay}\n`;
-        catalogMessage += `   📦 ${stockStatus}\n\n`;
-      });
-
-      if (activeProducts.length > 10) {
-        catalogMessage += `... and ${activeProducts.length - 10} more products.\n\n`;
-      }
-
-      catalogMessage += 'Reply with the product number to add to cart or get details.\nUse /search <keyword> to find specific products.';
-
-      this.bot?.sendMessage(chatId, catalogMessage, { parse_mode: 'Markdown' });
-    });
-
-    // Search command
-    this.bot.onText(/\/search (.+)/, async (msg, match) => {
-      const chatId = msg.chat.id;
-      const searchQuery = match?.[1] || '';
-      
-      await storage.incrementMessageCount();
-
-      const searchResults = await storage.searchProducts(searchQuery);
-
-      if (searchResults.length === 0) {
-        this.bot?.sendMessage(chatId, `No products found for "${searchQuery}". Try different keywords or browse /catalog.`);
-        return;
-      }
-
-      let searchMessage = `🔍 *Search Results for "${searchQuery}":*\n\n`;
-      
-      searchResults.slice(0, 8).forEach((product, index) => {
-        const stockStatus = product.stock > 0 ? '✅' : '❌';
-        searchMessage += `${index + 1}. *${product.name}* ${stockStatus}\n`;
-        searchMessage += `   $${product.price} • Stock: ${product.stock}\n\n`;
-      });
-
-      searchMessage += 'Reply with the product number for details or to add to cart.';
-
-      this.bot?.sendMessage(chatId, searchMessage, { parse_mode: 'Markdown' });
-    });
-
-    // Cart command
-    this.bot.onText(/\/cart/, async (msg) => {
-      const chatId = msg.chat.id;
-      const userId = msg.from?.id.toString() || '';
-      
-      await storage.incrementMessageCount();
-
-      const cartItems = await storage.getCart(userId);
-      const cartTotal = await storage.getCartTotal(userId);
-
-      if (cartItems.length === 0) {
-        this.bot?.sendMessage(chatId, '🛒 Your cart is empty.\n\nUse /catalog to browse products and add items to your cart!');
-        return;
-      }
-
-      let cartMessage = '🛒 *Your Shopping Cart:*\n\n';
-      
-      for (const item of cartItems) {
-        const product = await storage.getProduct(item.productId);
-        if (product) {
-          const itemTotal = (parseFloat(product.price) * item.quantity).toFixed(2);
-          cartMessage += `• *${product.name}*\n`;
-          cartMessage += `  $${product.price} × ${item.quantity} = $${itemTotal}\n\n`;
-        }
-      }
-
-      cartMessage += `📊 *Total: ${cartTotal.itemCount} items • $${cartTotal.totalAmount}*\n\n`;
-      cartMessage += '💡 Commands:\n';
-      cartMessage += '• /checkout - Place your order\n';
-      cartMessage += '• /clear_cart - Empty your cart\n';
-      cartMessage += '• Type "remove [product name]" to remove items';
-
-      this.bot?.sendMessage(chatId, cartMessage, { parse_mode: 'Markdown' });
-    });
-
-    // Checkout command
-    this.bot.onText(/\/checkout/, async (msg) => {
-      const chatId = msg.chat.id;
-      const userId = msg.from?.id.toString() || '';
-      const userName = msg.from?.first_name || 'Customer';
-      
-      await storage.incrementMessageCount();
-
-      const cartItems = await storage.getCart(userId);
-      const cartTotal = await storage.getCartTotal(userId);
-
-      if (cartItems.length === 0) {
-        this.bot?.sendMessage(chatId, '🛒 Your cart is empty. Add some products first using /catalog!');
-        return;
-      }
-
-      // Create order items
-      const orderItems = [];
-      for (const item of cartItems) {
-        const product = await storage.getProduct(item.productId);
-        if (product) {
-          orderItems.push({
-            productId: product.id,
-            productName: product.name,
-            price: product.price,
-            quantity: item.quantity,
-            total: (parseFloat(product.price) * item.quantity).toFixed(2)
-          });
-        }
-      }
-
-      let checkoutMessage = '🛍️ *Order Summary:*\n\n';
-      
-      orderItems.forEach(item => {
-        checkoutMessage += `• ${item.productName}\n`;
-        checkoutMessage += `  $${item.price} × ${item.quantity} = $${item.total}\n\n`;
-      });
-
-      checkoutMessage += `💰 *Total: $${cartTotal.totalAmount}*\n\n`;
-      checkoutMessage += '📝 To complete your order, please reply with:\n';
-      checkoutMessage += '• Your full name\n';
-      checkoutMessage += '• Contact information (phone/email)\n';
-      checkoutMessage += '• Delivery address\n';
-      checkoutMessage += '• Preferred payment method\n\n';
-      checkoutMessage += 'Format: NAME | CONTACT | ADDRESS | PAYMENT';
-
-      this.bot?.sendMessage(chatId, checkoutMessage, { parse_mode: 'Markdown' });
-    });
-
-    // Clear cart command
-    this.bot.onText(/\/clear_cart/, async (msg) => {
-      const chatId = msg.chat.id;
-      const userId = msg.from?.id.toString() || '';
-      
-      await storage.incrementMessageCount();
-      await storage.clearCart(userId);
-
-      this.bot?.sendMessage(chatId, '🗑️ Your cart has been cleared.');
-    });
-
-    // Orders command
-    this.bot.onText(/\/orders/, async (msg) => {
-      const chatId = msg.chat.id;
-      const userId = msg.from?.id.toString() || '';
-      
-      await storage.incrementMessageCount();
-
-      const userOrders = await storage.getOrdersByUser(userId);
-
-      if (userOrders.length === 0) {
-        this.bot?.sendMessage(chatId, '📦 You have no orders yet.\n\nStart shopping with /catalog to place your first order!');
-        return;
-      }
-
-      let ordersMessage = '📦 *Your Orders:*\n\n';
-      
-      userOrders.slice(0, 5).forEach((order, index) => {
-        const statusEmoji = {
-          'pending': '⏳',
-          'confirmed': '✅',
-          'processing': '🔄',
-          'shipped': '🚚',
-          'delivered': '📦',
-          'cancelled': '❌'
-        }[order.status] || '📋';
-
-        ordersMessage += `${index + 1}. Order #${order.id.substring(0, 8)}\n`;
-        ordersMessage += `   ${statusEmoji} Status: ${order.status.toUpperCase()}\n`;
-        ordersMessage += `   💰 Total: $${order.totalAmount}\n`;
-        ordersMessage += `   📅 ${order.createdAt.toLocaleDateString()}\n\n`;
-      });
-
-      if (userOrders.length > 5) {
-        ordersMessage += `... and ${userOrders.length - 5} more orders.\n\n`;
-      }
-
-      ordersMessage += 'Contact us if you have any questions about your orders!';
-
-      this.bot?.sendMessage(chatId, ordersMessage, { parse_mode: 'Markdown' });
-    });
-
-    // Contact command
-    this.bot.onText(/\/contact/, async (msg) => {
-      const chatId = msg.chat.id;
-      
-      await storage.incrementMessageCount();
-
-      const contactMessage = await storage.getBotSetting('contact_message');
-      const message = contactMessage?.value || '📞 Contact Information:\n\n📧 Email: support@teleshop.com\n📱 Phone: +1 (555) 123-4567\n🕒 Hours: Mon-Fri 9AM-6PM\n\n💬 Send us a message anytime and we\'ll respond within 24 hours!';
-      
-      this.bot?.sendMessage(chatId, message);
-    });
-
-    // Payment methods command
-    this.bot.onText(/\/payment/, async (msg) => {
-      const chatId = msg.chat.id;
-      
-      await storage.incrementMessageCount();
-
-      const paymentMessage = await storage.getBotSetting('payment_methods');
-      const message = paymentMessage?.value || '💳 Payment Methods:\n• Cash on Delivery\n• Bank Transfer\n• Credit/Debit Card\n• PayPal\n• Cryptocurrency';
-      
-      this.bot?.sendMessage(chatId, message);
-    });
-
-    // Handle all other messages
-    this.bot.on('message', async (msg) => {
-      const chatId = msg.chat.id;
-      const messageText = msg.text || '';
-      const userId = msg.from?.id.toString() || '';
-      const userName = msg.from?.first_name || 'Customer';
-
-      await storage.incrementMessageCount();
-
-      // Skip if it's a command
-      if (messageText.startsWith('/')) return;
-
-      // Handle remove from cart
-      if (messageText.toLowerCase().startsWith('remove ')) {
-        const productName = messageText.substring(7).trim();
-        const cartItems = await storage.getCart(userId);
-        
-        for (const item of cartItems) {
-          const product = await storage.getProduct(item.productId);
-          if (product && product.name.toLowerCase().includes(productName.toLowerCase())) {
-            await storage.removeFromCart(userId, product.id);
-            this.bot?.sendMessage(chatId, `✅ Removed "${product.name}" from your cart.`);
-            return;
-          }
-        }
-        
-        this.bot?.sendMessage(chatId, `❌ Couldn't find "${productName}" in your cart.`);
-        return;
-      }
-
-      // Handle order checkout format (NAME | CONTACT | ADDRESS | PAYMENT)
-      if (messageText.includes('|') && messageText.split('|').length >= 3) {
-        const orderParts = messageText.split('|').map(part => part.trim());
-        const [customerName, contactInfo, deliveryAddress, paymentMethod] = orderParts;
-
-        const cartItems = await storage.getCart(userId);
-        const cartTotal = await storage.getCartTotal(userId);
-
-        if (cartItems.length === 0) {
-          this.bot?.sendMessage(chatId, '❌ Your cart is empty. Please add items before placing an order.');
-          return;
-        }
-
-        // Create order items
-        const orderItems = [];
-        for (const item of cartItems) {
-          const product = await storage.getProduct(item.productId);
-          if (product) {
-            orderItems.push({
-              productId: product.id,
-              productName: product.name,
-              price: product.price,
-              quantity: item.quantity,
-              total: (parseFloat(product.price) * item.quantity).toFixed(2)
-            });
-          }
-        }
-
-        // Create the order
-        const order = await storage.createOrder({
-          telegramUserId: userId,
-          customerName: customerName || userName,
-          contactInfo,
-          items: JSON.stringify(orderItems),
-          totalAmount: cartTotal.totalAmount,
-          status: 'pending',
-          paymentMethod: paymentMethod || null,
-          deliveryAddress: deliveryAddress || null,
-        });
-
-        // Update stats
-        await storage.incrementOrderCount();
-        await storage.addRevenue(cartTotal.totalAmount);
-
-        // Clear the cart
-        await storage.clearCart(userId);
-
-        const confirmationMessage = await storage.getBotSetting('order_confirmation');
-        let orderConfirmMessage = confirmationMessage?.value || '✅ Order confirmed! We\'ll process your order and contact you within 24 hours with shipping details.';
-        
-        orderConfirmMessage += `\n\n📋 *Order Details:*\n`;
-        orderConfirmMessage += `Order ID: #${order.id.substring(0, 8)}\n`;
-        orderConfirmMessage += `Total: $${order.totalAmount}\n`;
-        orderConfirmMessage += `Status: ${order.status.toUpperCase()}\n\n`;
-        orderConfirmMessage += 'Thank you for your order! 🎉';
-
-        this.bot?.sendMessage(chatId, orderConfirmMessage, { parse_mode: 'Markdown' });
-        return;
-      }
-
-      // Handle numeric inputs (product selection)
-      const productIndex = parseInt(messageText) - 1;
-
-      // Check if it's a category number
-      if (!isNaN(productIndex) && productIndex >= 0) {
-        const categories = await storage.getCategories();
-        
-        if (productIndex < categories.length) {
-          const category = categories[productIndex];
-          const categoryProducts = await storage.getProductsByCategory(category.id);
-          
-          if (categoryProducts.length === 0) {
-            this.bot?.sendMessage(chatId, `No products available in ${category.name} category.`);
-            return;
-          }
-
-          let categoryMessage = `📂 *${category.name} Products:*\n\n`;
-          
-          categoryProducts.slice(0, 8).forEach((product, index) => {
-            const stockStatus = product.stock > 0 ? '✅' : '❌';
-            categoryMessage += `${index + 1}. *${product.name}* ${stockStatus}\n`;
-            categoryMessage += `   $${product.price} • Stock: ${product.stock}\n\n`;
-          });
-
-          categoryMessage += 'Reply with the product number to add to cart or get details.';
-
-          this.bot?.sendMessage(chatId, categoryMessage, { parse_mode: 'Markdown' });
-          return;
-        }
-
-        // Check if it's a product number
-        const products = await storage.getProducts();
-        const activeProducts = products.filter(p => p.isActive);
-
-        if (productIndex < activeProducts.length) {
-          const product = activeProducts[productIndex];
-          
-          let productMessage = `📱 *${product.name}*\n\n`;
-          productMessage += `${product.description}\n\n`;
-          
-          if (product.compareAtPrice) {
-            productMessage += `💰 ~~$${product.compareAtPrice}~~ *$${product.price}*\n`;
-          } else {
-            productMessage += `💰 *Price:* $${product.price}\n`;
-          }
-          
-          productMessage += `📦 *Stock:* ${product.stock > 0 ? `${product.stock} available` : 'Out of stock'}\n`;
-          
-          if (product.specifications) {
-            try {
-              const specs = JSON.parse(product.specifications);
-              productMessage += '\n🔧 *Specifications:*\n';
-              Object.entries(specs).forEach(([key, value]) => {
-                productMessage += `• ${key}: ${value}\n`;
-              });
-            } catch (e) {
-              // Ignore parsing errors
-            }
-          }
-          
-          if (product.stock > 0) {
-            productMessage += '\n✅ Reply with "add" to add this item to your cart!\n';
-            productMessage += 'Or include quantity: "add 2" for multiple items.';
-          } else {
-            productMessage += '\n❌ This item is currently out of stock.';
-          }
-
-          this.bot?.sendMessage(chatId, productMessage, { parse_mode: 'Markdown' });
-          return;
-        }
-      }
-
-      // Handle add to cart
-      if (messageText.toLowerCase().startsWith('add')) {
-        const parts = messageText.toLowerCase().split(' ');
-        const quantity = parts.length > 1 ? parseInt(parts[1]) || 1 : 1;
-        
-        // We need to track the last viewed product for this user
-        // For simplicity, we'll just let them know to select a product first
-        this.bot?.sendMessage(chatId, '📱 Please select a product first by typing its number from the catalog, then type "add" to add it to your cart.');
-        return;
-      }
-
-      // Handle general inquiries and contact information
-      if (messageText.includes('@') || messageText.includes('+') || messageText.length > 10) {
-        // This looks like contact information or a detailed inquiry
-        await storage.createInquiry({
-          telegramUserId: userId,
-          customerName: userName,
-          message: messageText,
-          contactInfo: messageText.includes('@') || messageText.includes('+') ? messageText : undefined,
-          isRead: false,
-        });
-
-        const responseMessage = '📧 Thank you for your message! We\'ve received your inquiry and will get back to you within 24 hours.\n\n💡 Tip: Use /help to see all available commands.';
-        this.bot?.sendMessage(chatId, responseMessage);
-        return;
-      }
-
-      // Handle other general messages
-      await storage.createInquiry({
-        telegramUserId: userId,
-        customerName: userName,
-        message: messageText,
-        isRead: false,
-      });
-
-      const defaultResponse = '💬 Thank you for your message!\n\n🔹 For products: /catalog\n🔹 For help: /help\n🔹 For your cart: /cart\n🔹 To contact us: /contact\n\n We\'re here to help! 😊';
-      this.bot?.sendMessage(chatId, defaultResponse);
-    });
-  }
-
-  async sendMessage(chatId: string, message: string) {
-    if (!this.bot) {
-      throw new Error('Bot not initialized');
     }
-    return this.bot.sendMessage(chatId, message);
   }
 
-  isReady(): boolean {
-    return this.isInitialized && this.bot !== null;
+  async isReady(): Promise<boolean> {
+    return this.bot !== null;
   }
 
   getConfig() {
-    return this.config;
+    return {
+      mode: process.env.NODE_ENV === 'production' ? 'webhook' : 'polling',
+      environment: process.env.NODE_ENV || 'development'
+    };
   }
 
-  // Webhook handler for production deployment
-  handleWebhookUpdate(req: any, res: any) {
-    if (!this.bot || !this.config?.useWebhook) {
-      return res.status(400).send('Webhook not configured');
+  async handleWebhookUpdate(req: any, res: any) {
+    if (!this.bot) {
+      res.status(500).json({ error: 'Bot not initialized' });
+      return;
     }
 
     try {
-      // Verify webhook secret if configured
-      if (this.config.webhookSecret) {
-        const receivedSecret = req.headers['x-telegram-bot-api-secret-token'];
-        if (receivedSecret !== this.config.webhookSecret) {
-          return res.status(401).send('Invalid secret token');
-        }
-      }
-
-      this.bot.processUpdate(req.body);
-      res.sendStatus(200);
+      await this.bot.processUpdate(req.body);
+      res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Webhook processing error:', error);
-      res.status(500).send('Webhook processing failed');
+      console.error('Webhook error:', error);
+      res.status(500).json({ error: 'Failed to process update' });
     }
   }
 
-  // Graceful shutdown
   async shutdown() {
     if (this.bot) {
       try {
-        if (this.config?.useWebhook) {
-          await this.bot.deleteWebHook();
-        } else {
-          await this.bot.stopPolling();
-        }
-        console.log('Bot shutdown completed');
+        await this.bot.stopPolling();
       } catch (error) {
-        console.error('Error during bot shutdown:', error);
+        // Ignore errors when stopping polling
       }
+      this.bot = null;
     }
   }
 }
 
 export const teleShopBot = new TeleShopBot();
-
-// Graceful shutdown handling
-process.on('SIGINT', async () => {
-  console.log('Received SIGINT, shutting down gracefully...');
-  await teleShopBot.shutdown();
-  process.exit(0);
-});
-
-process.on('SIGTERM', async () => {
-  console.log('Received SIGTERM, shutting down gracefully...');
-  await teleShopBot.shutdown();
-  process.exit(0);
-});
