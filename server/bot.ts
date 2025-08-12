@@ -489,7 +489,7 @@ export class TeleShopBot {
 Need help? Our support team is here for you!
 
 📞 **Support Contact:**
-• Telegram: @TeleShopSupport
+• Telegram: @murzion
 • Email: support@teleshop.com
 • Phone: +1 (555) 123-4567
 

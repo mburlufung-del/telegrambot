@@ -123,6 +123,13 @@ Preferred communication style: Simple, everyday language.
 - **Persistent Welcome Interface**: Clean welcome message with 6 command buttons always visible
 - **Inline Keyboard Navigation**: Modern button-based interaction replacing text commands
 
+### Operator Support System (August 2025)
+- **Professional Contact Information**: Complete support details with @murzion as primary Telegram contact
+- **Multi-Channel Support**: Telegram, email, and phone support options
+- **Business Hours Display**: Clear availability and response time information
+- **Interactive Support Features**: Send message, email template, and FAQ sections
+- **Inquiry System Integration**: Support messages create admin dashboard inquiries automatically
+
 ### Command Button Interface
 The bot now features a streamlined interface with 6 primary command buttons arranged in a compact 3x2 grid:
 
