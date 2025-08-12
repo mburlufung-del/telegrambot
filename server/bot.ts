@@ -404,7 +404,9 @@ export class TeleShopBot {
 
     let message = '⭐ *Weekly Product Ratings*\n\nHere are the most rated products this week:\n\n';
     
+    console.log('Processing ratings for display:', weeklyRatings);
     weeklyRatings.slice(0, 10).forEach((rating, index) => {
+      console.log(`Rating ${index + 1}:`, rating);
       const stars = '⭐'.repeat(Math.round(rating.averageRating));
       const starsDisplay = stars.padEnd(5, '☆');
       
