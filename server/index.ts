@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
+import { seedDatabase } from "./seed";
 
 const app = express();
 app.use(express.json());
@@ -40,8 +41,20 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
   
-  // Auto-initialize bot with token after routes are set up
+  // Auto-initialize bot with token and seed database after routes are set up
   setTimeout(async () => {
+    // Check if database is empty and seed if needed
+    try {
+      const products = await storage.getProducts();
+      if (products.length === 0) {
+        log('Database empty, seeding with sample data...');
+        await seedDatabase();
+      }
+    } catch (error) {
+      log('Database seeding check failed, will try seeding anyway');
+      await seedDatabase();
+    }
+    
     await autoInitializeBot();
     
     // Set up periodic bot health check
