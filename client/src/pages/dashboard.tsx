@@ -39,6 +39,11 @@ export default function Dashboard() {
     queryKey: ["/api/inquiries/unread-count"],
   });
 
+  const { data: botStatus } = useQuery<{ status: string; ready: boolean }>({
+    queryKey: ["/api/bot/status"],
+    refetchInterval: 5000, // Check every 5 seconds
+  });
+
   const recentProducts = products.slice(0, 3);
   const recentInquiries = inquiries.slice(0, 3);
   const unreadCount = unreadData?.count || 0;
@@ -46,7 +51,7 @@ export default function Dashboard() {
   return (
     <div className="p-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center">
@@ -98,6 +103,31 @@ export default function Dashboard() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Messages</p>
                 <p className="text-2xl font-bold text-gray-900">{stats?.totalMessages || 0}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                botStatus?.ready ? 'bg-green-100' : 'bg-red-100'
+              }`}>
+                {botStatus?.ready ? (
+                  <Users className="h-6 w-6 text-green-600" />
+                ) : (
+                  <Users className="h-6 w-6 text-red-600" />
+                )}
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Bot Status</p>
+                <div className="flex items-center space-x-2">
+                  <p className="text-lg font-bold text-gray-900 capitalize">{botStatus?.status || 'offline'}</p>
+                  <Badge variant={botStatus?.ready ? 'default' : 'destructive'}>
+                    {botStatus?.ready ? 'Online' : 'Offline'}
+                  </Badge>
+                </div>
               </div>
             </div>
           </CardContent>

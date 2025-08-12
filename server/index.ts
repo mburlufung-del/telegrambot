@@ -101,24 +101,25 @@ async function autoInitializeBot() {
       // Set the bot token automatically
       await storage.setBotSetting({
         key: 'bot_token',
-        value: '7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs',
-        description: 'Telegram Bot Token'
+        value: '7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs'
       });
       log('Bot token auto-configured');
     }
     
     // Initialize bot by calling the bot restart endpoint
-    try {
-      const response = await fetch('http://localhost:5000/api/bot/restart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (response.ok) {
-        log('Bot auto-initialized and running');
+    setTimeout(async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/bot/restart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (response.ok) {
+          log('Bot auto-initialized and running');
+        }
+      } catch (error) {
+        log('Bot restart API not ready yet');
       }
-    } catch (error) {
-      log('Bot restart API not ready yet');
-    }
+    }, 1000);
   } catch (error) {
     log(`Bot auto-initialization failed: ${error}`);
   }
