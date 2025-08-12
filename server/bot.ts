@@ -410,14 +410,7 @@ export class TeleShopBot {
         const productId = data.replace('product_', '');
         await this.handleProductDetails(chatId, userId, productId);
       }
-      // Handle quantity selection
-      else if (data?.startsWith('qty_')) {
-        const parts = data.split('_');
-        const productId = parts[1];
-        const quantity = parseInt(parts[2]);
-        await this.handleQuantitySelection(chatId, userId, productId, quantity);
-      }
-      // Handle dedicated quantity selector
+      // Handle +/- quantity selector
       else if (data?.startsWith('select_qty_')) {
         const parts = data.split('_');
         const productId = parts[2];
@@ -590,14 +583,8 @@ export class TeleShopBot {
     const actionButtons: Array<Array<{text: string, callback_data: string}>> = [];
 
     if (product.stock > 0) {
-      // Quick quantity selection row
+      // Quantity selection with +/- controls
       actionButtons.push([
-        { text: 'Qty: 1', callback_data: `qty_${productId}_1` },
-        { text: 'Qty: 2', callback_data: `qty_${productId}_2` },
-        { text: 'Qty: 3', callback_data: `qty_${productId}_3` }
-      ]);
-      actionButtons.push([
-        { text: 'Qty: 5', callback_data: `qty_${productId}_5` },
         { text: '🔢 Select Quantity', callback_data: `select_qty_${productId}_1` }
       ]);
 
@@ -625,61 +612,7 @@ export class TeleShopBot {
     });
   }
 
-  // Handle quantity selection with +/- controls
-  private async handleQuantitySelection(chatId: number, userId: string, productId: string, quantity: number) {
-    const product = await storage.getProduct(productId);
-    
-    if (!product) {
-      await this.sendMainMenu(chatId);
-      return;
-    }
 
-    if (quantity > product.stock) {
-      const message = `❌ *Insufficient Stock*\n\nRequested: ${quantity}\nAvailable: ${product.stock}\n\nPlease select a lower quantity.`;
-      await this.sendAutoVanishMessage(chatId, message, { parse_mode: 'Markdown' });
-      setTimeout(() => this.handleProductDetails(chatId, userId, productId), 2000);
-      return;
-    }
-
-    const message = `📦 *${product.name}*\n\n🔢 Selected Quantity: *${quantity}*\n💰 Price: $${product.price} each\n💵 Total: $${(parseFloat(product.price) * quantity).toFixed(2)}\n📦 Available: ${product.stock}`;
-
-    // Create quantity adjustment buttons
-    const quantityButtons = [];
-    
-    // Decrease button (only if quantity > 1)
-    if (quantity > 1) {
-      quantityButtons.push({ text: `➖ (${quantity - 1})`, callback_data: `qty_${productId}_${quantity - 1}` });
-    }
-    
-    // Current quantity display
-    quantityButtons.push({ text: `${quantity}`, callback_data: 'no_action' });
-    
-    // Increase button (only if we can add more)
-    if (quantity < product.stock) {
-      quantityButtons.push({ text: `➕ (${quantity + 1})`, callback_data: `qty_${productId}_${quantity + 1}` });
-    }
-
-    const keyboard = {
-      inline_keyboard: [
-        quantityButtons, // Quantity adjustment row
-        [
-          { text: `🛒 Add ${quantity} to Cart`, callback_data: `addcart_${productId}_${quantity}` }
-        ],
-        [
-          { text: `❤️ Add ${quantity} to Wishlist`, callback_data: `wishlist_${productId}_${quantity}` },
-          { text: `⭐ Rate Product`, callback_data: `rate_product_${productId}_${quantity}` }
-        ],
-        [
-          { text: '🔙 Back to Product', callback_data: `product_${productId}` }
-        ]
-      ]
-    };
-
-    await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
-      reply_markup: keyboard
-    });
-  }
 
   // Handle add to cart
   private async handleAddToCart(chatId: number, userId: string, productId: string, quantity: number = 1) {
