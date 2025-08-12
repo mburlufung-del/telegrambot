@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { storage } from "./storage";
 
 const app = express();
 app.use(express.json());
@@ -38,6 +39,25 @@ app.use((req, res, next) => {
 
 (async () => {
   const server = await registerRoutes(app);
+  
+  // Auto-initialize bot with token after routes are set up
+  setTimeout(async () => {
+    await autoInitializeBot();
+    
+    // Set up periodic bot health check
+    setInterval(async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/bot/status');
+        const status = await response.json();
+        if (!status.ready) {
+          log('Bot offline, restarting...');
+          await fetch('http://localhost:5000/api/bot/restart', { method: 'POST' });
+        }
+      } catch (error) {
+        // Ignore check errors
+      }
+    }, 60000); // Check every minute
+  }, 2000);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -69,3 +89,37 @@ app.use((req, res, next) => {
     log(`serving on port ${port}`);
   });
 })();
+
+// Auto-initialize bot function
+async function autoInitializeBot() {
+  try {
+    // Check if bot token exists in storage
+    const settings = await storage.getBotSettings();
+    const tokenSetting = settings.find(s => s.key === 'bot_token');
+    
+    if (!tokenSetting) {
+      // Set the bot token automatically
+      await storage.setBotSetting({
+        key: 'bot_token',
+        value: '7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs',
+        description: 'Telegram Bot Token'
+      });
+      log('Bot token auto-configured');
+    }
+    
+    // Initialize bot by calling the bot restart endpoint
+    try {
+      const response = await fetch('http://localhost:5000/api/bot/restart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (response.ok) {
+        log('Bot auto-initialized and running');
+      }
+    } catch (error) {
+      log('Bot restart API not ready yet');
+    }
+  } catch (error) {
+    log(`Bot auto-initialization failed: ${error}`);
+  }
+}
