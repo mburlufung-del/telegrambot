@@ -378,22 +378,57 @@ export class TeleShopBot {
   }
 
   private async handleRatingCommand(chatId: number, userId: string) {
-    const message = '⭐ *Rate Your Experience*\n\nHow would you rate your shopping experience with us?';
+    const weeklyRatings = await storage.getWeeklyProductRatings();
     
+    if (weeklyRatings.length === 0) {
+      const message = '⭐ *Weekly Product Ratings*\n\nNo products have been rated this week yet.\n\nBe the first to rate a product! Browse our catalog and share your experience.';
+      
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '📋 Browse Products', callback_data: 'listings' }],
+          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+      return;
+    }
+
+    let message = '⭐ *Weekly Product Ratings*\n\nHere are the most rated products this week:\n\n';
+    
+    weeklyRatings.slice(0, 10).forEach((rating, index) => {
+      const stars = '⭐'.repeat(Math.round(rating.averageRating));
+      const starsDisplay = stars.padEnd(5, '☆');
+      
+      message += `${index + 1}. *${rating.productName}*\n`;
+      message += `   ${starsDisplay} ${rating.averageRating}/5\n`;
+      message += `   👥 ${rating.totalRatings} ${rating.totalRatings === 1 ? 'person' : 'people'} rated\n`;
+      
+      // Show star distribution
+      const starBreakdown = [];
+      for (let i = 5; i >= 1; i--) {
+        const count = rating.ratingCounts[i] || 0;
+        if (count > 0) {
+          starBreakdown.push(`${i}⭐: ${count}`);
+        }
+      }
+      if (starBreakdown.length > 0) {
+        message += `   📊 ${starBreakdown.join(' | ')}\n`;
+      }
+      message += '\n';
+    });
+
+    if (weeklyRatings.length > 10) {
+      message += `... and ${weeklyRatings.length - 10} more rated products.`;
+    }
+
     const keyboard = {
       inline_keyboard: [
-        [
-          { text: '⭐', callback_data: 'rate_1' },
-          { text: '⭐⭐', callback_data: 'rate_2' },
-          { text: '⭐⭐⭐', callback_data: 'rate_3' }
-        ],
-        [
-          { text: '⭐⭐⭐⭐', callback_data: 'rate_4' },
-          { text: '⭐⭐⭐⭐⭐', callback_data: 'rate_5' }
-        ],
-        [
-          { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
-        ]
+        [{ text: '📋 Browse Products to Rate', callback_data: 'listings' }],
+        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
       ]
     };
 
@@ -477,7 +512,7 @@ export class TeleShopBot {
       else if (data?.startsWith('rate_product_')) {
         const parts = data.split('_');
         const productId = parts[2];
-        const rating = parts[3];
+        const rating = parseInt(parts[3]);
         await this.handleProductRating(chatId, userId, productId, rating);
       }
       // Handle cart actions
@@ -754,7 +789,7 @@ export class TeleShopBot {
   }
 
   // Handle product rating
-  private async handleProductRating(chatId: number, userId: string, productId: string, rating?: string) {
+  private async handleProductRating(chatId: number, userId: string, productId: string, rating?: number) {
     const product = await storage.getProduct(productId);
     
     if (!product) {
@@ -788,23 +823,36 @@ export class TeleShopBot {
         reply_markup: keyboard
       });
     } else {
-      // Process the rating
-      const stars = '⭐'.repeat(parseInt(rating));
-      const message = `${stars} *Thank you for rating!*\n\nYou gave *${product.name}* a ${rating}-star rating.\n\nYour feedback helps other customers!`;
-      
-      const keyboard = {
-        inline_keyboard: [
-          [
-            { text: '🔙 Back to Product', callback_data: `product_${productId}` },
-            { text: '🏠 Main Menu', callback_data: 'back_to_menu' }
-          ]
-        ]
-      };
+      // Save the rating to storage
+      try {
+        await storage.addProductRating({
+          productId: productId,
+          telegramUserId: userId,
+          rating: rating
+        });
 
-      await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
-        reply_markup: keyboard
-      });
+        // Process the rating
+        const stars = '⭐'.repeat(rating);
+        const message = `${stars} *Thank you for rating!*\n\nYou gave *${product.name}* a ${rating}-star rating.\n\nYour feedback helps other customers!`;
+        
+        const keyboard = {
+          inline_keyboard: [
+            [
+              { text: '🔙 Back to Product', callback_data: `product_${productId}` },
+              { text: '🏠 Main Menu', callback_data: 'back_to_menu' }
+            ]
+          ]
+        };
+
+        await this.sendAutoVanishMessage(chatId, message, {
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+      } catch (error) {
+        console.error('Error saving rating:', error);
+        const message = 'Failed to save your rating. Please try again.';
+        await this.sendAutoVanishMessage(chatId, message);
+      }
     }
   }
 

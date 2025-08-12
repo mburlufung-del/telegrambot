@@ -13,6 +13,8 @@ import {
   type InsertBotSettings,
   type BotStats,
   type InsertBotStats,
+  type ProductRating,
+  type InsertProductRating,
   type OrderItem
 } from "@shared/schema";
 import { randomUUID } from "crypto";
@@ -72,6 +74,12 @@ export interface IStorage {
   incrementOrderCount(): Promise<void>;
   incrementMessageCount(): Promise<void>;
   addRevenue(amount: string): Promise<void>;
+
+  // Product Ratings
+  addProductRating(rating: InsertProductRating): Promise<ProductRating>;
+  getProductRating(productId: string, telegramUserId: string): Promise<ProductRating | undefined>;
+  getWeeklyProductRatings(): Promise<{ productId: string; productName: string; averageRating: number; totalRatings: number; ratingCounts: Record<number, number> }[]>;
+  getProductRatings(productId: string): Promise<ProductRating[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -82,6 +90,7 @@ export class MemStorage implements IStorage {
   private inquiries: Map<string, Inquiry>;
   private botSettings: Map<string, BotSettings>;
   private botStats: BotStats;
+  private productRatings: Map<string, ProductRating>; // key: `${productId}-${telegramUserId}`
 
   constructor() {
     this.products = new Map();
@@ -90,6 +99,7 @@ export class MemStorage implements IStorage {
     this.orders = new Map();
     this.inquiries = new Map();
     this.botSettings = new Map();
+    this.productRatings = new Map();
     this.botStats = {
       id: randomUUID(),
       totalUsers: 0,
@@ -102,6 +112,7 @@ export class MemStorage implements IStorage {
     // Initialize with sample data
     this.initializeDefaultSettings();
     this.initializeSampleData();
+    this.initializeSampleRatings();
   }
 
   private initializeDefaultSettings() {
@@ -243,6 +254,40 @@ export class MemStorage implements IStorage {
         updatedAt: new Date(),
       };
       this.products.set(product.id, product);
+    });
+  }
+
+  private initializeSampleRatings() {
+    // Add some sample ratings for this week
+    const products = Array.from(this.products.values());
+    const sampleUserIds = ['12345', '67890', '11111', '22222', '33333'];
+    
+    // Create ratings for the past week
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 6); // 6 days ago
+
+    products.slice(0, 8).forEach((product, productIndex) => {
+      // Generate 3-15 ratings per product
+      const ratingCount = Math.floor(Math.random() * 13) + 3;
+      
+      for (let i = 0; i < ratingCount; i++) {
+        const userId = sampleUserIds[i % sampleUserIds.length] + productIndex + i;
+        const rating = Math.floor(Math.random() * 5) + 1; // 1-5 stars
+        
+        // Random date within the past week
+        const randomDate = new Date(weekAgo.getTime() + Math.random() * (Date.now() - weekAgo.getTime()));
+        
+        const productRating: ProductRating = {
+          id: randomUUID(),
+          productId: product.id,
+          telegramUserId: userId,
+          rating: rating,
+          createdAt: randomDate
+        };
+        
+        const key = `${product.id}-${userId}`;
+        this.productRatings.set(key, productRating);
+      }
     });
   }
 
@@ -576,6 +621,71 @@ export class MemStorage implements IStorage {
     const newRevenue = currentRevenue + parseFloat(amount);
     this.botStats.totalRevenue = newRevenue.toFixed(2);
     this.botStats.updatedAt = new Date();
+  }
+
+  // Product Ratings
+  async addProductRating(insertRating: InsertProductRating): Promise<ProductRating> {
+    const id = randomUUID();
+    const rating: ProductRating = {
+      id,
+      ...insertRating,
+      createdAt: new Date(),
+    };
+
+    const key = `${rating.productId}-${rating.telegramUserId}`;
+    this.productRatings.set(key, rating);
+    return rating;
+  }
+
+  async getProductRating(productId: string, telegramUserId: string): Promise<ProductRating | undefined> {
+    const key = `${productId}-${telegramUserId}`;
+    return this.productRatings.get(key);
+  }
+
+  async getWeeklyProductRatings(): Promise<{ productId: string; productName: string; averageRating: number; totalRatings: number; ratingCounts: Record<number, number> }[]> {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const weeklyRatings = Array.from(this.productRatings.values())
+      .filter(rating => rating.createdAt >= oneWeekAgo);
+
+    const ratingsByProduct = new Map<string, ProductRating[]>();
+    
+    for (const rating of weeklyRatings) {
+      if (!ratingsByProduct.has(rating.productId)) {
+        ratingsByProduct.set(rating.productId, []);
+      }
+      ratingsByProduct.get(rating.productId)!.push(rating);
+    }
+
+    const results: { productId: string; productName: string; averageRating: number; totalRatings: number; ratingCounts: Record<number, number> }[] = [];
+    for (const [productId, ratings] of Array.from(ratingsByProduct.entries())) {
+      const product = this.products.get(productId);
+      if (!product) continue;
+
+      const totalRatings = ratings.length;
+      const averageRating = ratings.reduce((sum: number, r: ProductRating) => sum + r.rating, 0) / totalRatings;
+      
+      const ratingCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      ratings.forEach((r: ProductRating) => {
+        ratingCounts[r.rating] = (ratingCounts[r.rating] || 0) + 1;
+      });
+
+      results.push({
+        productId,
+        productName: product.name,
+        averageRating: Math.round(averageRating * 10) / 10,
+        totalRatings,
+        ratingCounts
+      });
+    }
+
+    return results.sort((a, b) => b.totalRatings - a.totalRatings);
+  }
+
+  async getProductRatings(productId: string): Promise<ProductRating[]> {
+    return Array.from(this.productRatings.values())
+      .filter(rating => rating.productId === productId);
   }
 }
 

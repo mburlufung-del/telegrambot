@@ -80,6 +80,14 @@ export const botStats = pgTable("bot_stats", {
   updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
 });
 
+export const productRatings = pgTable("product_ratings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  productId: varchar("product_id").notNull().references(() => products.id),
+  telegramUserId: text("telegram_user_id").notNull(),
+  rating: integer("rating").notNull(), // 1-5 stars
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
   createdAt: true,
@@ -116,6 +124,11 @@ export const insertBotStatsSchema = createInsertSchema(botStats).omit({
   updatedAt: true,
 });
 
+export const insertProductRatingSchema = createInsertSchema(productRatings).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Order item type for cart and orders
 export const orderItemSchema = z.object({
   productId: z.string(),
@@ -139,4 +152,6 @@ export type BotSettings = typeof botSettings.$inferSelect;
 export type InsertBotSettings = z.infer<typeof insertBotSettingsSchema>;
 export type BotStats = typeof botStats.$inferSelect;
 export type InsertBotStats = z.infer<typeof insertBotStatsSchema>;
+export type ProductRating = typeof productRatings.$inferSelect;
+export type InsertProductRating = z.infer<typeof insertProductRatingSchema>;
 export type OrderItem = z.infer<typeof orderItemSchema>;
