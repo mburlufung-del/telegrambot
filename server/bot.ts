@@ -384,7 +384,7 @@ export class TeleShopBot {
           const orderDate = new Date(order.createdAt || Date.now()).toLocaleDateString();
           
           message += `${i + 1}. *Order ${order.id.slice(-6).toUpperCase()}*\n`;
-          message += `   💰 Total: $${order.total}\n`;
+          message += `   💰 Total: $${order.totalAmount}\n`;
           message += `   📅 Date: ${orderDate}\n`;
           message += `   ✅ Status: ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}\n\n`;
         }
@@ -1498,15 +1498,15 @@ Type your complete information below:`;
 
     const message = `✅ *Confirm Customer Information*
 
-*Order Number:* ${orderNumber}
-*Customer Name:* ${customerName}
-*Phone:* ${customerPhone}
-*Username:* ${username ? `@${username}` : 'Not available'}
+Order Number: ${orderNumber}
+Customer Name: ${customerName}
+Phone: ${customerPhone}
+Username: ${username ? `@${username}` : 'Not available'}
 
-*Delivery Address:*
+Delivery Address:
 ${customerAddress}
 
-*Delivery Method:* ${deliveryMethod}
+Delivery Method: ${deliveryMethod}
 
 Is this information correct?`;
 

@@ -117,6 +117,7 @@ export class MemStorage implements IStorage {
     this.initializeDefaultSettings();
     this.initializeSampleData();
     this.initializeSampleRatings();
+    this.initializeSampleOrders();
   }
 
   private initializeDefaultSettings() {
@@ -726,6 +727,62 @@ export class MemStorage implements IStorage {
   async getProductRatings(productId: string): Promise<ProductRating[]> {
     return Array.from(this.productRatings.values())
       .filter(rating => rating.productId === productId);
+  }
+
+  private initializeSampleOrders() {
+    // Add some sample completed orders for different users
+    const products = Array.from(this.products.values());
+    const sampleOrders = [
+      {
+        telegramUserId: "12345", // Sample user
+        customerName: "John Smith",
+        contactInfo: "+1-555-0123",
+        deliveryAddress: "123 Main St, City, State 12345",
+        totalAmount: "157.50",
+        status: "delivered",
+        paymentMethod: "card",
+        items: JSON.stringify([
+          { productId: products[0]?.id, productName: products[0]?.name, quantity: 2, price: products[0]?.price }
+        ])
+      },
+      {
+        telegramUserId: "12345", // Same user
+        customerName: "John Smith", 
+        contactInfo: "+1-555-0123",
+        deliveryAddress: "123 Main St, City, State 12345",
+        totalAmount: "89.99",
+        status: "shipped",
+        paymentMethod: "bitcoin",
+        items: JSON.stringify([
+          { productId: products[1]?.id, productName: products[1]?.name, quantity: 1, price: products[1]?.price }
+        ])
+      },
+      {
+        telegramUserId: "67890", // Different user
+        customerName: "Jane Doe",
+        contactInfo: "+1-555-0456",
+        deliveryAddress: "456 Oak Ave, City, State 67890",
+        totalAmount: "275.00",
+        status: "completed",
+        paymentMethod: "bank",
+        items: JSON.stringify([
+          { productId: products[2]?.id, productName: products[2]?.name, quantity: 3, price: products[2]?.price }
+        ])
+      }
+    ];
+
+    sampleOrders.forEach(orderData => {
+      if (products.length > 0) {
+        const order: Order = {
+          id: randomUUID(),
+          ...orderData,
+          notes: null,
+          createdAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000), // Random date within last week
+          updatedAt: new Date()
+        };
+        this.orders.set(order.id, order);
+      }
+    });
   }
 }
 
