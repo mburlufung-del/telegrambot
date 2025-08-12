@@ -5,7 +5,10 @@ import { teleShopBot } from "./bot";
 import { 
   insertProductSchema, 
   insertInquirySchema, 
-  insertBotSettingsSchema 
+  insertBotSettingsSchema,
+  insertOrderSchema,
+  insertCartSchema,
+  insertCategorySchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -19,6 +22,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(products);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  // Featured products route (must come before /products/:id)
+  app.get("/api/products/featured", async (req, res) => {
+    try {
+      const products = await storage.getFeaturedProducts();
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch featured products" });
+    }
+  });
+
+  // Search products route (must come before /products/:id)
+  app.get("/api/products/search", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query) {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+      const products = await storage.searchProducts(query);
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to search products" });
     }
   });
 
@@ -66,6 +93,202 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete product" });
+    }
+  });
+
+  // Categories routes
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const categories = await storage.getCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  app.post("/api/categories", async (req, res) => {
+    try {
+      const categoryData = insertCategorySchema.parse(req.body);
+      const category = await storage.createCategory(categoryData);
+      res.status(201).json(category);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid category data" });
+    }
+  });
+
+  app.put("/api/categories/:id", async (req, res) => {
+    try {
+      const categoryData = insertCategorySchema.partial().parse(req.body);
+      const category = await storage.updateCategory(req.params.id, categoryData);
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.json(category);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid category data" });
+    }
+  });
+
+  app.delete("/api/categories/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteCategory(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete category" });
+    }
+  });
+
+
+
+  // Products by category route
+  app.get("/api/categories/:id/products", async (req, res) => {
+    try {
+      const products = await storage.getProductsByCategory(req.params.id);
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch products by category" });
+    }
+  });
+
+  // Orders routes
+  app.get("/api/orders", async (req, res) => {
+    try {
+      const orders = await storage.getOrders();
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
+  app.get("/api/orders/:id", async (req, res) => {
+    try {
+      const order = await storage.getOrder(req.params.id);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch order" });
+    }
+  });
+
+  app.post("/api/orders", async (req, res) => {
+    try {
+      const orderData = insertOrderSchema.parse(req.body);
+      const order = await storage.createOrder(orderData);
+      
+      // Update stats
+      await storage.incrementOrderCount();
+      await storage.addRevenue(orderData.totalAmount);
+      
+      res.status(201).json(order);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid order data" });
+    }
+  });
+
+  app.put("/api/orders/:id", async (req, res) => {
+    try {
+      const orderData = insertOrderSchema.partial().parse(req.body);
+      const order = await storage.updateOrder(req.params.id, orderData);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      res.json(order);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid order data" });
+    }
+  });
+
+  app.put("/api/orders/:id/status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (!status) {
+        return res.status(400).json({ message: "Status is required" });
+      }
+      const order = await storage.updateOrderStatus(req.params.id, status);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      res.json(order);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update order status" });
+    }
+  });
+
+  // Cart routes
+  app.get("/api/cart/:telegramUserId", async (req, res) => {
+    try {
+      const cartItems = await storage.getCart(req.params.telegramUserId);
+      res.json(cartItems);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch cart" });
+    }
+  });
+
+  app.post("/api/cart", async (req, res) => {
+    try {
+      const cartData = insertCartSchema.parse(req.body);
+      const cartItem = await storage.addToCart(cartData);
+      res.status(201).json(cartItem);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid cart data" });
+    }
+  });
+
+  app.put("/api/cart/:telegramUserId/:productId", async (req, res) => {
+    try {
+      const { quantity } = req.body;
+      if (typeof quantity !== 'number') {
+        return res.status(400).json({ message: "Quantity must be a number" });
+      }
+      const cartItem = await storage.updateCartItem(
+        req.params.telegramUserId, 
+        req.params.productId, 
+        quantity
+      );
+      if (!cartItem) {
+        return res.status(404).json({ message: "Cart item not found" });
+      }
+      res.json(cartItem);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update cart item" });
+    }
+  });
+
+  app.delete("/api/cart/:telegramUserId/:productId", async (req, res) => {
+    try {
+      const deleted = await storage.removeFromCart(
+        req.params.telegramUserId, 
+        req.params.productId
+      );
+      if (!deleted) {
+        return res.status(404).json({ message: "Cart item not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to remove cart item" });
+    }
+  });
+
+  app.delete("/api/cart/:telegramUserId", async (req, res) => {
+    try {
+      await storage.clearCart(req.params.telegramUserId);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to clear cart" });
+    }
+  });
+
+  app.get("/api/cart/:telegramUserId/total", async (req, res) => {
+    try {
+      const total = await storage.getCartTotal(req.params.telegramUserId);
+      res.json(total);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to calculate cart total" });
     }
   });
 

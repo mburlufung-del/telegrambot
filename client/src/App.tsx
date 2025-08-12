@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import Products from "@/pages/products";
+import Categories from "@/pages/categories";
+import Orders from "@/pages/orders";
 import Inquiries from "@/pages/inquiries";
 import BotSettings from "@/pages/bot-settings";
 import Sidebar from "@/components/layout/sidebar";
@@ -21,6 +23,8 @@ function Router() {
           <Switch>
             <Route path="/" component={Dashboard} />
             <Route path="/products" component={Products} />
+            <Route path="/categories" component={Categories} />
+            <Route path="/orders" component={Orders} />
             <Route path="/inquiries" component={Inquiries} />
             <Route path="/bot-settings" component={BotSettings} />
             <Route component={NotFound} />
