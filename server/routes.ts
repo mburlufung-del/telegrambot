@@ -163,6 +163,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User orders route - Must come before /:id route
+  app.get("/api/orders/user/:telegramUserId", async (req, res) => {
+    try {
+      const orders = await storage.getUserOrders(req.params.telegramUserId);
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user orders" });
+    }
+  });
+
   app.get("/api/orders/:id", async (req, res) => {
     try {
       const order = await storage.getOrder(req.params.id);
@@ -357,7 +367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bot status route
   app.get("/api/bot/status", async (req, res) => {
     try {
-      const isReady = teleShopBot.isReady();
+      const isReady = await teleShopBot.isReady();
       const config = teleShopBot.getConfig();
       res.json({ 
         status: isReady ? 'online' : 'offline',

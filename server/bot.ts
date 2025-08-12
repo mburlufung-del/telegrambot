@@ -371,7 +371,7 @@ export class TeleShopBot {
         return;
       }
 
-      let message = '📦 *Your Orders*\n\n';
+      let message = '📦 Your Orders\n\n';
       
       // Show only successful orders
       const successfulOrders = userOrders.filter(order => order.status === 'completed' || order.status === 'shipped' || order.status === 'delivered');
@@ -383,7 +383,7 @@ export class TeleShopBot {
           const order = successfulOrders[i];
           const orderDate = new Date(order.createdAt || Date.now()).toLocaleDateString();
           
-          message += `${i + 1}. *Order ${order.id.slice(-6).toUpperCase()}*\n`;
+          message += `${i + 1}. Order #${order.id.slice(-6).toUpperCase()}\n`;
           message += `   💰 Total: $${order.totalAmount}\n`;
           message += `   📅 Date: ${orderDate}\n`;
           message += `   ✅ Status: ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}\n\n`;
