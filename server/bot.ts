@@ -508,8 +508,6 @@ Need help? Our support team is here for you!
     const keyboard = {
       inline_keyboard: [
         [{ text: '💬 Send Message to Support', callback_data: 'send_support_message' }],
-        [{ text: '📧 Email Support', callback_data: 'email_support' }],
-        [{ text: '❓ FAQ', callback_data: 'faq' }],
         [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
       ]
     };
@@ -585,12 +583,6 @@ Need help? Our support team is here for you!
       // Handle operator support actions
       else if (data === 'send_support_message') {
         await this.handleSendSupportMessage(chatId, userId);
-      }
-      else if (data === 'email_support') {
-        await this.handleEmailSupport(chatId, userId);
-      }
-      else if (data === 'faq') {
-        await this.handleFAQ(chatId, userId);
       }
 
     });
