@@ -366,18 +366,56 @@ export class TeleShopBot {
   }
 
   private async handleWishlistCommand(chatId: number, userId: string) {
-    const message = '❤️ *Your Wishlist*\n\nWishlist feature coming soon!';
-    const keyboard = {
-      inline_keyboard: [
-        [{ text: '📋 Browse Products', callback_data: 'listings' }],
-        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
-      ]
-    };
-    
-    await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
-      reply_markup: keyboard
-    });
+    try {
+      const wishlistItems = await storage.getWishlistItems(userId);
+      
+      if (wishlistItems.length === 0) {
+        const message = '❤️ *Your Wishlist*\n\nYour wishlist is empty.\n\nBrowse products and add items you love to your wishlist!';
+        const keyboard = {
+          inline_keyboard: [
+            [{ text: '📋 Browse Products', callback_data: 'listings' }],
+            [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          ]
+        };
+        
+        await this.sendAutoVanishMessage(chatId, message, {
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+        return;
+      }
+
+      let message = '❤️ *Your Wishlist*\n\n';
+      
+      for (let i = 0; i < wishlistItems.length; i++) {
+        const item = wishlistItems[i];
+        const product = await storage.getProduct(item.productId);
+        
+        if (product) {
+          message += `${i + 1}. *${product.name}*\n`;
+          message += `   💰 $${product.price}\n`;
+          message += `   📦 Quantity: ${item.quantity}\n`;
+          message += `   📊 Stock: ${product.stock > 0 ? `${product.stock} available` : 'Out of stock'}\n\n`;
+        }
+      }
+
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '📋 Browse More Products', callback_data: 'listings' }],
+          [{ text: '🛒 View Cart', callback_data: 'carts' }],
+          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+      
+    } catch (error) {
+      console.error('Error fetching wishlist:', error);
+      await this.sendMainMenu(chatId);
+    }
   }
 
   private async handleRatingCommand(chatId: number, userId: string) {
