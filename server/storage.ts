@@ -93,6 +93,9 @@ export class MemStorage implements IStorage {
       ...insertProduct, 
       id, 
       createdAt: new Date(),
+      stock: insertProduct.stock ?? 0,
+      imageUrl: insertProduct.imageUrl ?? null,
+      isActive: insertProduct.isActive ?? true,
     };
     this.products.set(id, product);
     return product;
@@ -128,6 +131,9 @@ export class MemStorage implements IStorage {
       ...insertInquiry, 
       id, 
       createdAt: new Date(),
+      productId: insertInquiry.productId ?? null,
+      contactInfo: insertInquiry.contactInfo ?? null,
+      isRead: insertInquiry.isRead ?? false,
     };
     this.inquiries.set(id, inquiry);
     return inquiry;

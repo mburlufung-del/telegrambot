@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,14 +30,18 @@ export default function BotSettingsPage() {
 
   const { data: botSettings = [], isLoading } = useQuery<BotSettings[]>({
     queryKey: ["/api/bot/settings"],
-    onSuccess: (data) => {
+  });
+
+  // Update settings when botSettings changes
+  useEffect(() => {
+    if (botSettings.length > 0) {
       const settingsMap: Record<string, string> = {};
-      data.forEach(setting => {
+      botSettings.forEach((setting: BotSettings) => {
         settingsMap[setting.key] = setting.value;
       });
       setSettings(settingsMap);
-    },
-  });
+    }
+  }, [botSettings]);
 
   const { data: botStatus } = useQuery<BotStatus>({
     queryKey: ["/api/bot/status"],
