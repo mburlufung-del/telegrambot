@@ -373,11 +373,26 @@ export class TeleShopBot {
 
       let message = '📦 Your Orders\n\n';
       
-      // Show only successful orders
-      const successfulOrders = userOrders.filter(order => order.status === 'completed' || order.status === 'shipped' || order.status === 'delivered');
+      // Show only successful orders (completed/shipped/delivered)
+      const successfulOrders = userOrders.filter(order => 
+        order.status === 'completed' || 
+        order.status === 'shipped' || 
+        order.status === 'delivered'
+      );
+      
+      console.log(`Orders debug for user ${userId}:`, {
+        totalOrders: userOrders.length,
+        orderStatuses: userOrders.map(o => o.status),
+        successfulOrders: successfulOrders.length
+      });
       
       if (successfulOrders.length === 0) {
-        message += 'No completed orders found.\n\nYour pending orders are being processed.';
+        const pendingCount = userOrders.filter(o => o.status === 'pending').length;
+        if (pendingCount > 0) {
+          message += `You have ${pendingCount} pending order${pendingCount > 1 ? 's' : ''} being processed.\n\nCompleted orders will appear here once shipped.`;
+        } else {
+          message += 'You have no orders yet.\n\nStart shopping to see your order history here!';
+        }
       } else {
         for (let i = 0; i < successfulOrders.length; i++) {
           const order = successfulOrders[i];
@@ -1519,7 +1534,6 @@ Is this information correct?`;
     };
 
     await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
       reply_markup: keyboard
     });
 
