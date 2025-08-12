@@ -412,19 +412,20 @@ export class TeleShopBot {
       let message = '📦 Your Orders\n\n';
       
       // Show only successful orders (completed/shipped/delivered)
-      const successfulOrders = userOrders.filter(order => 
+      const visibleOrders = userOrders.filter(order => 
         order.status === 'completed' || 
         order.status === 'shipped' || 
-        order.status === 'delivered'
+        order.status === 'delivered' ||
+        order.status === 'processing'
       );
       
       console.log(`Orders debug for user ${userId}:`, {
         totalOrders: userOrders.length,
         orderStatuses: userOrders.map(o => o.status),
-        successfulOrders: successfulOrders.length
+        visibleOrders: visibleOrders.length
       });
       
-      if (successfulOrders.length === 0) {
+      if (visibleOrders.length === 0) {
         const pendingCount = userOrders.filter(o => o.status === 'pending').length;
         if (pendingCount > 0) {
           message += `You have ${pendingCount} pending order${pendingCount > 1 ? 's' : ''} being processed.\n\nCompleted orders will appear here once shipped.`;
@@ -432,8 +433,8 @@ export class TeleShopBot {
           message += 'You have no orders yet.\n\nStart shopping to see your order history here!';
         }
       } else {
-        for (let i = 0; i < successfulOrders.length; i++) {
-          const order = successfulOrders[i];
+        for (let i = 0; i < visibleOrders.length; i++) {
+          const order = visibleOrders[i];
           const orderDate = new Date(order.createdAt || Date.now()).toLocaleDateString();
           
           message += `${i + 1}. Order #${order.id.slice(-6).toUpperCase()}\n`;
@@ -1814,13 +1815,13 @@ Include your Order Number: ${orderNumber}`;
         }
       }
 
-      // Create order
+      // Create order with completed status since payment is confirmed
       const orderId = await storage.createOrder({
         customerName: `User ${userId}`,
         telegramUserId: userId,
         contactInfo: 'Telegram contact',
         totalAmount: total.toFixed(2),
-        status: 'pending',
+        status: 'completed',
         items: JSON.stringify(orderItems)
       });
 
@@ -1832,7 +1833,7 @@ Include your Order Number: ${orderNumber}`;
 **Order Number:** ${orderNumber}
 **Customer ID:** ${userId}
 **Total:** $${total.toFixed(2)}
-**Status:** Pending Payment Verification
+**Status:** Completed
 
 📋 **Next Steps:**
 1. Payment verification (if applicable)
@@ -1851,6 +1852,7 @@ Thank you for shopping with us! 🛍️`;
 
       const keyboard = {
         inline_keyboard: [
+          [{ text: '📦 View My Orders', callback_data: 'orders' }],
           [{ text: '👤 Contact Support', callback_data: 'operator' }],
           [{ text: '📋 Continue Shopping', callback_data: 'listings' }],
           [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
