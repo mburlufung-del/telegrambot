@@ -171,15 +171,17 @@ export class TeleShopBot {
         const quantity = parseInt(parts[2]) || 1;
         await this.handleAddToWishlist(chatId, userId, productId, quantity);
       } else if (data.startsWith('rate_product_')) {
-        const productId = data.replace('rate_product_', '');
-        await this.handleProductRating(chatId, userId, productId);
-      } else if (data.startsWith('rating_')) {
-        const rating = data.split('_')[1];
-        const thankYouMessage = `⭐ Thank you for your ${rating}-star rating!\n\nYour feedback helps us improve our service.`;
-        const backButton = {
-          inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
-        };
-        await this.sendAutoVanishMessage(chatId, thankYouMessage, { reply_markup: backButton });
+        const parts = data.split('_');
+        if (parts.length === 4) {
+          // Handle rating selection: rate_product_productId_rating
+          const productId = parts[2];
+          const rating = parseInt(parts[3]);
+          await this.handleProductRating(chatId, userId, productId, rating);
+        } else {
+          // Handle show rating interface: rate_product_productId
+          const productId = parts[2];
+          await this.showProductRatingInterface(chatId, userId, productId);
+        }
       } else {
         // Unknown callback, show main menu again
         await this.sendMainMenu(chatId);
@@ -510,13 +512,7 @@ export class TeleShopBot {
         // Do nothing - this is for the current quantity display button
         return;
       }
-      // Handle product rating
-      else if (data?.startsWith('rate_product_')) {
-        const parts = data.split('_');
-        const productId = parts[2];
-        const rating = parseInt(parts[3]);
-        await this.handleProductRating(chatId, userId, productId, rating);
-      }
+
       // Handle cart actions
       else if (data === 'clear_cart') {
         await this.handleClearCart(chatId, userId);
@@ -524,15 +520,7 @@ export class TeleShopBot {
       else if (data === 'checkout') {
         await this.handleCheckout(chatId, userId);
       }
-      // Handle rating responses
-      else if (data?.startsWith('rate_')) {
-        const rating = data.split('_')[1];
-        const thankYouMessage = `⭐ Thank you for your ${rating}-star rating!\n\nYour feedback helps us improve our service.`;
-        const backButton = {
-          inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
-        };
-        await this.sendAutoVanishMessage(chatId, thankYouMessage, { reply_markup: backButton });
-      }
+
     });
   }
 
