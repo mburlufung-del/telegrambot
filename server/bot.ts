@@ -5,13 +5,28 @@ export class TeleShopBot {
   private bot: TelegramBot | null = null;
   private userMessages: Map<number, number[]> = new Map();
 
-  async initialize(token: string) {
+  async initialize(token?: string) {
     if (this.bot) {
       await this.shutdown();
     }
 
     try {
-      console.log('Initializing bot with token...');
+      // Get token from storage if not provided
+      if (!token) {
+        const botSettings = await storage.getBotSettings();
+        const tokenSetting = botSettings.find(s => s.key === 'bot_token');
+        token = tokenSetting?.value || '7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs';
+        
+        // Save default token if none exists
+        if (!tokenSetting) {
+          await storage.setBotSetting({
+            key: 'bot_token',
+            value: '7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs'
+          });
+        }
+      }
+
+      console.log('Initializing bot with token...', token ? 'YES' : 'NO');
       
       // Choose polling for development, webhook for production
       const useWebhook = process.env.NODE_ENV === 'production' && process.env.WEBHOOK_URL;
@@ -34,6 +49,11 @@ export class TeleShopBot {
       this.bot = null;
       return false;
     }
+  }
+
+  async restart() {
+    console.log('Restarting bot...');
+    return await this.initialize();
   }
 
   private async sendAutoVanishMessage(chatId: number, text: string, options: any = {}) {
