@@ -18,13 +18,34 @@ class TeleShopBot {
   async initialize(customConfig?: Partial<BotConfig>) {
     if (this.isInitialized) return;
 
-    // Get bot token from storage first, fallback to environment variable
-    const storedToken = await storage.getBotSetting('bot_token');
-    const botToken = customConfig?.token || storedToken?.value || process.env.TELEGRAM_BOT_TOKEN;
+    // Get bot token from storage first, fallback to hardcoded token
+    const hardcodedToken = '7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs';
+    let storedToken;
+    try {
+      storedToken = await storage.getBotSetting('bot_token');
+    } catch (error) {
+      console.log('Error getting stored token:', error);
+    }
+    const botToken = customConfig?.token || storedToken?.value || hardcodedToken;
+    console.log('Bot token found:', botToken ? 'YES' : 'NO');
+    console.log('Initializing bot with token...');
     
     if (!botToken) {
-      console.warn('TELEGRAM_BOT_TOKEN not provided. Bot functionality will be disabled.');
+      console.log('No bot token available');
       return;
+    }
+    
+    // Ensure token is saved for future use
+    if (!storedToken?.value) {
+      try {
+        await storage.setBotSetting({
+          key: 'bot_token',
+          value: hardcodedToken
+        });
+        console.log('Bot token saved to storage');
+      } catch (error) {
+        console.log('Failed to save bot token:', error);
+      }
     }
 
     // Configure bot based on environment
