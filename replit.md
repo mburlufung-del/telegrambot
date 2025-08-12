@@ -204,3 +204,6 @@ The Listings command now provides the complete flow you requested:
 - Full cart functionality: View cart items, totals, clear cart, checkout process
 - Complete order management: Order creation, status tracking, order history
 - Real-time inventory management with stock validation
+- Enhanced quantity selection with +/- controls and real-time stock limits
+- Quantity support for cart, wishlist, and product rating actions
+- Smart button controls that adapt to available stock levels

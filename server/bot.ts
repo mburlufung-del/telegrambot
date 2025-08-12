@@ -426,8 +426,15 @@ export class TeleShopBot {
       }
       // Handle add to wishlist - auto-returns to main menu
       else if (data?.startsWith('wishlist_')) {
-        const productId = data.replace('wishlist_', '');
-        await this.handleAddToWishlist(chatId, userId, productId);
+        const parts = data.split('_');
+        const productId = parts[1];
+        const quantity = parts[2] ? parseInt(parts[2]) : 1;
+        await this.handleAddToWishlist(chatId, userId, productId, quantity);
+      }
+      // Handle no action (for current quantity display)
+      else if (data === 'no_action') {
+        // Do nothing - this is for the current quantity display button
+        return;
       }
       // Handle product rating
       else if (data?.startsWith('rate_product_')) {
@@ -610,7 +617,7 @@ export class TeleShopBot {
     });
   }
 
-  // Handle quantity selection
+  // Handle quantity selection with +/- controls
   private async handleQuantitySelection(chatId: number, userId: string, productId: string, quantity: number) {
     const product = await storage.getProduct(productId);
     
@@ -619,13 +626,40 @@ export class TeleShopBot {
       return;
     }
 
-    const message = `📦 *Quantity Selected: ${quantity}*\n\nProduct: *${product.name}*\nPrice: $${product.price} each\nTotal: $${(parseFloat(product.price) * quantity).toFixed(2)}`;
+    if (quantity > product.stock) {
+      const message = `❌ *Insufficient Stock*\n\nRequested: ${quantity}\nAvailable: ${product.stock}\n\nPlease select a lower quantity.`;
+      await this.sendAutoVanishMessage(chatId, message, { parse_mode: 'Markdown' });
+      setTimeout(() => this.handleProductDetails(chatId, userId, productId), 2000);
+      return;
+    }
+
+    const message = `📦 *${product.name}*\n\n🔢 Selected Quantity: *${quantity}*\n💰 Price: $${product.price} each\n💵 Total: $${(parseFloat(product.price) * quantity).toFixed(2)}\n📦 Available: ${product.stock}`;
+
+    // Create quantity adjustment buttons
+    const quantityButtons = [];
+    
+    // Decrease button (only if quantity > 1)
+    if (quantity > 1) {
+      quantityButtons.push({ text: `➖ (${quantity - 1})`, callback_data: `qty_${productId}_${quantity - 1}` });
+    }
+    
+    // Current quantity display
+    quantityButtons.push({ text: `${quantity}`, callback_data: 'no_action' });
+    
+    // Increase button (only if we can add more)
+    if (quantity < product.stock) {
+      quantityButtons.push({ text: `➕ (${quantity + 1})`, callback_data: `qty_${productId}_${quantity + 1}` });
+    }
 
     const keyboard = {
       inline_keyboard: [
+        quantityButtons, // Quantity adjustment row
         [
-          { text: '🛒 Add to Cart', callback_data: `addcart_${productId}_${quantity}` },
-          { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}` }
+          { text: `🛒 Add ${quantity} to Cart`, callback_data: `addcart_${productId}_${quantity}` }
+        ],
+        [
+          { text: `❤️ Add ${quantity} to Wishlist`, callback_data: `wishlist_${productId}_${quantity}` },
+          { text: `⭐ Rate Product`, callback_data: `rate_product_${productId}_${quantity}` }
         ],
         [
           { text: '🔙 Back to Product', callback_data: `product_${productId}` }
@@ -694,26 +728,39 @@ export class TeleShopBot {
     }
   }
 
-  // Handle add to wishlist - automatically returns to main menu
-  private async handleAddToWishlist(chatId: number, userId: string, productId: string) {
-    const product = await storage.getProduct(productId);
-    
-    if (!product) {
+  // Handle add to wishlist with quantity support - automatically returns to main menu
+  private async handleAddToWishlist(chatId: number, userId: string, productId: string, quantity: number = 1) {
+    try {
+      const product = await storage.getProduct(productId);
+      
+      if (!product) {
+        await this.sendMainMenu(chatId);
+        return;
+      }
+
+      // Add to wishlist with quantity
+      await storage.addToWishlist({
+        telegramUserId: userId,
+        productId: productId,
+        quantity: quantity
+      });
+
+      // Show success message and auto-return to main menu
+      const message = `❤️ *Added to Wishlist!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Price: $${product.price} each\n\nReturning to main menu...`;
+      
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown'
+      });
+
+      // Auto-return to main menu after 2 seconds
+      setTimeout(async () => {
+        await this.sendMainMenu(chatId);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error adding to wishlist:', error);
       await this.sendMainMenu(chatId);
-      return;
     }
-
-    // Show success message and auto-return to main menu
-    const message = `❤️ *Added to Wishlist!*\n\n${product.name} has been saved to your wishlist.\n\nReturning to main menu...`;
-    
-    await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown'
-    });
-
-    // Auto-return to main menu after 2 seconds
-    setTimeout(async () => {
-      await this.sendMainMenu(chatId);
-    }, 2000);
   }
 
   // Handle product rating
