@@ -484,12 +484,32 @@ export class TeleShopBot {
   }
 
   private async handleOperatorCommand(chatId: number, userId: string) {
-    const message = '👤 *Contact Operator*\n\nNeed help? Our support team is here for you!';
+    const message = `👤 *Contact Operator*
+
+Need help? Our support team is here for you!
+
+📞 **Support Contact:**
+• Telegram: @TeleShopSupport
+• Email: support@teleshop.com
+• Phone: +1 (555) 123-4567
+
+🕒 **Business Hours:**
+• Monday - Friday: 9:00 AM - 6:00 PM
+• Saturday: 10:00 AM - 4:00 PM
+• Sunday: Closed
+
+💬 **For Quick Help:**
+• Order issues: Reply with your order number
+• Product questions: Ask about specific items
+• Technical support: Describe your problem
+
+⚡ **Average Response Time:** 2-4 hours`;
     
     const keyboard = {
       inline_keyboard: [
-        [{ text: '💬 Live Chat', callback_data: 'live_chat' }],
-        [{ text: '📧 Send Email', callback_data: 'send_email' }],
+        [{ text: '💬 Send Message to Support', callback_data: 'send_support_message' }],
+        [{ text: '📧 Email Support', callback_data: 'email_support' }],
+        [{ text: '❓ FAQ', callback_data: 'faq' }],
         [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
       ]
     };
@@ -560,6 +580,17 @@ export class TeleShopBot {
       }
       else if (data === 'checkout') {
         await this.handleCheckout(chatId, userId);
+      }
+      
+      // Handle operator support actions
+      else if (data === 'send_support_message') {
+        await this.handleSendSupportMessage(chatId, userId);
+      }
+      else if (data === 'email_support') {
+        await this.handleEmailSupport(chatId, userId);
+      }
+      else if (data === 'faq') {
+        await this.handleFAQ(chatId, userId);
       }
 
     });
@@ -1102,6 +1133,162 @@ export class TeleShopBot {
         // Ignore errors when stopping polling
       }
       this.bot = null;
+    }
+  }
+
+  // Operator Support Methods
+  private async handleSendSupportMessage(chatId: number, userId: string) {
+    const message = `💬 *Send Message to Support*
+
+Please describe your issue or question. Our support team will respond within 2-4 hours.
+
+📝 **What to include:**
+• Order number (if applicable)
+• Product name (if applicable)
+• Detailed description of your issue
+• Any error messages you received
+
+Type your message below and send it:`;
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '🔙 Back to Operator Menu', callback_data: 'operator' }],
+          [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
+        ]
+      }
+    });
+
+    // Set up message listener for support inquiry
+    this.bot?.once('message', async (msg) => {
+      if (msg.chat.id === chatId && msg.text && !msg.text.startsWith('/')) {
+        await this.createSupportInquiry(chatId, userId, msg.text);
+      }
+    });
+  }
+
+  private async handleEmailSupport(chatId: number, userId: string) {
+    const message = `📧 *Email Support*
+
+You can reach our support team directly at:
+
+**Email:** support@teleshop.com
+
+📋 **Email Template:**
+Copy and paste this template for faster assistance:
+
+\`\`\`
+Subject: TeleShop Support Request
+
+Customer ID: ${userId}
+Issue Type: [Order/Product/Technical/Other]
+Order Number: [If applicable]
+
+Description:
+[Describe your issue here]
+
+Additional Details:
+[Any additional information]
+\`\`\`
+
+⚡ **Response Time:** 2-4 hours during business hours`;
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '💬 Send Message Instead', callback_data: 'send_support_message' }],
+          [{ text: '🔙 Back to Operator Menu', callback_data: 'operator' }],
+          [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
+        ]
+      }
+    });
+  }
+
+  private async handleFAQ(chatId: number, userId: string) {
+    const message = `❓ *Frequently Asked Questions*
+
+**🛒 Ordering:**
+• Q: How do I place an order?
+• A: Browse products, add to cart, then checkout
+
+• Q: Can I modify my order?
+• A: Contact support within 1 hour of ordering
+
+**📦 Shipping:**
+• Q: How long does shipping take?
+• A: 3-7 business days for standard shipping
+
+• Q: Do you ship internationally?
+• A: Currently shipping within the US only
+
+**💳 Payment:**
+• Q: What payment methods do you accept?
+• A: Credit cards, PayPal, bank transfer, and crypto
+
+**🔄 Returns:**
+• Q: What's your return policy?
+• A: 30-day returns for unopened products
+
+**📱 Technical:**
+• Q: Bot not responding?
+• A: Try /start command or contact support
+
+Need more help? Contact our support team!`;
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '💬 Contact Support', callback_data: 'send_support_message' }],
+          [{ text: '🔙 Back to Operator Menu', callback_data: 'operator' }],
+          [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
+        ]
+      }
+    });
+  }
+
+  private async createSupportInquiry(chatId: number, userId: string, message: string) {
+    try {
+      await storage.createInquiry({
+        customerName: `User ${userId}`,
+        subject: 'Support Request via Telegram Bot',
+        message: message,
+        telegramUserId: userId,
+        contactInfo: `user${userId}@telegram.local`,
+        isRead: false
+      });
+
+      const confirmMessage = `✅ *Message Sent Successfully!*
+
+Your support request has been received. Our team will respond within 2-4 hours.
+
+**Your message:** "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"
+
+**Ticket ID:** #${Date.now().toString().slice(-6)}
+
+You can continue shopping while we prepare your response.`;
+
+      await this.sendAutoVanishMessage(chatId, confirmMessage, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '📋 Browse Products', callback_data: 'listings' }],
+            [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
+          ]
+        }
+      });
+
+    } catch (error) {
+      console.error('Error creating support inquiry:', error);
+      await this.sendAutoVanishMessage(chatId, '❌ Error sending message. Please try again or contact support directly.', {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          ]
+        }
+      });
     }
   }
 }

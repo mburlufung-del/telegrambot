@@ -441,13 +441,10 @@ export class MemStorage implements IStorage {
     const key = `${cartItem.telegramUserId}-${cartItem.productId}`;
     const existing = this.wishlist.get(key);
     
-    console.log(`Adding to wishlist: User ${cartItem.telegramUserId}, Product ${cartItem.productId}, Key: ${key}`);
-    
     if (existing) {
       // Update quantity if item already in wishlist
       existing.quantity += cartItem.quantity || 1;
       this.wishlist.set(key, existing);
-      console.log(`Updated existing wishlist item:`, existing);
       return existing;
     } else {
       // Add new item to wishlist
@@ -459,22 +456,14 @@ export class MemStorage implements IStorage {
         addedAt: new Date(),
       };
       this.wishlist.set(key, newItem);
-      console.log(`Added new wishlist item:`, newItem);
-      console.log(`Total wishlist items now: ${this.wishlist.size}`);
       return newItem;
     }
   }
 
   async getWishlistItems(telegramUserId: string): Promise<Cart[]> {
-    console.log(`Getting wishlist for user: ${telegramUserId}`);
-    console.log(`Total wishlist items in storage: ${this.wishlist.size}`);
-    const allItems = Array.from(this.wishlist.values());
-    console.log(`All wishlist items:`, allItems);
-    
-    const userItems = allItems.filter(item => item.telegramUserId === telegramUserId);
-    console.log(`User's wishlist items:`, userItems);
-    
-    return userItems.sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
+    return Array.from(this.wishlist.values())
+      .filter(item => item.telegramUserId === telegramUserId)
+      .sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
   }
 
   async updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined> {
