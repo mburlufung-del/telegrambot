@@ -661,15 +661,10 @@ Need help? Our support team is here for you!
         const quantity = parseInt(parts[3]);
         await this.handleAdvancedQuantitySelection(chatId, userId, productId, quantity);
       }
-      // Handle add to cart with quantity
-      else if (data?.startsWith('addcart_')) {
-        const parts = data.split('_');
-        const productId = parts[1];
-        const quantity = parts[2] ? parseInt(parts[2]) : 1;
-        await this.handleAddToCart(chatId, userId, productId, quantity);
-      }
+      // addcart_ handled in main callback handler - removed to prevent duplicates
+      // wishlist_ handled in main callback handler - removed to prevent duplicates
       // Handle add to wishlist - auto-returns to main menu
-      else if (data?.startsWith('wishlist_')) {
+      else if (data?.startsWith('wishlist_old_')) {
         const parts = data.split('_');
         const productId = parts[1];
         const quantity = parts[2] ? parseInt(parts[2]) : 1;
