@@ -908,6 +908,10 @@ Need help? Our support team is here for you!
         return;
       }
 
+      // Check if item already exists in cart to show proper message
+      const existingCartItems = await storage.getCartItems(userId);
+      const existingItem = existingCartItems.find(item => item.productId === productId);
+      
       await storage.addToCart({
         telegramUserId: userId,
         productId: productId,
@@ -915,7 +919,18 @@ Need help? Our support team is here for you!
       });
 
       const total = (parseFloat(product.price) * quantity).toFixed(2);
-      const message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Total: $${total}`;
+      
+      // Get updated cart to show final quantity
+      const updatedCartItems = await storage.getCartItems(userId);
+      const finalItem = updatedCartItems.find(item => item.productId === productId);
+      const finalQuantity = finalItem ? finalItem.quantity : quantity;
+      
+      let message;
+      if (existingItem) {
+        message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Added: ${quantity}\n• Total in cart: ${finalQuantity}\n• Item total: $${(parseFloat(product.price) * finalQuantity).toFixed(2)}`;
+      } else {
+        message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Total: $${total}`;
+      }
       
       const keyboard = {
         inline_keyboard: [

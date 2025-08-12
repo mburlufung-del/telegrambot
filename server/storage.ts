@@ -421,7 +421,7 @@ export class MemStorage implements IStorage {
     const existing = this.cart.get(key);
     
     if (existing) {
-      // Update quantity if item already in cart
+      // For existing items, ADD to the current quantity (this is the expected behavior for "Add to Cart")
       existing.quantity += cartItem.quantity || 1;
       this.cart.set(key, existing);
       return existing;
@@ -437,6 +437,21 @@ export class MemStorage implements IStorage {
       this.cart.set(key, newItem);
       return newItem;
     }
+  }
+
+  async setCartItem(cartItem: InsertCart): Promise<Cart> {
+    const key = `${cartItem.telegramUserId}-${cartItem.productId}`;
+    
+    // SET the exact quantity (for direct quantity setting, not adding)
+    const newItem: Cart = {
+      id: this.cart.get(key)?.id || randomUUID(),
+      telegramUserId: cartItem.telegramUserId,
+      productId: cartItem.productId,
+      quantity: cartItem.quantity || 1,
+      addedAt: this.cart.get(key)?.addedAt || new Date(),
+    };
+    this.cart.set(key, newItem);
+    return newItem;
   }
 
   async addToWishlist(cartItem: InsertCart): Promise<Cart> {
