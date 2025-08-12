@@ -583,8 +583,10 @@ Need help? Our support team is here for you!
       
       // Handle checkout flow
       else if (data?.startsWith('delivery_')) {
-        const method = data.replace('delivery_', '');
-        await this.handleDeliverySelection(chatId, userId, method);
+        const parts = data.replace('delivery_', '').split('_');
+        const method = parts[0];
+        const orderNumber = parts.length > 1 ? `#${parts[1]}` : `#${Date.now().toString().slice(-6)}`;
+        await this.handleDeliverySelection(chatId, userId, method, orderNumber);
       }
       else if (data === 'enter_address') {
         await this.handleAddressEntry(chatId, userId);
@@ -593,11 +595,15 @@ Need help? Our support team is here for you!
         await this.handleAddressConfirmation(chatId, userId);
       }
       else if (data?.startsWith('payment_')) {
-        const method = data.replace('payment_', '');
-        await this.handlePaymentSelection(chatId, userId, method);
+        const parts = data.replace('payment_', '').split('_');
+        const method = parts[0];
+        const orderNumber = parts.length > 1 ? `#${parts[1]}` : `#${Date.now().toString().slice(-6)}`;
+        await this.handlePaymentSelection(chatId, userId, method, orderNumber);
       }
-      else if (data === 'complete_order') {
-        await this.handleOrderCompletion(chatId, userId);
+      else if (data?.startsWith('complete_order')) {
+        const parts = data.split('_');
+        const orderNumber = parts.length > 2 ? `#${parts[2]}` : `#${Date.now().toString().slice(-6)}`;
+        await this.handleOrderCompletion(chatId, userId, orderNumber);
       }
       
       // Handle operator support actions
@@ -1272,7 +1278,6 @@ Need more help? Contact our support team!`;
       
       await storage.createInquiry({
         customerName: customerName,
-        subject: 'Support Request via Telegram Bot',
         message: message,
         telegramUserId: userId,
         contactInfo: contactInfo,
@@ -1329,7 +1334,13 @@ You can continue shopping while we prepare your response.`;
       return;
     }
 
+    // Generate order number at checkout start
+    const orderNumber = `#${Date.now().toString().slice(-6)}`;
+    
     const message = `🚚 *Choose Delivery Method*
+
+**Order Number:** ${orderNumber}
+**Customer ID:** ${userId}
 
 Select your preferred delivery option:
 
@@ -1340,10 +1351,10 @@ Select your preferred delivery option:
 
     const keyboard = {
       inline_keyboard: [
-        [{ text: '📦 Standard (Free)', callback_data: 'delivery_standard' }],
-        [{ text: '🚀 Express ($15)', callback_data: 'delivery_express' }],
-        [{ text: '🏪 Store Pickup (Free)', callback_data: 'delivery_pickup' }],
-        [{ text: '🚚 Priority ($25)', callback_data: 'delivery_priority' }],
+        [{ text: '📦 Standard (Free)', callback_data: `delivery_standard_${orderNumber}` }],
+        [{ text: '🚀 Express ($15)', callback_data: `delivery_express_${orderNumber}` }],
+        [{ text: '🏪 Store Pickup (Free)', callback_data: `delivery_pickup_${orderNumber}` }],
+        [{ text: '🚚 Priority ($25)', callback_data: `delivery_priority_${orderNumber}` }],
         [{ text: '🔙 Back to Cart', callback_data: 'carts' }]
       ]
     };
@@ -1354,7 +1365,7 @@ Select your preferred delivery option:
     });
   }
 
-  private async handleDeliverySelection(chatId: number, userId: string, method: string) {
+  private async handleDeliverySelection(chatId: number, userId: string, method: string, orderNumber: string) {
     const deliveryMethods = {
       standard: { name: 'Standard Delivery', time: '3-7 days', cost: 0 },
       express: { name: 'Express Delivery', time: '1-2 days', cost: 15 },
@@ -1369,26 +1380,33 @@ Select your preferred delivery option:
       return;
     }
 
-    // Store delivery method in user session (for now, we'll track in memory)
-    // In production, you'd store this in a checkout session table
-
     if (method === 'pickup') {
       // Skip address for pickup
-      await this.handlePaymentMethodSelection(chatId, userId, method);
+      await this.handlePaymentMethodSelection(chatId, userId, method, orderNumber);
     } else {
-      const message = `📍 *Delivery Address*
+      const message = `📍 *Customer Information & Delivery Address*
 
+**Order Number:** ${orderNumber}
 **Selected:** ${selected.name} (${selected.time})
 **Cost:** ${selected.cost === 0 ? 'Free' : `$${selected.cost}`}
 
-Please enter your delivery address:
+Please provide your information in this format:
 
-📝 **Format:**
+📝 **Required Format:**
+Full Name
+Phone Number
 Street Address
 City, State ZIP
 Country
 
-Type your complete address below:`;
+**Example:**
+John Smith
++1 (555) 123-4567
+123 Main Street
+New York, NY 10001
+United States
+
+Type your complete information below:`;
 
       await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
@@ -1402,7 +1420,7 @@ Type your complete address below:`;
       // Set up address listener
       this.bot?.once('message', async (msg) => {
         if (msg.chat.id === chatId && msg.text && !msg.text.startsWith('/')) {
-          await this.handleAddressConfirmation(chatId, userId, msg.text, method);
+          await this.handleAddressConfirmation(chatId, userId, msg.text, method, orderNumber, msg.from?.username);
         }
       });
     }
@@ -1413,25 +1431,35 @@ Type your complete address below:`;
     await this.handleCheckoutStart(chatId, userId);
   }
 
-  private async handleAddressConfirmation(chatId: number, userId: string, address?: string, deliveryMethod?: string) {
-    if (!address || !deliveryMethod) {
+  private async handleAddressConfirmation(chatId: number, userId: string, address?: string, deliveryMethod?: string, orderNumber?: string, username?: string) {
+    if (!address || !deliveryMethod || !orderNumber) {
       await this.handleCheckoutStart(chatId, userId);
       return;
     }
 
-    const message = `✅ *Confirm Delivery Address*
+    const lines = address.trim().split('\n');
+    const customerName = lines[0] || `User ${userId}`;
+    const customerPhone = lines[1] || 'Not provided';
+    const customerAddress = lines.slice(2).join('\n') || address;
 
-**Address:**
-${address}
+    const message = `✅ *Confirm Customer Information*
+
+**Order Number:** ${orderNumber}
+**Customer Name:** ${customerName}
+**Phone:** ${customerPhone}
+**Username:** ${username ? `@${username}` : 'Not available'}
+
+**Delivery Address:**
+${customerAddress}
 
 **Delivery Method:** ${deliveryMethod}
 
-Is this address correct?`;
+Is this information correct?`;
 
     const keyboard = {
       inline_keyboard: [
-        [{ text: '✅ Confirm Address', callback_data: `confirm_address_${deliveryMethod}` }],
-        [{ text: '✏️ Re-enter Address', callback_data: `delivery_${deliveryMethod}` }],
+        [{ text: '✅ Confirm Information', callback_data: `confirm_info_${deliveryMethod}_${orderNumber.replace('#', '')}` }],
+        [{ text: '✏️ Re-enter Information', callback_data: `delivery_${deliveryMethod}_${orderNumber.replace('#', '')}` }],
         [{ text: '🔙 Change Delivery Method', callback_data: 'start_checkout' }]
       ]
     };
@@ -1441,15 +1469,18 @@ Is this address correct?`;
       reply_markup: keyboard
     });
 
-    // Store address temporarily (in production, use proper session storage)
-    // For now, proceed to payment
+    // Store information temporarily (in production, use proper session storage)
+    // For now, proceed to payment after confirmation
     setTimeout(() => {
-      this.handlePaymentMethodSelection(chatId, userId, deliveryMethod);
-    }, 2000);
+      this.handlePaymentMethodSelection(chatId, userId, deliveryMethod, orderNumber, customerName, customerPhone, customerAddress, username);
+    }, 3000);
   }
 
-  private async handlePaymentMethodSelection(chatId: number, userId: string, deliveryMethod: string) {
+  private async handlePaymentMethodSelection(chatId: number, userId: string, deliveryMethod: string, orderNumber: string, customerName?: string, customerPhone?: string, customerAddress?: string, username?: string) {
     const message = `💳 *Choose Payment Method*
+
+**Order Number:** ${orderNumber}
+**Customer:** ${customerName || `User ${userId}`}
 
 Select your preferred payment option:
 
@@ -1461,11 +1492,11 @@ Select your preferred payment option:
 
     const keyboard = {
       inline_keyboard: [
-        [{ text: '💳 Credit/Debit Card', callback_data: 'payment_card' }],
-        [{ text: '🏦 Bank Transfer', callback_data: 'payment_bank' }],
-        [{ text: '₿ Bitcoin', callback_data: 'payment_bitcoin' }],
-        [{ text: '💰 Cash on Delivery', callback_data: 'payment_cod' }],
-        [{ text: '📱 PayPal', callback_data: 'payment_paypal' }],
+        [{ text: '💳 Credit/Debit Card', callback_data: `payment_card_${orderNumber.replace('#', '')}` }],
+        [{ text: '🏦 Bank Transfer', callback_data: `payment_bank_${orderNumber.replace('#', '')}` }],
+        [{ text: '₿ Bitcoin', callback_data: `payment_bitcoin_${orderNumber.replace('#', '')}` }],
+        [{ text: '💰 Cash on Delivery', callback_data: `payment_cod_${orderNumber.replace('#', '')}` }],
+        [{ text: '📱 PayPal', callback_data: `payment_paypal_${orderNumber.replace('#', '')}` }],
         [{ text: '🔙 Back to Delivery', callback_data: 'start_checkout' }]
       ]
     };
@@ -1476,7 +1507,7 @@ Select your preferred payment option:
     });
   }
 
-  private async handlePaymentSelection(chatId: number, userId: string, method: string) {
+  private async handlePaymentSelection(chatId: number, userId: string, method: string, orderNumber: string) {
     const cartItems = await storage.getCartItems(userId);
     let total = 0;
     
@@ -1510,7 +1541,7 @@ Select your preferred payment option:
 **Account:** 1234567890
 **Routing:** 123456789
 **Amount:** $${total.toFixed(2)}
-**Reference:** Order-${Date.now().toString().slice(-6)}
+**Reference:** Order-${orderNumber.replace('#', '')}
 
 📋 **Steps:**
 1. Transfer exact amount
@@ -1570,22 +1601,23 @@ No upfront payment needed!`,
     const selected = paymentMethods[method as keyof typeof paymentMethods];
     
     if (!selected) {
-      await this.handlePaymentMethodSelection(chatId, userId, 'standard');
+      await this.handlePaymentMethodSelection(chatId, userId, 'standard', orderNumber);
       return;
     }
 
-    let message = `${selected.instructions}\n\n`;
+    let message = `**Order Number:** ${orderNumber}\n\n${selected.instructions}\n\n`;
     
     if (method !== 'cod') {
       message += `📸 **After Payment:**
-Send screenshot of payment confirmation to @murzion`;
+Send screenshot of payment confirmation to @murzion
+Include your Order Number: ${orderNumber}`;
     }
 
     const keyboard = {
       inline_keyboard: [
-        [{ text: '✅ Payment Completed', callback_data: 'complete_order' }],
+        [{ text: '✅ Payment Completed', callback_data: `complete_order_${orderNumber.replace('#', '')}` }],
         [{ text: '👤 Contact Support', callback_data: 'operator' }],
-        [{ text: '🔙 Change Payment Method', callback_data: `delivery_standard` }]
+        [{ text: '🔙 Change Payment Method', callback_data: `delivery_standard_${orderNumber.replace('#', '')}` }]
       ]
     };
 
@@ -1595,7 +1627,7 @@ Send screenshot of payment confirmation to @murzion`;
     });
   }
 
-  private async handleOrderCompletion(chatId: number, userId: string) {
+  private async handleOrderCompletion(chatId: number, userId: string, orderNumber: string) {
     try {
       const cartItems = await storage.getCartItems(userId);
       
@@ -1635,17 +1667,16 @@ Send screenshot of payment confirmation to @murzion`;
         telegramUserId: userId,
         total: total.toFixed(2),
         status: 'pending',
-        items: orderItems
+        items: JSON.stringify(orderItems)
       });
 
       // Clear cart
       await storage.clearCart(userId);
-
-      const orderNumber = `#${Date.now().toString().slice(-6)}`;
       
       const message = `🎉 **Order Confirmed!**
 
 **Order Number:** ${orderNumber}
+**Customer ID:** ${userId}
 **Total:** $${total.toFixed(2)}
 **Status:** Pending Payment Verification
 
