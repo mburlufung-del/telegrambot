@@ -1134,6 +1134,10 @@ Need help? Our support team is here for you!
 
 Please describe your issue or question. Our support team will respond within 2-4 hours.
 
+📞 **Direct Contact:**
+• Contact @murzion directly on Telegram
+• Your User ID: ${userId}
+
 📝 **What to include:**
 • Order number (if applicable)
 • Product name (if applicable)
@@ -1155,7 +1159,7 @@ Type your message below and send it:`;
     // Set up message listener for support inquiry
     this.bot?.once('message', async (msg) => {
       if (msg.chat.id === chatId && msg.text && !msg.text.startsWith('/')) {
-        await this.createSupportInquiry(chatId, userId, msg.text);
+        await this.createSupportInquiry(chatId, userId, msg.text, msg.from?.username);
       }
     });
   }
@@ -1241,14 +1245,17 @@ Need more help? Contact our support team!`;
     });
   }
 
-  private async createSupportInquiry(chatId: number, userId: string, message: string) {
+  private async createSupportInquiry(chatId: number, userId: string, message: string, username?: string) {
     try {
+      const customerName = username ? `@${username} (ID: ${userId})` : `User ${userId}`;
+      const contactInfo = username ? `@${username}` : `user${userId}@telegram.local`;
+      
       await storage.createInquiry({
-        customerName: `User ${userId}`,
+        customerName: customerName,
         subject: 'Support Request via Telegram Bot',
         message: message,
         telegramUserId: userId,
-        contactInfo: `user${userId}@telegram.local`,
+        contactInfo: contactInfo,
         isRead: false
       });
 
@@ -1257,6 +1264,8 @@ Need more help? Contact our support team!`;
 Your support request has been received. Our team will respond within 2-4 hours.
 
 **Your message:** "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"
+
+**Contact @murzion directly:** You can also message @murzion on Telegram${username ? ` mentioning your username @${username}` : ` with your User ID: ${userId}`}
 
 **Ticket ID:** #${Date.now().toString().slice(-6)}
 
