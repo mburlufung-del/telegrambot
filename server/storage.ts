@@ -156,7 +156,7 @@ export class MemStorage implements IStorage {
         price: "89.99",
         compareAtPrice: "129.99",
         stock: 25,
-        categoryId: electronicsCategory?.id,
+        categoryId: electronicsCategory?.id || null,
         tags: JSON.stringify(["electronics", "audio", "wireless", "bluetooth"]),
         specifications: JSON.stringify({
           "Battery Life": "30 hours",
@@ -172,7 +172,7 @@ export class MemStorage implements IStorage {
         price: "199.99",
         compareAtPrice: "249.99", 
         stock: 15,
-        categoryId: electronicsCategory?.id,
+        categoryId: electronicsCategory?.id || null,
         tags: JSON.stringify(["smartwatch", "fitness", "health", "gps"]),
         specifications: JSON.stringify({
           "Display": "1.4 inch AMOLED",
@@ -187,7 +187,7 @@ export class MemStorage implements IStorage {
         description: "Comfortable and sustainable organic cotton t-shirt. Available in multiple colors and sizes.",
         price: "24.99",
         stock: 50,
-        categoryId: fashionCategory?.id,
+        categoryId: fashionCategory?.id || null,
         tags: JSON.stringify(["fashion", "organic", "cotton", "sustainable"]),
         specifications: JSON.stringify({
           "Material": "100% Organic Cotton",
@@ -201,7 +201,7 @@ export class MemStorage implements IStorage {
         description: "Modern LED desk lamp with adjustable brightness and color temperature. USB charging port included.",
         price: "45.99",
         stock: 20,
-        categoryId: homeCategory?.id,
+        categoryId: homeCategory?.id || null,
         tags: JSON.stringify(["lighting", "led", "desk", "adjustable"]),
         specifications: JSON.stringify({
           "Power": "12W LED",
@@ -328,10 +328,11 @@ export class MemStorage implements IStorage {
   async createCategory(insertCategory: InsertCategory): Promise<Category> {
     const id = randomUUID();
     const category: Category = {
-      ...insertCategory,
       id,
-      createdAt: new Date(),
+      name: insertCategory.name,
+      description: insertCategory.description ?? null,
       isActive: insertCategory.isActive ?? true,
+      createdAt: new Date(),
     };
     this.categories.set(id, category);
     return category;
@@ -363,14 +364,16 @@ export class MemStorage implements IStorage {
     
     if (existing) {
       // Update quantity if item already in cart
-      existing.quantity += cartItem.quantity;
+      existing.quantity += cartItem.quantity || 1;
       this.cart.set(key, existing);
       return existing;
     } else {
       // Add new item to cart
       const newItem: Cart = {
         id: randomUUID(),
-        ...cartItem,
+        telegramUserId: cartItem.telegramUserId,
+        productId: cartItem.productId,
+        quantity: cartItem.quantity || 1,
         addedAt: new Date(),
       };
       this.cart.set(key, newItem);
