@@ -516,7 +516,6 @@ export class TeleShopBot {
       const message = `📂 *${category.name}*\n\nNo products available in this category at the moment.`;
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Browse Other Categories', callback_data: 'listings' }],
           [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
         ]
       };
@@ -556,9 +555,6 @@ export class TeleShopBot {
     }
 
     // Add navigation buttons
-    productButtons.push([
-      { text: '📋 Other Categories', callback_data: 'listings' }
-    ]);
     productButtons.push([
       { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
     ]);
