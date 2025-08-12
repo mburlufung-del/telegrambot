@@ -1,0 +1,89 @@
+{
+  "railway": {
+    "platform": "railway",
+    "timestamp": "2025-08-12T18:37:54.282Z",
+    "tests": {
+      "memoryBuild": {
+        "passed": true,
+        "duration": 9015,
+        "memoryLimit": 512,
+        "error": null
+      },
+      "buildTimeout": {
+        "passed": true,
+        "duration": 9011,
+        "timeoutLimit": 600,
+        "withinLimit": true
+      },
+      "bundleSize": {
+        "passed": true,
+        "sizeMB": 0.538909912109375,
+        "bundleLimit": null
+      },
+      "runtimeMemory": {
+        "passed": true,
+        "duration": 10013,
+        "memoryLimit": 512,
+        "started": true
+      }
+    }
+  },
+  "vercel": {
+    "platform": "vercel",
+    "timestamp": "2025-08-12T18:38:22.327Z",
+    "tests": {
+      "memoryBuild": {
+        "passed": true,
+        "duration": 9020,
+        "memoryLimit": 1024,
+        "error": null
+      },
+      "buildTimeout": {
+        "passed": true,
+        "duration": 8946,
+        "timeoutLimit": 2700,
+        "withinLimit": true
+      },
+      "bundleSize": {
+        "passed": true,
+        "sizeMB": 0.538909912109375,
+        "bundleLimit": 50,
+        "withinLimit": true
+      },
+      "runtimeMemory": {
+        "passed": true,
+        "duration": 10005,
+        "memoryLimit": 1024,
+        "started": true
+      }
+    }
+  },
+  "docker": {
+    "platform": "docker",
+    "timestamp": "2025-08-12T18:38:50.306Z",
+    "tests": {
+      "memoryBuild": {
+        "passed": true,
+        "duration": 9386,
+        "memoryLimit": 1024,
+        "error": null
+      },
+      "buildTimeout": {
+        "passed": true,
+        "duration": 0,
+        "timeoutLimit": null
+      },
+      "bundleSize": {
+        "passed": true,
+        "sizeMB": 0.538909912109375,
+        "bundleLimit": null
+      },
+      "runtimeMemory": {
+        "passed": true,
+        "duration": 10012,
+        "memoryLimit": 1024,
+        "started": true
+      }
+    }
+  }
+}

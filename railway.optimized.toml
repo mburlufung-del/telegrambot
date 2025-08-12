@@ -1,0 +1,20 @@
+# Railway Optimized Configuration
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/api/bot/status"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+
+# Resource optimizations
+[build.env]
+NODE_ENV = "production"
+NPM_CONFIG_PREFER_OFFLINE = "true"
+NPM_CONFIG_CACHE = "/tmp/.npm"
+
+[env]
+NODE_ENV = { default = "production" }
+PORT = { default = "5000" }
+NODE_OPTIONS = { default = "--max-old-space-size=512" }
