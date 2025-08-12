@@ -417,6 +417,13 @@ export class TeleShopBot {
         const quantity = parseInt(parts[2]);
         await this.handleQuantitySelection(chatId, userId, productId, quantity);
       }
+      // Handle dedicated quantity selector
+      else if (data?.startsWith('select_qty_')) {
+        const parts = data.split('_');
+        const productId = parts[2];
+        const quantity = parseInt(parts[3]);
+        await this.handleAdvancedQuantitySelection(chatId, userId, productId, quantity);
+      }
       // Handle add to cart with quantity
       else if (data?.startsWith('addcart_')) {
         const parts = data.split('_');
@@ -583,20 +590,21 @@ export class TeleShopBot {
     const actionButtons: Array<Array<{text: string, callback_data: string}>> = [];
 
     if (product.stock > 0) {
-      // Quantity selection row
+      // Quick quantity selection row
       actionButtons.push([
         { text: 'Qty: 1', callback_data: `qty_${productId}_1` },
         { text: 'Qty: 2', callback_data: `qty_${productId}_2` },
         { text: 'Qty: 3', callback_data: `qty_${productId}_3` }
       ]);
       actionButtons.push([
-        { text: 'Qty: 5', callback_data: `qty_${productId}_5` }
+        { text: 'Qty: 5', callback_data: `qty_${productId}_5` },
+        { text: '🔢 Select Quantity', callback_data: `select_qty_${productId}_1` }
       ]);
 
       // Main action buttons
       actionButtons.push([
         { text: '🛒 Add to Cart', callback_data: `addcart_${productId}_1` },
-        { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}` }
+        { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}_1` }
       ]);
     }
 
@@ -903,6 +911,71 @@ export class TeleShopBot {
       await this.sendAutoVanishMessage(chatId, message);
       setTimeout(() => this.sendMainMenu(chatId), 2000);
     }
+  }
+
+  // Handle advanced quantity selection with dedicated +/- controls
+  private async handleAdvancedQuantitySelection(chatId: number, userId: string, productId: string, quantity: number) {
+    const product = await storage.getProduct(productId);
+    
+    if (!product) {
+      await this.sendMainMenu(chatId);
+      return;
+    }
+
+    if (quantity > product.stock) {
+      quantity = product.stock;
+    }
+    if (quantity < 1) {
+      quantity = 1;
+    }
+
+    const message = `🔢 *Quantity Selection*\n\n📦 *${product.name}*\n\n` +
+                   `Current Selection: *${quantity}*\n` +
+                   `💰 Price: $${product.price} each\n` +
+                   `💵 Total: $${(parseFloat(product.price) * quantity).toFixed(2)}\n` +
+                   `📦 Available: ${product.stock}`;
+
+    // Create quantity control buttons
+    const quantityControls = [];
+    
+    // Decrease button
+    if (quantity > 1) {
+      quantityControls.push({ text: '➖', callback_data: `select_qty_${productId}_${quantity - 1}` });
+    } else {
+      quantityControls.push({ text: '➖', callback_data: 'no_action' }); // Disabled state
+    }
+    
+    // Current quantity display
+    quantityControls.push({ text: `${quantity}`, callback_data: 'no_action' });
+    
+    // Increase button
+    if (quantity < product.stock) {
+      quantityControls.push({ text: '➕', callback_data: `select_qty_${productId}_${quantity + 1}` });
+    } else {
+      quantityControls.push({ text: '➕', callback_data: 'no_action' }); // Disabled state
+    }
+
+    const keyboard = {
+      inline_keyboard: [
+        quantityControls, // +/- controls row
+        [
+          { text: `🛒 Add ${quantity} to Cart`, callback_data: `addcart_${productId}_${quantity}` }
+        ],
+        [
+          { text: `❤️ Add ${quantity} to Wishlist`, callback_data: `wishlist_${productId}_${quantity}` },
+          { text: `⭐ Rate Product`, callback_data: `rate_product_${productId}_${quantity}` }
+        ],
+        [
+          { text: '🔙 Back to Product', callback_data: `product_${productId}` },
+          { text: '🏠 Main Menu', callback_data: 'back_to_menu' }
+        ]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
   }
 
   async isReady(): Promise<boolean> {
