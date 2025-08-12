@@ -137,3 +137,29 @@ The bot now features a streamlined interface with 6 primary command buttons:
 - **Support Integration**: Direct inquiry creation through operator button
 - **Rating System**: Customer feedback collection with star ratings
 - **Responsive Design**: Optimized for mobile Telegram interface
+
+### Advanced Listings Command Flow (August 2025)
+
+**Complete Product Browsing Experience:**
+
+1. **Category Selection**: Users choose from organized product categories (e.g., "Steroids Powder", "Acetate Powder")
+2. **Product Browsing**: View products within selected category with prices, stock status, and descriptions
+3. **Product Details**: Full product information including specifications, images, and detailed descriptions
+4. **Quantity Selection**: Manual quantity input with preset options (1, 2, 3, 5 units)
+5. **Multi-Action Interface**: 
+   - Add to cart with chosen quantity
+   - Add to wishlist (auto-returns to main menu)
+   - Rate product with 1-5 star system
+   - Navigate back to category or main menu
+
+**Example User Journey:**
+- Select "Listings" → Choose "Acetate Powder" → Pick product → View details → Select "Qty: 3" → Add to cart
+- Or: Select product → Add to wishlist → Auto-return to main menu
+
+**Features:**
+- Clean category-based navigation
+- Detailed product specifications display
+- Stock validation and quantity controls
+- Seamless wishlist integration with auto-return
+- Product rating system
+- Auto-vanish interface throughout entire flow

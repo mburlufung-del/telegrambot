@@ -237,11 +237,10 @@ class TeleShopBot {
 
   // Command handlers for each button
   private async handleListingsCommand(chatId: number, userId: string) {
-    const products = await storage.getProducts();
-    const activeProducts = products.filter(p => p.isActive);
+    const categories = await storage.getCategories();
 
-    if (activeProducts.length === 0) {
-      const message = '📋 No products available at the moment.\n\nCome back later for new listings!';
+    if (categories.length === 0) {
+      const message = '📋 No categories available at the moment.\n\nCome back later for new listings!';
       const backButton = {
         inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
       };
@@ -250,37 +249,37 @@ class TeleShopBot {
       return;
     }
 
-    let listingsMessage = '📋 *Product Listings:*\n\n';
+    let categoriesMessage = '📋 *Choose Product Category:*\n\n';
     
-    activeProducts.slice(0, 8).forEach((product, index) => {
-      const stockStatus = product.stock > 0 ? '✅ In Stock' : '❌ Out of Stock';
-      const priceDisplay = product.compareAtPrice 
-        ? `💰 ~~$${product.compareAtPrice}~~ *$${product.price}*`
-        : `💰 *$${product.price}*`;
+    const categoryButtons: Array<Array<{text: string, callback_data: string}>> = [];
+    categories.forEach((category, index) => {
+      categoriesMessage += `${index + 1}. *${category.name}*\n`;
+      if (category.description) {
+        categoriesMessage += `   ${category.description}\n`;
+      }
+      categoriesMessage += '\n';
       
-      listingsMessage += `${index + 1}. *${product.name}*\n`;
-      listingsMessage += `   ${product.description.substring(0, 80)}${product.description.length > 80 ? '...' : ''}\n`;
-      listingsMessage += `   ${priceDisplay}\n`;
-      listingsMessage += `   📦 ${stockStatus}\n\n`;
+      // Create buttons in rows of 2
+      if (index % 2 === 0) {
+        categoryButtons.push([]);
+      }
+      categoryButtons[categoryButtons.length - 1].push({
+        text: `${index + 1}. ${category.name}`,
+        callback_data: `category_${category.id}`
+      });
     });
 
-    if (activeProducts.length > 8) {
-      listingsMessage += `... and ${activeProducts.length - 8} more products.`;
-    }
+    // Add navigation buttons
+    categoryButtons.push([
+      { text: '🔍 Search All Products', callback_data: 'search_all_products' }
+    ]);
+    categoryButtons.push([
+      { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+    ]);
 
-    const keyboard = {
-      inline_keyboard: [
-        [
-          { text: '🔍 Search Products', callback_data: 'search_products' },
-          { text: '📂 Categories', callback_data: 'view_categories' }
-        ],
-        [
-          { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
-        ]
-      ]
-    };
+    const keyboard = { inline_keyboard: categoryButtons };
 
-    await this.sendAutoVanishMessage(chatId, listingsMessage, {
+    await this.sendAutoVanishMessage(chatId, categoriesMessage, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
@@ -511,6 +510,37 @@ class TeleShopBot {
           };
           await this.sendAutoVanishMessage(chatId, chatMessage, { reply_markup: chatBackButton });
           break;
+        default:
+          // Handle category selection
+          if (data?.startsWith('category_')) {
+            const categoryId = data.replace('category_', '');
+            await this.handleCategoryProducts(chatId, query.from.id.toString(), categoryId);
+          }
+          // Handle product selection
+          else if (data?.startsWith('product_')) {
+            const productId = data.replace('product_', '');
+            await this.handleProductDetails(chatId, query.from.id.toString(), productId);
+          }
+          // Handle add to cart with quantity
+          else if (data?.startsWith('addcart_')) {
+            const parts = data.split('_');
+            const productId = parts[1];
+            const quantity = parts[2] ? parseInt(parts[2]) : 1;
+            await this.handleAddToCart(chatId, query.from.id.toString(), productId, quantity);
+          }
+          // Handle add to wishlist
+          else if (data?.startsWith('wishlist_')) {
+            const productId = data.replace('wishlist_', '');
+            await this.handleAddToWishlist(chatId, query.from.id.toString(), productId);
+          }
+          // Handle product rating
+          else if (data?.startsWith('rate_product_')) {
+            const parts = data.split('_');
+            const productId = parts[2];
+            const rating = parts[3];
+            await this.handleProductRating(chatId, query.from.id.toString(), productId, rating);
+          }
+          break;
       }
     });
   }
@@ -527,6 +557,262 @@ class TeleShopBot {
     } catch (error) {
       console.error('Error creating inquiry:', error);
     }
+  }
+
+  // Handle category product listing
+  private async handleCategoryProducts(chatId: number, userId: string, categoryId: string) {
+    const category = await storage.getCategories().then(cats => cats.find(c => c.id === categoryId));
+    const products = await storage.getProductsByCategory(categoryId);
+    const activeProducts = products.filter(p => p.isActive);
+
+    if (!category) {
+      await this.sendMainMenu(chatId);
+      return;
+    }
+
+    if (activeProducts.length === 0) {
+      const message = `📂 *${category.name}*\n\nNo products available in this category at the moment.`;
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '📋 Browse Other Categories', callback_data: 'listings' }],
+          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, { 
+        parse_mode: 'Markdown',
+        reply_markup: keyboard 
+      });
+      return;
+    }
+
+    let productsMessage = `📂 *${category.name}*\n\n`;
+    
+    const productButtons: Array<Array<{text: string, callback_data: string}>> = [];
+    activeProducts.slice(0, 10).forEach((product, index) => {
+      const stockStatus = product.stock > 0 ? '✅' : '❌';
+      const priceDisplay = product.compareAtPrice 
+        ? `~~$${product.compareAtPrice}~~ *$${product.price}*`
+        : `*$${product.price}*`;
+      
+      productsMessage += `${index + 1}. *${product.name}* ${stockStatus}\n`;
+      productsMessage += `   ${priceDisplay}\n`;
+      productsMessage += `   ${product.description.substring(0, 60)}${product.description.length > 60 ? '...' : ''}\n\n`;
+      
+      // Create product buttons in rows of 2
+      if (index % 2 === 0) {
+        productButtons.push([]);
+      }
+      productButtons[productButtons.length - 1].push({
+        text: `${index + 1}. ${product.name}`,
+        callback_data: `product_${product.id}`
+      });
+    });
+
+    if (activeProducts.length > 10) {
+      productsMessage += `... and ${activeProducts.length - 10} more products.`;
+    }
+
+    // Add navigation buttons
+    productButtons.push([
+      { text: '📋 Other Categories', callback_data: 'listings' }
+    ]);
+    productButtons.push([
+      { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+    ]);
+
+    const keyboard = { inline_keyboard: productButtons };
+
+    await this.sendAutoVanishMessage(chatId, productsMessage, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  // Handle product details view
+  private async handleProductDetails(chatId: number, userId: string, productId: string) {
+    const product = await storage.getProduct(productId);
+    
+    if (!product || !product.isActive) {
+      const message = '❌ Product not found or unavailable.';
+      const keyboard = {
+        inline_keyboard: [[{ text: '📋 Browse Products', callback_data: 'listings' }]]
+      };
+      await this.sendAutoVanishMessage(chatId, message, { reply_markup: keyboard });
+      return;
+    }
+
+    let productMessage = `📱 *${product.name}*\n\n`;
+    productMessage += `📝 *Description:*\n${product.description}\n\n`;
+    
+    if (product.compareAtPrice) {
+      productMessage += `💰 *Price:* ~~$${product.compareAtPrice}~~ *$${product.price}* (SALE!)\n`;
+    } else {
+      productMessage += `💰 *Price:* $${product.price}\n`;
+    }
+    
+    productMessage += `📦 *Stock:* ${product.stock > 0 ? `${product.stock} available` : 'Out of stock'}\n`;
+    
+    if (product.specifications) {
+      try {
+        const specs = JSON.parse(product.specifications);
+        productMessage += '\n🔧 *Specifications:*\n';
+        Object.entries(specs).forEach(([key, value]) => {
+          productMessage += `• ${key}: ${value}\n`;
+        });
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+
+    const keyboard = {
+      inline_keyboard: [] as Array<Array<{text: string, callback_data: string}>>
+    };
+
+    if (product.stock > 0) {
+      keyboard.inline_keyboard.push([
+        { text: '🛒 Add to Cart (1)', callback_data: `addcart_${product.id}` },
+        { text: '❤️ Add to Wishlist', callback_data: `wishlist_${product.id}` }
+      ]);
+      
+      // Quantity selection buttons
+      keyboard.inline_keyboard.push([
+        { text: '➕ Qty: 2', callback_data: `addcart_${product.id}_2` },
+        { text: '➕ Qty: 3', callback_data: `addcart_${product.id}_3` },
+        { text: '➕ Qty: 5', callback_data: `addcart_${product.id}_5` }
+      ]);
+    } else {
+      keyboard.inline_keyboard.push([
+        { text: '❤️ Add to Wishlist', callback_data: `wishlist_${product.id}` }
+      ]);
+    }
+
+    // Rating buttons
+    keyboard.inline_keyboard.push([
+      { text: '⭐', callback_data: `rate_product_${product.id}_1` },
+      { text: '⭐⭐', callback_data: `rate_product_${product.id}_2` },
+      { text: '⭐⭐⭐', callback_data: `rate_product_${product.id}_3` },
+      { text: '⭐⭐⭐⭐', callback_data: `rate_product_${product.id}_4` },
+      { text: '⭐⭐⭐⭐⭐', callback_data: `rate_product_${product.id}_5` }
+    ]);
+
+    keyboard.inline_keyboard.push([
+      { text: '🔙 Back to Category', callback_data: `category_${product.categoryId || ''}` },
+      { text: '🏠 Main Menu', callback_data: 'back_to_menu' }
+    ]);
+
+    await this.sendAutoVanishMessage(chatId, productMessage, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  // Handle add to cart
+  private async handleAddToCart(chatId: number, userId: string, productId: string, quantity: number = 1) {
+    const product = await storage.getProduct(productId);
+    
+    if (!product || !product.isActive) {
+      const message = '❌ Product not found or unavailable.';
+      const keyboard = {
+        inline_keyboard: [[{ text: '📋 Browse Products', callback_data: 'listings' }]]
+      };
+      await this.sendAutoVanishMessage(chatId, message, { reply_markup: keyboard });
+      return;
+    }
+
+    if (product.stock < quantity) {
+      const message = `❌ Sorry, only ${product.stock} items available in stock.`;
+      const keyboard = {
+        inline_keyboard: [[{ text: '🔙 Back to Product', callback_data: `product_${productId}` }]]
+      };
+      await this.sendAutoVanishMessage(chatId, message, { reply_markup: keyboard });
+      return;
+    }
+
+    try {
+      await storage.addToCart({
+        telegramUserId: userId,
+        productId: productId,
+        quantity: quantity
+      });
+
+      const total = (parseFloat(product.price) * quantity).toFixed(2);
+      const message = `✅ *Added to Cart!*\n\n${quantity}x ${product.name}\nTotal: $${total}`;
+      
+      const keyboard = {
+        inline_keyboard: [
+          [
+            { text: '🛒 View Cart', callback_data: 'carts' },
+            { text: '📋 Continue Shopping', callback_data: 'listings' }
+          ],
+          [
+            { text: '🔙 Back to Product', callback_data: `product_${productId}` }
+          ]
+        ]
+      };
+
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      const message = '❌ Error adding item to cart. Please try again.';
+      const keyboard = {
+        inline_keyboard: [[{ text: '🔙 Back to Product', callback_data: `product_${productId}` }]]
+      };
+      await this.sendAutoVanishMessage(chatId, message, { reply_markup: keyboard });
+    }
+  }
+
+  // Handle add to wishlist
+  private async handleAddToWishlist(chatId: number, userId: string, productId: string) {
+    const product = await storage.getProduct(productId);
+    
+    if (!product) {
+      await this.sendMainMenu(chatId);
+      return;
+    }
+
+    // For now, just show success message since wishlist is coming soon
+    const message = `❤️ *Added to Wishlist!*\n\n${product.name}\n\n🚧 Wishlist feature coming soon! Your favorites will be saved.`;
+    
+    // Return to main menu as requested
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown'
+    });
+    
+    // Auto return to main menu after 2 seconds
+    setTimeout(() => {
+      this.sendMainMenu(chatId);
+    }, 2000);
+  }
+
+  // Handle product rating
+  private async handleProductRating(chatId: number, userId: string, productId: string, rating: string) {
+    const product = await storage.getProduct(productId);
+    
+    if (!product) {
+      await this.sendMainMenu(chatId);
+      return;
+    }
+
+    const stars = '⭐'.repeat(parseInt(rating));
+    const message = `${stars} *Thank you for rating!*\n\n${product.name}\nYour ${rating}-star rating has been recorded.`;
+    
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: '🔙 Back to Product', callback_data: `product_${productId}` },
+          { text: '🏠 Main Menu', callback_data: 'back_to_menu' }
+        ]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
   }
 
   // Legacy command support (optional - can be removed)
