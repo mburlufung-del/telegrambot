@@ -134,40 +134,25 @@ class TeleShopBot {
   private setupCommands() {
     if (!this.bot) return;
 
-    // Handle any message/command to trigger auto-vanish welcome
+    // Handle initial message to show welcome menu only once
     this.bot.on('message', async (msg) => {
       const chatId = msg.chat.id;
       const userId = msg.from?.id.toString() || '';
       const text = msg.text || '';
       
-      // Skip if it's a callback query response
+      // Skip if it's a callback query response or other commands
       if (text.startsWith('/callback_')) return;
       
       await storage.incrementMessageCount();
       
-      // Auto-vanish welcome interface with command buttons
-      const welcomeMessage = '🛍️ Welcome to TeleShop!\n\nChoose an option below:';
-      
-      const keyboard = {
-        inline_keyboard: [
-          [
-            { text: '📋 Listings', callback_data: 'listings' },
-            { text: '🛒 Carts', callback_data: 'carts' }
-          ],
-          [
-            { text: '📦 Orders', callback_data: 'orders' },
-            { text: '❤️ Wishlist', callback_data: 'wishlist' }
-          ],
-          [
-            { text: '⭐ Rating', callback_data: 'rating' },
-            { text: '👤 Operator', callback_data: 'operator' }
-          ]
-        ]
-      };
-
-      await this.sendAutoVanishMessage(chatId, welcomeMessage, {
-        reply_markup: keyboard
-      });
+      // Only show main menu for initial messages or explicit menu requests
+      if (text === '/start' || text.toLowerCase() === 'menu' || text.toLowerCase() === 'main menu') {
+        await this.sendMainMenu(chatId);
+      } else {
+        // For other messages, just acknowledge and stay in current context
+        const ackMessage = '👋 Hello! Use the buttons below to navigate.';
+        await this.sendAutoVanishMessage(chatId, ackMessage);
+      }
     });
 
     // Handle callback queries for the command buttons
@@ -217,13 +202,11 @@ class TeleShopBot {
       inline_keyboard: [
         [
           { text: '📋 Listings', callback_data: 'listings' },
-          { text: '🛒 Carts', callback_data: 'carts' }
+          { text: '🛒 Carts', callback_data: 'carts' },
+          { text: '📦 Orders', callback_data: 'orders' }
         ],
         [
-          { text: '📦 Orders', callback_data: 'orders' },
-          { text: '❤️ Wishlist', callback_data: 'wishlist' }
-        ],
-        [
+          { text: '❤️ Wishlist', callback_data: 'wishlist' },
           { text: '⭐ Rating', callback_data: 'rating' },
           { text: '👤 Operator', callback_data: 'operator' }
         ]
@@ -774,18 +757,18 @@ class TeleShopBot {
       return;
     }
 
-    // For now, just show success message since wishlist is coming soon
-    const message = `❤️ *Added to Wishlist!*\n\n${product.name}\n\n🚧 Wishlist feature coming soon! Your favorites will be saved.`;
+    // Show success message and auto-return to main menu without showing it
+    const message = `❤️ *Added to Wishlist!*\n\n${product.name}\n\n🚧 Wishlist feature coming soon! Your favorites will be saved.\n\n_Returning to main menu..._`;
     
-    // Return to main menu as requested
     await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown'
     });
     
-    // Auto return to main menu after 2 seconds
-    setTimeout(() => {
-      this.sendMainMenu(chatId);
-    }, 2000);
+    // Auto return to main menu after 3 seconds without showing the menu display
+    setTimeout(async () => {
+      await this.clearPreviousMessages(chatId);
+      await this.sendMainMenu(chatId);
+    }, 3000);
   }
 
   // Handle product rating

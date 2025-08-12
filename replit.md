@@ -115,7 +115,10 @@ Preferred communication style: Simple, everyday language.
 - **Inline Keyboard Navigation**: Modern button-based interaction replacing text commands
 
 ### Command Button Interface
-The bot now features a streamlined interface with 6 primary command buttons:
+The bot now features a streamlined interface with 6 primary command buttons arranged in a compact 3x2 grid:
+
+**Row 1:** 📋 Listings | 🛒 Carts | 📦 Orders
+**Row 2:** ❤️ Wishlist | ⭐ Rating | 👤 Operator
 
 1. **📋 Listings** - Browse product catalog with categories and search
 2. **🛒 Carts** - View shopping cart with checkout and clear options
@@ -127,8 +130,9 @@ The bot now features a streamlined interface with 6 primary command buttons:
 ### Auto-Vanish Implementation Features
 - **Message Tracking**: Bot tracks all sent messages per user for selective deletion
 - **Clean Interface**: Previous bot responses vanish when user takes new actions
-- **Persistent Navigation**: Main menu remains accessible via "Back to Menu" buttons
-- **Smooth Transitions**: Seamless navigation between different bot functions
+- **Smart Menu Display**: Main menu only shows on /start, "menu", or explicit requests
+- **Seamless Flow**: Users stay in context without menu interruptions after selections
+- **Smooth Transitions**: Clean navigation between functions without menu display
 - **Error Recovery**: Auto-fallback to main menu for unknown commands
 
 ### Enhanced Shopping Flow
