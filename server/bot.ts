@@ -1326,11 +1326,17 @@ Need help? Our support team is here for you!
       currentQty = 1;
     }
 
+    // Use pricing tier price if available, otherwise use base price
+    const tierPrice = await storage.getProductPriceForQuantity(productId, currentQty);
+    const effectivePrice = tierPrice || product.price;
+    const totalPrice = (parseFloat(effectivePrice) * currentQty).toFixed(2);
+    
     const message = `🔢 *Quantity Selection*\n\n📦 *${product.name}*\n\n` +
                    `Current Selection: *${currentQty}*\n` +
-                   `💰 Price: $${product.price} each\n` +
-                   `💵 Total: $${(parseFloat(product.price) * currentQty).toFixed(2)}\n` +
-                   `📦 Available: ${product.stock}`;
+                   `💰 Price: $${effectivePrice} each\n` +
+                   `💵 Total: $${totalPrice}\n` +
+                   `📦 Available: ${product.stock}` +
+                   (tierPrice ? `\n\n💡 *Bulk pricing applied!*` : '');
 
     // Create quantity control buttons with +/- system
     const quantityControls = [];

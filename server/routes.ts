@@ -626,6 +626,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test pricing calculation route
+  app.post("/api/test-pricing", async (req, res) => {
+    try {
+      const { productId, quantity } = req.body;
+      const price = await storage.getProductPriceForQuantity(productId, quantity);
+      const product = await storage.getProduct(productId);
+      const tiers = await storage.getPricingTiers(productId);
+      
+      res.json({
+        productId,
+        quantity,
+        calculatedPrice: price,
+        basePrice: product?.price,
+        availableTiers: tiers.map(t => ({
+          min: t.minQuantity,
+          max: t.maxQuantity,
+          price: t.price
+        }))
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to test pricing" });
+    }
+  });
+
   // Integration testing route
   app.get("/api/integration/test", async (req, res) => {
     try {
