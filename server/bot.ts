@@ -366,7 +366,10 @@ export class TeleShopBot {
 
   // Main menu method
   private async sendMainMenu(chatId: number) {
-    const welcomeMessage = '🛍️ Welcome to TeleShop!\n\nChoose an option below:';
+    // Get welcome message from database settings
+    const botSettings = await storage.getBotSettings();
+    const welcomeSetting = botSettings.find(s => s.key === 'welcome_message');
+    const welcomeMessage = welcomeSetting?.value || '🛍️ Welcome to TeleShop!\n\nChoose an option below:';
     
     const keyboard = {
       inline_keyboard: [

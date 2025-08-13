@@ -162,6 +162,26 @@ The orders system now provides complete user-specific order tracking with profes
 - Simplified checkout flow with immediate order completion
 - Enhanced debugging logs for order tracking verification
 
+## Dynamic Welcome Message Fix (August 2025)
+
+**Fixed Welcome Message Not Updating:**
+
+The welcome message was hardcoded in the bot code instead of using the dynamic settings from the database:
+
+1. **Issue Identified**: Bot code had hardcoded welcome message `'🛍️ Welcome to TeleShop!\n\nChoose an option below:'`
+2. **Database Setting**: Welcome message was stored in database but not being used: `"welcone user here"`
+3. **Solution Applied**: Modified `sendMainMenu()` method to fetch welcome message from `getBotSettings()`
+4. **Fallback Protection**: Added fallback to default message if database setting is not found
+5. **Bot Restarted**: Applied changes by restarting the bot service
+
+**Technical Implementation:**
+- Queries `storage.getBotSettings()` for `welcome_message` key
+- Uses database value or falls back to default message
+- Maintains consistent messaging across bot interactions
+- Enables dynamic welcome message updates from admin dashboard
+
+The bot now dynamically uses the welcome message configured in the admin dashboard bot settings.
+
 ## Enhanced Broadcast System Implementation (August 2025)
 
 **Fully Working Broadcast Functionality with Image Upload:**
