@@ -25,7 +25,7 @@ import { insertProductSchema } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@shared/schema";
-import { ObjectUploader } from "@/components/object-uploader";
+import ObjectUploader from "@/components/object-uploader";
 
 interface ProductModalProps {
   open: boolean;
@@ -231,82 +231,79 @@ export default function ProductModal({ open, onOpenChange, product }: ProductMod
                     Product Image
                   </label>
                   <p className="text-sm text-gray-500 mb-3">
-                    Upload a high-quality image of your product
+                    Upload a high-quality image directly from your device
                   </p>
                   
-                  {/* Image Upload */}
+                  {/* Direct Image Upload */}
                   <div className="space-y-3">
                     {!imagePreview ? (
                       <ObjectUploader
-                        onUploadComplete={handleImageUrlChange}
-                        buttonClassName="w-full h-32 border-2 border-dashed border-gray-300 hover:border-gray-400"
+                        onUploadComplete={(url) => {
+                          console.log('Upload completed, URL:', url);
+                          handleImageUrlChange(url);
+                        }}
+                        buttonClassName="w-full h-40 border-2 border-dashed border-blue-300 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 transition-all"
                       >
-                        <div className="flex flex-col items-center gap-2">
-                          <Upload className="h-8 w-8 text-gray-400" />
-                          <span className="text-sm text-gray-600">Click to upload image</span>
-                          <span className="text-xs text-gray-400">JPG, PNG, GIF up to 10MB</span>
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="p-3 bg-blue-100 rounded-full">
+                            <Upload className="h-8 w-8 text-blue-600" />
+                          </div>
+                          <div className="text-center">
+                            <span className="text-lg font-medium text-blue-700">Upload Product Image</span>
+                            <p className="text-sm text-blue-600 mt-1">Click here to select image from your device</p>
+                            <p className="text-xs text-gray-500 mt-2">Supports JPG, PNG, GIF up to 10MB</p>
+                          </div>
                         </div>
                       </ObjectUploader>
                     ) : (
-                      <div className="relative border-2 border-dashed border-green-300 rounded-lg p-2">
+                      <div className="relative border-2 border-solid border-green-400 rounded-lg p-3 bg-green-50">
                         <img
                           src={imagePreview.startsWith('/objects/') ? `${window.location.origin}${imagePreview}` : imagePreview}
                           alt="Product preview"
-                          className="w-full h-32 object-cover rounded-lg"
-                          onError={() => setImagePreview("")}
+                          className="w-full h-40 object-cover rounded-lg"
+                          onError={() => {
+                            console.error('Image failed to load:', imagePreview);
+                            setImagePreview("");
+                          }}
                         />
                         <Button
                           type="button"
                           variant="destructive"
                           size="icon"
-                          className="absolute top-3 right-3 h-6 w-6"
+                          className="absolute top-4 right-4 h-8 w-8"
                           onClick={() => {
                             setImagePreview("");
                             form.setValue("imageUrl", "");
                           }}
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-4 w-4" />
                         </Button>
-                        <div className="mt-2 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Image className="h-4 w-4 text-green-600" />
-                            <span className="text-sm text-green-700">Image uploaded successfully</span>
+                        <div className="mt-3 p-3 bg-white rounded-lg border border-green-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Image className="h-5 w-5 text-green-600" />
+                              <span className="text-sm font-medium text-green-700">Image uploaded and ready!</span>
+                            </div>
+                            <ObjectUploader
+                              onUploadComplete={handleImageUrlChange}
+                              buttonClassName="text-sm bg-blue-100 hover:bg-blue-200 text-blue-700"
+                            >
+                              Change Image
+                            </ObjectUploader>
                           </div>
-                          <ObjectUploader
-                            onUploadComplete={handleImageUrlChange}
-                            buttonClassName="text-xs"
-                          >
-                            Change Image
-                          </ObjectUploader>
                         </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Manual URL input as fallback */}
-                  <div className="mt-3">
-                    <FormField
-                      control={form.control}
-                      name="imageUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs text-gray-500">Or enter image URL manually</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="https://example.com/image.jpg"
-                              className="text-sm"
-                              {...field}
-                              onChange={(e) => {
-                                field.onChange(e);
-                                handleImageUrlChange(e.target.value);
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  {/* Hidden form field for imageUrl */}
+                  <FormField
+                    control={form.control}
+                    name="imageUrl"
+                    render={({ field }) => (
+                      <input type="hidden" {...field} />
+                    )}
+                  />
                 </div>
               </div>
             </div>
