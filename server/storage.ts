@@ -7,6 +7,8 @@ import {
   type InsertOrder,
   type Cart,
   type InsertCart,
+  type Wishlist,
+  type InsertWishlist,
   type Category,
   type InsertCategory,
   type BotSettings,
@@ -41,8 +43,8 @@ export interface IStorage {
   getCart(telegramUserId: string): Promise<Cart[]>;
   getCartItems(telegramUserId: string): Promise<Cart[]>; // Alias for getCart
   addToCart(cartItem: InsertCart): Promise<Cart>;
-  addToWishlist(cartItem: InsertCart): Promise<Cart>; // Add wishlist functionality
-  getWishlistItems(telegramUserId: string): Promise<Cart[]>;
+  addToWishlist(wishlistItem: InsertWishlist): Promise<Wishlist>; // Add wishlist functionality
+  getWishlistItems(telegramUserId: string): Promise<Wishlist[]>;
   updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined>;
   removeFromCart(telegramUserId: string, productId: string): Promise<boolean>;
   clearCart(telegramUserId: string): Promise<void>;
@@ -85,11 +87,12 @@ export interface IStorage {
 }
 
 import { db } from "./db";
-import { eq, desc, sql, and } from "drizzle-orm";
+import { eq, desc, sql, and, gte } from "drizzle-orm";
 import { 
   products, 
   categories, 
   cart, 
+  wishlist,
   orders, 
   inquiries, 
   botSettings, 
@@ -193,14 +196,40 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async addToWishlist(cartItem: InsertCart): Promise<Cart> {
-    // For now, use the same cart table with a flag or separate handling
-    return this.addToCart(cartItem);
+  async addToWishlist(wishlistItem: InsertWishlist): Promise<Wishlist> {
+    // Check if item already exists in wishlist
+    const existing = await db.select().from(wishlist).where(
+      and(
+        eq(wishlist.telegramUserId, wishlistItem.telegramUserId),
+        eq(wishlist.productId, wishlistItem.productId)
+      )
+    );
+
+    if (existing.length > 0) {
+      // Update quantity
+      const result = await db.update(wishlist).set({
+        quantity: existing[0].quantity + (wishlistItem.quantity || 1)
+      }).where(eq(wishlist.id, existing[0].id)).returning();
+      return result[0];
+    } else {
+      // Insert new item
+      const result = await db.insert(wishlist).values(wishlistItem).returning();
+      return result[0];
+    }
   }
 
-  async getWishlistItems(telegramUserId: string): Promise<Cart[]> {
-    // For now, return empty array - could be extended with a separate wishlist table
-    return [];
+  async getWishlistItems(telegramUserId: string): Promise<Wishlist[]> {
+    return await db.select().from(wishlist).where(eq(wishlist.telegramUserId, telegramUserId));
+  }
+
+  async removeFromWishlist(telegramUserId: string, productId: string): Promise<boolean> {
+    const result = await db.delete(wishlist).where(
+      and(
+        eq(wishlist.telegramUserId, telegramUserId),
+        eq(wishlist.productId, productId)
+      )
+    );
+    return (result.rowCount || 0) > 0;
   }
 
   async updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined> {

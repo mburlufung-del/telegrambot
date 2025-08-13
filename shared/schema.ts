@@ -63,6 +63,14 @@ export const cart = pgTable("cart", {
   addedAt: timestamp("added_at").notNull().default(sql`now()`),
 });
 
+export const wishlist = pgTable("wishlist", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  telegramUserId: text("telegram_user_id").notNull(),
+  productId: varchar("product_id").notNull().references(() => products.id),
+  quantity: integer("quantity").notNull().default(1),
+  addedAt: timestamp("added_at").notNull().default(sql`now()`),
+});
+
 export const categories = pgTable("categories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull().unique(),
@@ -114,6 +122,11 @@ export const insertCartSchema = createInsertSchema(cart).omit({
   addedAt: true,
 });
 
+export const insertWishlistSchema = createInsertSchema(wishlist).omit({
+  id: true,
+  addedAt: true,
+});
+
 export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
   createdAt: true,
@@ -146,6 +159,8 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type Cart = typeof cart.$inferSelect;
 export type InsertCart = z.infer<typeof insertCartSchema>;
+export type Wishlist = typeof wishlist.$inferSelect;
+export type InsertWishlist = z.infer<typeof insertWishlistSchema>;
 export type Category = typeof categories.$inferSelect;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type BotSettings = typeof botSettings.$inferSelect;
