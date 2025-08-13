@@ -447,7 +447,12 @@ export class TeleShopBot {
         const order = userOrders[i];
         const orderDate = new Date(order.createdAt || Date.now()).toLocaleDateString();
         
-        message += `${i + 1}. Order #${order.id.slice(-6).toUpperCase()}\n`;
+        // Generate consistent order number based on creation timestamp
+        const orderNumber = order.createdAt ? 
+          new Date(order.createdAt).getTime().toString().slice(-6) : 
+          order.id.slice(-6).toUpperCase();
+        
+        message += `${i + 1}. Order #${orderNumber}\n`;
         message += `   💰 Total: $${order.totalAmount}\n`;
         message += `   📅 Date: ${orderDate}\n`;
         message += `   📋 Status: ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}\n\n`;
@@ -1119,19 +1124,22 @@ Need help? Our support team is here for you!
       }
 
       // Create order record
-      await storage.createOrder({
+      const newOrder = await storage.createOrder({
         telegramUserId: userId,
         customerName: `User ${userId}`,
         contactInfo: `Telegram User ID: ${userId}`, // Add required contactInfo field
         totalAmount: totalAmount.toString(),
-        status: 'pending',
+        status: 'completed', // Mark as completed for immediate order history display
         items: JSON.stringify(orderItems)
       });
 
       // Clear cart after successful order
       await storage.clearCart(userId);
 
-      const message = `✅ *Order Placed Successfully!*\n\nOrder Total: $${totalAmount.toFixed(2)}\nStatus: Pending\n\nThank you for your purchase! We'll process your order shortly.`;
+      // Generate order number from creation timestamp
+      const orderNumber = new Date(newOrder.createdAt).getTime().toString().slice(-6);
+      
+      const message = `✅ *Order Placed Successfully!*\n\nOrder #${orderNumber}\nOrder Total: $${totalAmount.toFixed(2)}\nStatus: Completed\n\nThank you for your purchase! Your order is ready for delivery.`;
       
       const keyboard = {
         inline_keyboard: [
