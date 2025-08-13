@@ -40,6 +40,17 @@ export const botSettings = pgTable("bot_settings", {
   updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
 });
 
+// Payment methods table for dynamic management
+export const paymentMethods = pgTable("payment_methods", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true).notNull(),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+});
+
 export const orders = pgTable("orders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   telegramUserId: text("telegram_user_id").notNull(),
@@ -136,6 +147,12 @@ export const insertBotSettingsSchema = createInsertSchema(botSettings).omit({
   updatedAt: true,
 });
 
+export const insertPaymentMethodSchema = createInsertSchema(paymentMethods).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertOrderSchema = createInsertSchema(orders).omit({
   id: true,
   createdAt: true,
@@ -190,6 +207,8 @@ export type Category = typeof categories.$inferSelect;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type BotSettings = typeof botSettings.$inferSelect;
 export type InsertBotSettings = z.infer<typeof insertBotSettingsSchema>;
+export type PaymentMethod = typeof paymentMethods.$inferSelect;
+export type InsertPaymentMethod = z.infer<typeof insertPaymentMethodSchema>;
 export type BotStats = typeof botStats.$inferSelect;
 export type InsertBotStats = z.infer<typeof insertBotStatsSchema>;
 export type ProductRating = typeof productRatings.$inferSelect;

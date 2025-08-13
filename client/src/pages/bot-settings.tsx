@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import EnhancedBroadcast from "@/components/enhanced-broadcast";
+import { PaymentMethodsManager } from "@/components/payment-methods-manager";
 
 import type { BotSettings } from "@shared/schema";
 import { 
@@ -70,7 +71,6 @@ const BOT_CONFIG_CATEGORIES = {
     icon: CreditCard,
     description: "Payment methods and pricing settings",
     settings: [
-      { key: "payment_methods", label: "Available Payment Methods", type: "textarea", default: "💳 Payment Methods:\n• Cash on Delivery\n• Bank Transfer\n• Credit/Debit Card", description: "List of accepted payment methods" },
       { key: "currency_symbol", label: "Currency Symbol", type: "text", default: "$", description: "Symbol shown with prices" },
       { key: "currency_code", label: "Currency Code", type: "text", default: "USD", description: "Three-letter currency code" },
       { key: "minimum_order", label: "Minimum Order Amount", type: "number", default: "0", description: "Minimum order value required" },
@@ -339,6 +339,11 @@ export default function BotSettings() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Payment methods get special treatment */}
+              {activeCategory === "payment" && (
+                <PaymentMethodsManager className="mb-6" />
+              )}
+              
               {BOT_CONFIG_CATEGORIES[activeCategory as keyof typeof BOT_CONFIG_CATEGORIES].settings.map(setting => (
                 <div key={setting.key} className="space-y-2">
                   <Label htmlFor={setting.key} className="text-sm font-medium">

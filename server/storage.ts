@@ -1,27 +1,43 @@
-import { 
-  type Product, 
-  type InsertProduct, 
-  type Inquiry, 
-  type InsertInquiry,
-  type Order,
-  type InsertOrder,
-  type Cart,
-  type InsertCart,
-  type Wishlist,
-  type InsertWishlist,
-  type Category,
-  type InsertCategory,
-  type BotSettings,
-  type InsertBotSettings,
-  type BotStats,
-  type InsertBotStats,
-  type ProductRating,
-  type InsertProductRating,
-  type PricingTier,
-  type InsertPricingTier,
-  type OrderItem
-} from "@shared/schema";
 import { randomUUID } from "crypto";
+import { and, asc, desc, eq, ilike, lt, sql } from "drizzle-orm";
+import { db } from "./db";
+import type {
+  Cart,
+  Category,
+  Order,
+  Product,
+  Inquiry,
+  BotSettings,
+  BotStats,
+  ProductRating,
+  Wishlist,
+  PricingTier,
+  PaymentMethod,
+  InsertCart,
+  InsertCategory,
+  InsertOrder,
+  InsertProduct,
+  InsertInquiry,
+  InsertBotSettings,
+  InsertBotStats,
+  InsertProductRating,
+  InsertWishlist,
+  InsertPricingTier,
+  InsertPaymentMethod,
+} from "@shared/schema";
+import {
+  categories,
+  products,
+  orders,
+  inquiries,
+  botSettings,
+  botStats,
+  cart,
+  wishlist,
+  productRatings,
+  pricingTiers,
+  paymentMethods,
+} from "@shared/schema";
 
 export interface IStorage {
   // Products
@@ -43,19 +59,21 @@ export interface IStorage {
 
   // Cart
   getCart(telegramUserId: string): Promise<Cart[]>;
-  getCartItems(telegramUserId: string): Promise<Cart[]>; // Alias for getCart
+  getCartItems(telegramUserId: string): Promise<Cart[]>;
   addToCart(cartItem: InsertCart): Promise<Cart>;
-  addToWishlist(wishlistItem: InsertWishlist): Promise<Wishlist>; // Add wishlist functionality
-  getWishlistItems(telegramUserId: string): Promise<Wishlist[]>;
   updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined>;
   removeFromCart(telegramUserId: string, productId: string): Promise<boolean>;
   clearCart(telegramUserId: string): Promise<void>;
   getCartTotal(telegramUserId: string): Promise<{ itemCount: number; totalAmount: string }>;
 
+  // Wishlist
+  addToWishlist(wishlistItem: InsertWishlist): Promise<Wishlist>;
+  getWishlistItems(telegramUserId: string): Promise<Wishlist[]>;
+
   // Orders
   getOrders(): Promise<Order[]>;
   getOrdersByUser(telegramUserId: string): Promise<Order[]>;
-  getUserOrders(telegramUserId: string): Promise<Order[]>; // Alias for getOrdersByUser
+  getUserOrders(telegramUserId: string): Promise<Order[]>;
   getOrder(id: string): Promise<Order | undefined>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: string, order: Partial<InsertOrder>): Promise<Order | undefined>;
@@ -73,7 +91,7 @@ export interface IStorage {
   getBotSetting(key: string): Promise<BotSettings | undefined>;
   setBotSetting(setting: InsertBotSettings): Promise<BotSettings>;
 
-  // Bot Stats
+  // Bot Statistics
   getBotStats(): Promise<BotStats | undefined>;
   updateBotStats(stats: Partial<InsertBotStats>): Promise<BotStats>;
   incrementUserCount(): Promise<void>;
@@ -84,488 +102,30 @@ export interface IStorage {
   // Product Ratings
   addProductRating(rating: InsertProductRating): Promise<ProductRating>;
   getProductRating(productId: string, telegramUserId: string): Promise<ProductRating | undefined>;
-  getWeeklyProductRatings(): Promise<{ productId: string; productName: string; averageRating: number; totalRatings: number; ratingCounts: Record<number, number> }[]>;
+  getWeeklyProductRatings(): Promise<{
+    productId: string;
+    productName: string;
+    averageRating: number;
+    totalRatings: number;
+    ratingCounts: Record<number, number>;
+  }[]>;
   getProductRatings(productId: string): Promise<ProductRating[]>;
 
   // Pricing Tiers
   getPricingTiers(productId: string): Promise<PricingTier[]>;
   createPricingTier(tier: InsertPricingTier): Promise<PricingTier>;
-  updatePricingTier(id: string, tier: Partial<InsertPricingTier>): Promise<PricingTier | undefined>;
+  updatePricingTier(id: string, tier: Partial<PricingTier>): Promise<PricingTier | undefined>;
   deletePricingTier(id: string): Promise<boolean>;
   getProductPriceForQuantity(productId: string, quantity: number): Promise<string | undefined>;
-}
 
-import { db } from "./db";
-import { eq, desc, sql, and, gte } from "drizzle-orm";
-import { 
-  products, 
-  categories, 
-  cart, 
-  wishlist,
-  orders, 
-  inquiries, 
-  botSettings, 
-  botStats, 
-  productRatings,
-  pricingTiers 
-} from "@shared/schema";
-
-export class DatabaseStorage implements IStorage {
-  async getProducts(): Promise<Product[]> {
-    return await db.select().from(products).orderBy(desc(products.createdAt));
-  }
-
-  async getProductsByCategory(categoryId: string): Promise<Product[]> {
-    return await db.select().from(products).where(eq(products.categoryId, categoryId));
-  }
-
-  async getFeaturedProducts(): Promise<Product[]> {
-    return await db.select().from(products).where(eq(products.isFeatured, true));
-  }
-
-  async searchProducts(query: string): Promise<Product[]> {
-    return await db.select().from(products).where(
-      sql`${products.name} ILIKE ${'%' + query + '%'} OR ${products.description} ILIKE ${'%' + query + '%'}`
-    );
-  }
-
-  async getProduct(id: string): Promise<Product | undefined> {
-    const result = await db.select().from(products).where(eq(products.id, id));
-    return result[0];
-  }
-
-  async createProduct(product: InsertProduct): Promise<Product> {
-    const result = await db.insert(products).values(product).returning();
-    return result[0];
-  }
-
-  async updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined> {
-    const result = await db.update(products).set({
-      ...product,
-      updatedAt: new Date()
-    }).where(eq(products.id, id)).returning();
-    return result[0];
-  }
-
-  async deleteProduct(id: string): Promise<boolean> {
-    const result = await db.delete(products).where(eq(products.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-
-  async getCategories(): Promise<Category[]> {
-    return await db.select().from(categories).orderBy(categories.name);
-  }
-
-  async getCategory(id: string): Promise<Category | undefined> {
-    const result = await db.select().from(categories).where(eq(categories.id, id));
-    return result[0];
-  }
-
-  async createCategory(category: InsertCategory): Promise<Category> {
-    const result = await db.insert(categories).values(category).returning();
-    return result[0];
-  }
-
-  async updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category | undefined> {
-    const result = await db.update(categories).set(category).where(eq(categories.id, id)).returning();
-    return result[0];
-  }
-
-  async deleteCategory(id: string): Promise<boolean> {
-    const result = await db.delete(categories).where(eq(categories.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-
-  async getCart(telegramUserId: string): Promise<Cart[]> {
-    return await db.select().from(cart).where(eq(cart.telegramUserId, telegramUserId));
-  }
-
-  async getCartItems(telegramUserId: string): Promise<Cart[]> {
-    return this.getCart(telegramUserId);
-  }
-
-  async addToCart(cartItem: InsertCart): Promise<Cart> {
-    // Check if item already exists in cart
-    const existing = await db.select().from(cart).where(
-      and(
-        eq(cart.telegramUserId, cartItem.telegramUserId),
-        eq(cart.productId, cartItem.productId)
-      )
-    );
-
-    if (existing.length > 0) {
-      // Update quantity
-      const result = await db.update(cart).set({
-        quantity: existing[0].quantity + (cartItem.quantity || 1)
-      }).where(eq(cart.id, existing[0].id)).returning();
-      return result[0];
-    } else {
-      // Insert new item
-      const result = await db.insert(cart).values(cartItem).returning();
-      return result[0];
-    }
-  }
-
-  async addToWishlist(wishlistItem: InsertWishlist): Promise<Wishlist> {
-    // Check if item already exists in wishlist
-    const existing = await db.select().from(wishlist).where(
-      and(
-        eq(wishlist.telegramUserId, wishlistItem.telegramUserId),
-        eq(wishlist.productId, wishlistItem.productId)
-      )
-    );
-
-    if (existing.length > 0) {
-      // Update quantity
-      const result = await db.update(wishlist).set({
-        quantity: existing[0].quantity + (wishlistItem.quantity || 1)
-      }).where(eq(wishlist.id, existing[0].id)).returning();
-      return result[0];
-    } else {
-      // Insert new item
-      const result = await db.insert(wishlist).values(wishlistItem).returning();
-      return result[0];
-    }
-  }
-
-  async getWishlistItems(telegramUserId: string): Promise<Wishlist[]> {
-    return await db.select().from(wishlist).where(eq(wishlist.telegramUserId, telegramUserId));
-  }
-
-  async removeFromWishlist(telegramUserId: string, productId: string): Promise<boolean> {
-    const result = await db.delete(wishlist).where(
-      and(
-        eq(wishlist.telegramUserId, telegramUserId),
-        eq(wishlist.productId, productId)
-      )
-    );
-    return (result.rowCount || 0) > 0;
-  }
-
-  async updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined> {
-    const result = await db.update(cart).set({ quantity }).where(
-      and(
-        eq(cart.telegramUserId, telegramUserId),
-        eq(cart.productId, productId)
-      )
-    ).returning();
-    return result[0];
-  }
-
-  async removeFromCart(telegramUserId: string, productId: string): Promise<boolean> {
-    const result = await db.delete(cart).where(
-      and(
-        eq(cart.telegramUserId, telegramUserId),
-        eq(cart.productId, productId)
-      )
-    );
-    return (result.rowCount || 0) > 0;
-  }
-
-  async clearCart(telegramUserId: string): Promise<void> {
-    await db.delete(cart).where(eq(cart.telegramUserId, telegramUserId));
-  }
-
-  async getCartTotal(telegramUserId: string): Promise<{ itemCount: number; totalAmount: string }> {
-    const cartItems = await this.getCart(telegramUserId);
-    let totalAmount = 0;
-    let itemCount = 0;
-
-    for (const item of cartItems) {
-      const product = await this.getProduct(item.productId);
-      if (product) {
-        totalAmount += parseFloat(product.price) * item.quantity;
-        itemCount += item.quantity;
-      }
-    }
-
-    return {
-      itemCount,
-      totalAmount: totalAmount.toFixed(2)
-    };
-  }
-
-  async getOrders(): Promise<Order[]> {
-    return await db.select().from(orders).orderBy(desc(orders.createdAt));
-  }
-
-  async getOrdersByUser(telegramUserId: string): Promise<Order[]> {
-    return await db.select().from(orders).where(eq(orders.telegramUserId, telegramUserId)).orderBy(desc(orders.createdAt));
-  }
-
-  async getUserOrders(telegramUserId: string): Promise<Order[]> {
-    return this.getOrdersByUser(telegramUserId);
-  }
-
-  async getOrder(id: string): Promise<Order | undefined> {
-    const result = await db.select().from(orders).where(eq(orders.id, id));
-    return result[0];
-  }
-
-  async createOrder(order: InsertOrder): Promise<Order> {
-    const result = await db.insert(orders).values(order).returning();
-    return result[0];
-  }
-
-  async updateOrder(id: string, order: Partial<InsertOrder>): Promise<Order | undefined> {
-    const result = await db.update(orders).set({
-      ...order,
-      updatedAt: new Date()
-    }).where(eq(orders.id, id)).returning();
-    return result[0];
-  }
-
-  async updateOrderStatus(id: string, status: string): Promise<Order | undefined> {
-    const result = await db.update(orders).set({
-      status,
-      updatedAt: new Date()
-    }).where(eq(orders.id, id)).returning();
-    return result[0];
-  }
-
-  async getInquiries(): Promise<Inquiry[]> {
-    return await db.select().from(inquiries).orderBy(desc(inquiries.createdAt));
-  }
-
-  async getInquiry(id: string): Promise<Inquiry | undefined> {
-    const result = await db.select().from(inquiries).where(eq(inquiries.id, id));
-    return result[0];
-  }
-
-  async createInquiry(inquiry: InsertInquiry): Promise<Inquiry> {
-    const result = await db.insert(inquiries).values(inquiry).returning();
-    return result[0];
-  }
-
-  async updateInquiry(id: string, inquiry: Partial<InsertInquiry>): Promise<Inquiry | undefined> {
-    const result = await db.update(inquiries).set(inquiry).where(eq(inquiries.id, id)).returning();
-    return result[0];
-  }
-
-  async getUnreadInquiriesCount(): Promise<number> {
-    const result = await db.select({ count: sql<number>`count(*)` }).from(inquiries).where(eq(inquiries.isRead, false));
-    return result[0]?.count || 0;
-  }
-
-  async getBotSettings(): Promise<BotSettings[]> {
-    return await db.select().from(botSettings);
-  }
-
-  async getBotSetting(key: string): Promise<BotSettings | undefined> {
-    const result = await db.select().from(botSettings).where(eq(botSettings.key, key));
-    return result[0];
-  }
-
-  async setBotSetting(setting: InsertBotSettings): Promise<BotSettings> {
-    const existing = await this.getBotSetting(setting.key);
-    if (existing) {
-      const result = await db.update(botSettings).set({
-        value: setting.value,
-        updatedAt: new Date()
-      }).where(eq(botSettings.key, setting.key)).returning();
-      return result[0];
-    } else {
-      const result = await db.insert(botSettings).values(setting).returning();
-      return result[0];
-    }
-  }
-
-  async getBotStats(): Promise<BotStats | undefined> {
-    const result = await db.select().from(botStats).limit(1);
-    if (result.length === 0) {
-      // Create default stats
-      const defaultStats = {
-        totalUsers: 0,
-        totalOrders: 0,
-        totalMessages: 0,
-        totalRevenue: "0"
-      };
-      const created = await db.insert(botStats).values(defaultStats).returning();
-      return created[0];
-    }
-    return result[0];
-  }
-
-  async updateBotStats(stats: Partial<InsertBotStats>): Promise<BotStats> {
-    const existing = await this.getBotStats();
-    if (existing) {
-      const result = await db.update(botStats).set({
-        ...stats,
-        updatedAt: new Date()
-      }).where(eq(botStats.id, existing.id)).returning();
-      return result[0];
-    } else {
-      const result = await db.insert(botStats).values(stats as InsertBotStats).returning();
-      return result[0];
-    }
-  }
-
-  async incrementUserCount(): Promise<void> {
-    const stats = await this.getBotStats();
-    if (stats) {
-      await this.updateBotStats({ totalUsers: stats.totalUsers + 1 });
-    }
-  }
-
-  async incrementOrderCount(): Promise<void> {
-    const stats = await this.getBotStats();
-    if (stats) {
-      await this.updateBotStats({ totalOrders: stats.totalOrders + 1 });
-    }
-  }
-
-  async incrementMessageCount(): Promise<void> {
-    const stats = await this.getBotStats();
-    if (stats) {
-      await this.updateBotStats({ totalMessages: stats.totalMessages + 1 });
-    }
-  }
-
-  async addRevenue(amount: string): Promise<void> {
-    const stats = await this.getBotStats();
-    if (stats) {
-      const currentRevenue = parseFloat(stats.totalRevenue);
-      const newRevenue = currentRevenue + parseFloat(amount);
-      await this.updateBotStats({ totalRevenue: newRevenue.toFixed(2) });
-    }
-  }
-
-  async addProductRating(rating: InsertProductRating): Promise<ProductRating> {
-    // Check if user already rated this product
-    const existing = await db.select().from(productRatings).where(
-      and(
-        eq(productRatings.productId, rating.productId),
-        eq(productRatings.telegramUserId, rating.telegramUserId)
-      )
-    );
-
-    if (existing.length > 0) {
-      // Update existing rating
-      const result = await db.update(productRatings).set({
-        rating: rating.rating,
-        createdAt: new Date()
-      }).where(eq(productRatings.id, existing[0].id)).returning();
-      return result[0];
-    } else {
-      // Insert new rating
-      const result = await db.insert(productRatings).values(rating).returning();
-      return result[0];
-    }
-  }
-
-  async getProductRating(productId: string, telegramUserId: string): Promise<ProductRating | undefined> {
-    const result = await db.select().from(productRatings).where(
-      and(
-        eq(productRatings.productId, productId),
-        eq(productRatings.telegramUserId, telegramUserId)
-      )
-    );
-    return result[0];
-  }
-
-  async getWeeklyProductRatings(): Promise<{ productId: string; productName: string; averageRating: number; totalRatings: number; ratingCounts: Record<number, number> }[]> {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-    console.log(`Fetching ratings from past week (since ${oneWeekAgo.toISOString()})`);
-
-    const ratings = await db.select({
-      productId: productRatings.productId,
-      rating: productRatings.rating,
-      productName: products.name,
-      createdAt: productRatings.createdAt
-    }).from(productRatings)
-    .innerJoin(products, eq(productRatings.productId, products.id))
-    .where(gte(productRatings.createdAt, oneWeekAgo));
-
-    console.log(`Found ${ratings.length} ratings from past week:`, ratings.map(r => ({
-      product: r.productName,
-      rating: r.rating,
-      date: r.createdAt
-    })));
-
-    const groupedRatings: Record<string, { productName: string; ratings: number[] }> = {};
-
-    ratings.forEach(r => {
-      if (!groupedRatings[r.productId]) {
-        groupedRatings[r.productId] = {
-          productName: r.productName,
-          ratings: []
-        };
-      }
-      groupedRatings[r.productId].ratings.push(r.rating);
-    });
-
-    const result = Object.entries(groupedRatings).map(([productId, data]) => {
-      const ratings = data.ratings;
-      const averageRating = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-      const totalRatings = ratings.length;
-      
-      const ratingCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-      ratings.forEach(rating => {
-        ratingCounts[rating] = (ratingCounts[rating] || 0) + 1;
-      });
-
-      return {
-        productId,
-        productName: data.productName,
-        averageRating: Math.round(averageRating * 10) / 10,
-        totalRatings,
-        ratingCounts
-      };
-    });
-
-    console.log(`Returning ${result.length} products with ratings from past week`);
-    return result;
-  }
-
-  async getProductRatings(productId: string): Promise<ProductRating[]> {
-    return await db.select().from(productRatings).where(eq(productRatings.productId, productId));
-  }
-
-  // Pricing Tiers
-  async getPricingTiers(productId: string): Promise<PricingTier[]> {
-    return await db.select().from(pricingTiers)
-      .where(and(eq(pricingTiers.productId, productId), eq(pricingTiers.isActive, true)))
-      .orderBy(pricingTiers.minQuantity);
-  }
-
-  async createPricingTier(tier: InsertPricingTier): Promise<PricingTier> {
-    const result = await db.insert(pricingTiers).values(tier).returning();
-    return result[0];
-  }
-
-  async updatePricingTier(id: string, tier: Partial<InsertPricingTier>): Promise<PricingTier | undefined> {
-    const result = await db.update(pricingTiers).set(tier).where(eq(pricingTiers.id, id)).returning();
-    return result[0];
-  }
-
-  async deletePricingTier(id: string): Promise<boolean> {
-    const result = await db.delete(pricingTiers).where(eq(pricingTiers.id, id));
-    return (result.rowCount ?? 0) > 0;
-  }
-
-  async getProductPriceForQuantity(productId: string, quantity: number): Promise<string | undefined> {
-    const tiers = await this.getPricingTiers(productId);
-    
-    if (tiers.length === 0) {
-      // No pricing tiers, return base product price
-      const product = await this.getProduct(productId);
-      return product?.price;
-    }
-
-    // Find the appropriate tier for this quantity
-    for (const tier of tiers) {
-      if (quantity >= tier.minQuantity && (tier.maxQuantity === null || quantity <= tier.maxQuantity)) {
-        return tier.price;
-      }
-    }
-
-    // If no tier matches, return the base product price
-    const product = await this.getProduct(productId);
-    return product?.price;
-  }
-
+  // Payment Methods
+  getPaymentMethods(): Promise<PaymentMethod[]>;
+  getActivePaymentMethods(): Promise<PaymentMethod[]>;
+  getPaymentMethod(id: string): Promise<PaymentMethod | undefined>;
+  createPaymentMethod(method: InsertPaymentMethod): Promise<PaymentMethod>;
+  updatePaymentMethod(id: string, method: Partial<InsertPaymentMethod>): Promise<PaymentMethod | undefined>;
+  deletePaymentMethod(id: string): Promise<boolean>;
+  reorderPaymentMethods(methods: { id: string; sortOrder: number }[]): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -579,6 +139,7 @@ export class MemStorage implements IStorage {
   private botStats: BotStats;
   private productRatings: Map<string, ProductRating>; // key: `${productId}-${telegramUserId}`
   private pricingTiers: Map<string, PricingTier>; // key: tierId
+  private paymentMethods: Map<string, PaymentMethod>;
 
   constructor() {
     this.products = new Map();
@@ -590,6 +151,7 @@ export class MemStorage implements IStorage {
     this.botSettings = new Map();
     this.productRatings = new Map();
     this.pricingTiers = new Map();
+    this.paymentMethods = new Map();
     this.botStats = {
       id: randomUUID(),
       totalUsers: 0,
@@ -604,6 +166,28 @@ export class MemStorage implements IStorage {
     this.initializeSampleData();
     this.initializeSampleRatings();
     this.initializeSampleOrders();
+    this.initializeDefaultPaymentMethods();
+    this.initializeSamplePricingTiers();
+  }
+
+  private initializeDefaultPaymentMethods() {
+    const defaultMethods = [
+      { name: "Cash on Delivery", description: "Pay when you receive your order", isActive: true, sortOrder: 0 },
+      { name: "Bank Transfer", description: "Direct bank account transfer", isActive: true, sortOrder: 1 },
+      { name: "Credit/Debit Card", description: "Visa, MasterCard, American Express", isActive: true, sortOrder: 2 },
+      { name: "PayPal", description: "Secure online payments", isActive: true, sortOrder: 3 },
+      { name: "Bitcoin", description: "Cryptocurrency payment", isActive: false, sortOrder: 4 },
+    ];
+
+    defaultMethods.forEach(method => {
+      const paymentMethod: PaymentMethod = {
+        id: randomUUID(),
+        ...method,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.paymentMethods.set(paymentMethod.id, paymentMethod);
+    });
   }
 
   private initializeDefaultSettings() {
@@ -627,9 +211,63 @@ export class MemStorage implements IStorage {
     });
   }
 
+  // Payment Methods Implementation
+  async getPaymentMethods(): Promise<PaymentMethod[]> {
+    return Array.from(this.paymentMethods.values()).sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async getActivePaymentMethods(): Promise<PaymentMethod[]> {
+    return Array.from(this.paymentMethods.values())
+      .filter(method => method.isActive)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async getPaymentMethod(id: string): Promise<PaymentMethod | undefined> {
+    return this.paymentMethods.get(id);
+  }
+
+  async createPaymentMethod(method: InsertPaymentMethod): Promise<PaymentMethod> {
+    const newMethod: PaymentMethod = {
+      id: randomUUID(),
+      ...method,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.paymentMethods.set(newMethod.id, newMethod);
+    return newMethod;
+  }
+
+  async updatePaymentMethod(id: string, method: Partial<InsertPaymentMethod>): Promise<PaymentMethod | undefined> {
+    const existing = this.paymentMethods.get(id);
+    if (!existing) return undefined;
+    
+    const updated: PaymentMethod = {
+      ...existing,
+      ...method,
+      updatedAt: new Date(),
+    };
+    this.paymentMethods.set(id, updated);
+    return updated;
+  }
+
+  async deletePaymentMethod(id: string): Promise<boolean> {
+    return this.paymentMethods.delete(id);
+  }
+
+  async reorderPaymentMethods(methods: { id: string; sortOrder: number }[]): Promise<void> {
+    methods.forEach(({ id, sortOrder }) => {
+      const method = this.paymentMethods.get(id);
+      if (method) {
+        method.sortOrder = sortOrder;
+        method.updatedAt = new Date();
+      }
+    });
+  }
+
+  // Initialize other sample data methods...
   private initializeSampleData() {
     // Create sample categories  
-    const categories = [
+    const categoryData = [
       { name: "Steroids Powder", description: "High-quality steroid powder compounds" },
       { name: "Acetate Powder", description: "Premium acetate-based powder formulations" },
       { name: "Injectable Solutions", description: "Ready-to-use injectable compounds" },
@@ -637,7 +275,7 @@ export class MemStorage implements IStorage {
       { name: "Fat Burners", description: "Advanced fat burning compounds" }
     ];
 
-    categories.forEach(cat => {
+    categoryData.forEach(cat => {
       const category: Category = {
         id: randomUUID(),
         name: cat.name,
@@ -698,20 +336,6 @@ export class MemStorage implements IStorage {
           "CAS Number": "521-12-0",
           "Molecular Formula": "C23H36O3",
           "Appearance": "White crystalline powder"
-        }),
-      },
-      {
-        name: "Sustanon 250 Injectable",
-        description: "Ready-to-inject testosterone blend. Four different testosterone esters for sustained release and stable blood levels.",
-        price: "45.99",
-        stock: 20,
-        categoryId: injectableCategory?.id || null,
-        tags: JSON.stringify(["sustanon", "injectable", "testosterone", "blend"]),
-        specifications: JSON.stringify({
-          "Concentration": "250mg/ml",
-          "Volume": "10ml vial",
-          "Carrier Oil": "Grape seed oil",
-          "Sterility": "Lab tested"
         }),
       },
       {
@@ -782,540 +406,27 @@ export class MemStorage implements IStorage {
     });
   }
 
-  // Products
-  async getProducts(): Promise<Product[]> {
-    return Array.from(this.products.values()).sort((a, b) => 
-      b.createdAt.getTime() - a.createdAt.getTime()
-    );
-  }
-
-  async getProductsByCategory(categoryId: string): Promise<Product[]> {
-    return Array.from(this.products.values())
-      .filter(p => p.categoryId === categoryId && p.isActive)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  }
-
-  async getFeaturedProducts(): Promise<Product[]> {
-    return Array.from(this.products.values())
-      .filter(p => p.isFeatured && p.isActive)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  }
-
-  async searchProducts(query: string): Promise<Product[]> {
-    const searchTerm = query.toLowerCase();
-    return Array.from(this.products.values())
-      .filter(p => 
-        p.isActive && (
-          p.name.toLowerCase().includes(searchTerm) ||
-          p.description.toLowerCase().includes(searchTerm) ||
-          (p.tags && p.tags.toLowerCase().includes(searchTerm))
-        )
-      )
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  }
-
-  async getProduct(id: string): Promise<Product | undefined> {
-    return this.products.get(id);
-  }
-
-  async createProduct(insertProduct: InsertProduct): Promise<Product> {
-    const id = randomUUID();
-    const product: Product = { 
-      ...insertProduct, 
-      id, 
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      stock: insertProduct.stock ?? 0,
-      minOrderQuantity: insertProduct.minOrderQuantity ?? 1,
-      maxOrderQuantity: insertProduct.maxOrderQuantity ?? null,
-      compareAtPrice: insertProduct.compareAtPrice ?? null,
-      imageUrl: insertProduct.imageUrl ?? null,
-      categoryId: insertProduct.categoryId ?? null,
-      tags: insertProduct.tags ?? null,
-      specifications: insertProduct.specifications ?? null,
-      isActive: insertProduct.isActive ?? true,
-      isFeatured: insertProduct.isFeatured ?? false,
-    };
-    this.products.set(id, product);
-    return product;
-  }
-
-  async updateProduct(id: string, insertProduct: Partial<InsertProduct>): Promise<Product | undefined> {
-    const existing = this.products.get(id);
-    if (!existing) return undefined;
-
-    const updated: Product = { ...existing, ...insertProduct, updatedAt: new Date() };
-    this.products.set(id, updated);
-    return updated;
-  }
-
-  async deleteProduct(id: string): Promise<boolean> {
-    return this.products.delete(id);
-  }
-
-  // Categories
-  async getCategories(): Promise<Category[]> {
-    return Array.from(this.categories.values())
-      .filter(c => c.isActive)
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  async getCategory(id: string): Promise<Category | undefined> {
-    return this.categories.get(id);
-  }
-
-  async createCategory(insertCategory: InsertCategory): Promise<Category> {
-    const id = randomUUID();
-    const category: Category = {
-      id,
-      name: insertCategory.name,
-      description: insertCategory.description ?? null,
-      isActive: insertCategory.isActive ?? true,
-      createdAt: new Date(),
-    };
-    this.categories.set(id, category);
-    return category;
-  }
-
-  async updateCategory(id: string, insertCategory: Partial<InsertCategory>): Promise<Category | undefined> {
-    const existing = this.categories.get(id);
-    if (!existing) return undefined;
-
-    const updated: Category = { ...existing, ...insertCategory };
-    this.categories.set(id, updated);
-    return updated;
-  }
-
-  async deleteCategory(id: string): Promise<boolean> {
-    return this.categories.delete(id);
-  }
-
-  // Cart
-  async getCart(telegramUserId: string): Promise<Cart[]> {
-    return Array.from(this.cart.values())
-      .filter(item => item.telegramUserId === telegramUserId)
-      .sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
-  }
-
-  async getCartItems(telegramUserId: string): Promise<Cart[]> {
-    // Alias method for getCart
-    return this.getCart(telegramUserId);
-  }
-
-  async addToCart(cartItem: InsertCart): Promise<Cart> {
-    const key = `${cartItem.telegramUserId}-${cartItem.productId}`;
-    const existing = this.cart.get(key);
-    
-    if (existing) {
-      // For existing items, ADD to the current quantity (this is the expected behavior for "Add to Cart")
-      existing.quantity += cartItem.quantity || 1;
-      this.cart.set(key, existing);
-      return existing;
-    } else {
-      // Add new item to cart
-      const newItem: Cart = {
-        id: randomUUID(),
-        telegramUserId: cartItem.telegramUserId,
-        productId: cartItem.productId,
-        quantity: cartItem.quantity || 1,
-        addedAt: new Date(),
-      };
-      this.cart.set(key, newItem);
-      return newItem;
-    }
-  }
-
-  async setCartItem(cartItem: InsertCart): Promise<Cart> {
-    const key = `${cartItem.telegramUserId}-${cartItem.productId}`;
-    
-    // SET the exact quantity (for direct quantity setting, not adding)
-    const newItem: Cart = {
-      id: this.cart.get(key)?.id || randomUUID(),
-      telegramUserId: cartItem.telegramUserId,
-      productId: cartItem.productId,
-      quantity: cartItem.quantity || 1,
-      addedAt: this.cart.get(key)?.addedAt || new Date(),
-    };
-    this.cart.set(key, newItem);
-    return newItem;
-  }
-
-  async addToWishlist(cartItem: InsertCart): Promise<Cart> {
-    const key = `${cartItem.telegramUserId}-${cartItem.productId}`;
-    const existing = this.wishlist.get(key);
-    
-    if (existing) {
-      // Update quantity if item already in wishlist
-      existing.quantity += cartItem.quantity || 1;
-      this.wishlist.set(key, existing);
-      return existing;
-    } else {
-      // Add new item to wishlist
-      const newItem: Cart = {
-        id: randomUUID(),
-        telegramUserId: cartItem.telegramUserId,
-        productId: cartItem.productId,
-        quantity: cartItem.quantity || 1,
-        addedAt: new Date(),
-      };
-      this.wishlist.set(key, newItem);
-      return newItem;
-    }
-  }
-
-  async getWishlistItems(telegramUserId: string): Promise<Cart[]> {
-    return Array.from(this.wishlist.values())
-      .filter(item => item.telegramUserId === telegramUserId)
-      .sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
-  }
-
-  async updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined> {
-    const key = `${telegramUserId}-${productId}`;
-    const existing = this.cart.get(key);
-    
-    if (!existing) return undefined;
-    
-    if (quantity <= 0) {
-      this.cart.delete(key);
-      return undefined;
-    }
-    
-    existing.quantity = quantity;
-    this.cart.set(key, existing);
-    return existing;
-  }
-
-  async removeFromCart(telegramUserId: string, productId: string): Promise<boolean> {
-    const key = `${telegramUserId}-${productId}`;
-    return this.cart.delete(key);
-  }
-
-  async clearCart(telegramUserId: string): Promise<void> {
-    const userCartItems = Array.from(this.cart.keys())
-      .filter(key => key.startsWith(`${telegramUserId}-`));
-    
-    userCartItems.forEach(key => this.cart.delete(key));
-  }
-
-  async getCartTotal(telegramUserId: string): Promise<{ itemCount: number; totalAmount: string }> {
-    const cartItems = await this.getCart(telegramUserId);
-    let itemCount = 0;
-    let totalAmount = 0;
-    
-    for (const item of cartItems) {
-      const product = await this.getProduct(item.productId);
-      if (product) {
-        itemCount += item.quantity;
-        totalAmount += parseFloat(product.price) * item.quantity;
-      }
-    }
-    
-    return {
-      itemCount,
-      totalAmount: totalAmount.toFixed(2),
-    };
-  }
-
-  // Orders
-  async getOrders(): Promise<Order[]> {
-    return Array.from(this.orders.values()).sort((a, b) => 
-      b.createdAt.getTime() - a.createdAt.getTime()
-    );
-  }
-
-  async getOrdersByUser(telegramUserId: string): Promise<Order[]> {
-    return Array.from(this.orders.values())
-      .filter(order => order.telegramUserId === telegramUserId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  }
-
-  async getUserOrders(telegramUserId: string): Promise<Order[]> {
-    // Alias method for getOrdersByUser
-    return this.getOrdersByUser(telegramUserId);
-  }
-
-  async getOrder(id: string): Promise<Order | undefined> {
-    return this.orders.get(id);
-  }
-
-  async createOrder(insertOrder: InsertOrder): Promise<Order> {
-    const id = randomUUID();
-    const order: Order = {
-      ...insertOrder,
-      id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      status: insertOrder.status || "pending",
-      paymentMethod: insertOrder.paymentMethod || null,
-      deliveryAddress: insertOrder.deliveryAddress || null,
-      notes: insertOrder.notes || null,
-    };
-    this.orders.set(id, order);
-    return order;
-  }
-
-  async updateOrder(id: string, insertOrder: Partial<InsertOrder>): Promise<Order | undefined> {
-    const existing = this.orders.get(id);
-    if (!existing) return undefined;
-
-    const updated: Order = { ...existing, ...insertOrder, updatedAt: new Date() };
-    this.orders.set(id, updated);
-    return updated;
-  }
-
-  async updateOrderStatus(id: string, status: string): Promise<Order | undefined> {
-    return this.updateOrder(id, { status });
-  }
-
-  // Inquiries
-  async getInquiries(): Promise<Inquiry[]> {
-    return Array.from(this.inquiries.values()).sort((a, b) => 
-      b.createdAt.getTime() - a.createdAt.getTime()
-    );
-  }
-
-  async getInquiry(id: string): Promise<Inquiry | undefined> {
-    return this.inquiries.get(id);
-  }
-
-  async createInquiry(insertInquiry: InsertInquiry): Promise<Inquiry> {
-    const id = randomUUID();
-    const inquiry: Inquiry = { 
-      ...insertInquiry, 
-      id, 
-      createdAt: new Date(),
-      productId: insertInquiry.productId ?? null,
-      contactInfo: insertInquiry.contactInfo ?? null,
-      isRead: insertInquiry.isRead ?? false,
-    };
-    this.inquiries.set(id, inquiry);
-    return inquiry;
-  }
-
-  async updateInquiry(id: string, insertInquiry: Partial<InsertInquiry>): Promise<Inquiry | undefined> {
-    const existing = this.inquiries.get(id);
-    if (!existing) return undefined;
-
-    const updated: Inquiry = { ...existing, ...insertInquiry };
-    this.inquiries.set(id, updated);
-    return updated;
-  }
-
-  async getUnreadInquiriesCount(): Promise<number> {
-    return Array.from(this.inquiries.values()).filter(inquiry => !inquiry.isRead).length;
-  }
-
-  // Bot Settings
-  async getBotSettings(): Promise<BotSettings[]> {
-    return Array.from(this.botSettings.values());
-  }
-
-  async getBotSetting(key: string): Promise<BotSettings | undefined> {
-    return this.botSettings.get(key);
-  }
-
-  async setBotSetting(insertSetting: InsertBotSettings): Promise<BotSettings> {
-    const existing = this.botSettings.get(insertSetting.key);
-    const setting: BotSettings = {
-      id: existing?.id || randomUUID(),
-      ...insertSetting,
-      updatedAt: new Date(),
-    };
-    this.botSettings.set(insertSetting.key, setting);
-    return setting;
-  }
-
-  // Bot Stats
-  async getBotStats(): Promise<BotStats | undefined> {
-    return this.botStats;
-  }
-
-  async updateBotStats(stats: Partial<InsertBotStats>): Promise<BotStats> {
-    this.botStats = { ...this.botStats, ...stats, updatedAt: new Date() };
-    return this.botStats;
-  }
-
-  async incrementUserCount(): Promise<void> {
-    this.botStats.totalUsers += 1;
-    this.botStats.updatedAt = new Date();
-  }
-
-  async incrementOrderCount(): Promise<void> {
-    this.botStats.totalOrders += 1;
-    this.botStats.updatedAt = new Date();
-  }
-
-  async incrementMessageCount(): Promise<void> {
-    this.botStats.totalMessages += 1;
-    this.botStats.updatedAt = new Date();
-  }
-
-  async addRevenue(amount: string): Promise<void> {
-    const currentRevenue = parseFloat(this.botStats.totalRevenue);
-    const newRevenue = currentRevenue + parseFloat(amount);
-    this.botStats.totalRevenue = newRevenue.toFixed(2);
-    this.botStats.updatedAt = new Date();
-  }
-
-  // Product Ratings
-  async addProductRating(insertRating: InsertProductRating): Promise<ProductRating> {
-    const id = randomUUID();
-    const rating: ProductRating = {
-      id,
-      ...insertRating,
-      createdAt: new Date(),
-    };
-
-    const key = `${rating.productId}-${rating.telegramUserId}`;
-    console.log(`Adding rating with key: ${key}, rating: ${rating.rating}, created: ${rating.createdAt}`);
-    this.productRatings.set(key, rating);
-    console.log(`Total ratings in storage: ${this.productRatings.size}`);
-    return rating;
-  }
-
-  async getProductRating(productId: string, telegramUserId: string): Promise<ProductRating | undefined> {
-    const key = `${productId}-${telegramUserId}`;
-    return this.productRatings.get(key);
-  }
-
-  async getWeeklyProductRatings(): Promise<{ productId: string; productName: string; averageRating: number; totalRatings: number; ratingCounts: Record<number, number> }[]> {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-    console.log(`Checking ratings from ${oneWeekAgo.toISOString()} onwards`);
-    console.log(`Total ratings in storage: ${this.productRatings.size}`);
-    
-    const allRatings = Array.from(this.productRatings.values());
-    console.log('All ratings:', allRatings.map(r => ({productId: r.productId, rating: r.rating, createdAt: r.createdAt})));
-    
-    const weeklyRatings = allRatings.filter(rating => rating.createdAt >= oneWeekAgo);
-    console.log(`Weekly ratings count: ${weeklyRatings.length}`);
-
-    const ratingsByProduct = new Map<string, ProductRating[]>();
-    
-    for (const rating of weeklyRatings) {
-      if (!ratingsByProduct.has(rating.productId)) {
-        ratingsByProduct.set(rating.productId, []);
-      }
-      ratingsByProduct.get(rating.productId)!.push(rating);
-    }
-
-    const results: { productId: string; productName: string; averageRating: number; totalRatings: number; ratingCounts: Record<number, number> }[] = [];
-    for (const [productId, ratings] of Array.from(ratingsByProduct.entries())) {
-      const product = this.products.get(productId);
-      if (!product) continue;
-
-      const totalRatings = ratings.length;
-      const averageRating = ratings.reduce((sum: number, r: ProductRating) => sum + r.rating, 0) / totalRatings;
-      
-      const ratingCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-      ratings.forEach((r: ProductRating) => {
-        ratingCounts[r.rating] = (ratingCounts[r.rating] || 0) + 1;
-      });
-
-      results.push({
-        productId,
-        productName: product.name,
-        averageRating: Math.round(averageRating * 10) / 10,
-        totalRatings,
-        ratingCounts
-      });
-    }
-
-    return results.sort((a, b) => b.totalRatings - a.totalRatings);
-  }
-
-  async getProductRatings(productId: string): Promise<ProductRating[]> {
-    return Array.from(this.productRatings.values())
-      .filter(rating => rating.productId === productId);
-  }
-
-  // Pricing Tiers (full implementation for MemStorage)
-  async getPricingTiers(productId: string): Promise<PricingTier[]> {
-    return Array.from(this.pricingTiers.values())
-      .filter(tier => tier.productId === productId && tier.isActive)
-      .sort((a, b) => a.minQuantity - b.minQuantity);
-  }
-
-  async createPricingTier(tier: InsertPricingTier): Promise<PricingTier> {
-    const id = randomUUID();
-    const pricingTier: PricingTier = {
-      id,
-      ...tier,
-      isActive: tier.isActive ?? true,
-      maxQuantity: tier.maxQuantity ?? null,
-      createdAt: new Date(),
-    };
-    this.pricingTiers.set(id, pricingTier);
-    return pricingTier;
-  }
-
-  async updatePricingTier(id: string, tier: Partial<InsertPricingTier>): Promise<PricingTier | undefined> {
-    const existing = this.pricingTiers.get(id);
-    if (!existing) return undefined;
-
-    const updated: PricingTier = { ...existing, ...tier };
-    this.pricingTiers.set(id, updated);
-    return updated;
-  }
-
-  async deletePricingTier(id: string): Promise<boolean> {
-    return this.pricingTiers.delete(id);
-  }
-
-  async getProductPriceForQuantity(productId: string, quantity: number): Promise<string | undefined> {
-    const tiers = await this.getPricingTiers(productId);
-    
-    if (tiers.length === 0) {
-      // No pricing tiers, return base product price
-      const product = this.products.get(productId);
-      return product?.price;
-    }
-
-    // Find the appropriate tier for this quantity
-    for (const tier of tiers) {
-      if (quantity >= tier.minQuantity && (tier.maxQuantity === null || quantity <= tier.maxQuantity)) {
-        return tier.price;
-      }
-    }
-
-    // If no tier matches, return the base product price
-    const product = this.products.get(productId);
-    return product?.price;
-  }
-
   private initializeSampleOrders() {
-    // Add some sample completed orders for different users
     const products = Array.from(this.products.values());
+    if (products.length === 0) return;
+
     const sampleOrders = [
       {
-        telegramUserId: "12345", // Sample user
-        customerName: "John Smith",
-        contactInfo: "+1-555-0123",
+        telegramUserId: "12345",
+        customerName: "John Doe",
+        contactInfo: "+1-555-1234",
         deliveryAddress: "123 Main St, City, State 12345",
-        totalAmount: "157.50",
-        status: "delivered",
+        totalAmount: "129.99",
+        status: "completed",
         paymentMethod: "card",
         items: JSON.stringify([
-          { productId: products[0]?.id, productName: products[0]?.name, quantity: 2, price: products[0]?.price }
+          { productId: products[0]?.id, productName: products[0]?.name, quantity: 1, price: products[0]?.price }
         ])
       },
       {
-        telegramUserId: "12345", // Same user
-        customerName: "John Smith", 
-        contactInfo: "+1-555-0123",
-        deliveryAddress: "123 Main St, City, State 12345",
-        totalAmount: "89.99",
-        status: "shipped",
-        paymentMethod: "bitcoin",
-        items: JSON.stringify([
-          { productId: products[1]?.id, productName: products[1]?.name, quantity: 1, price: products[1]?.price }
-        ])
-      },
-      {
-        telegramUserId: "67890", // Different user
-        customerName: "Jane Doe",
-        contactInfo: "+1-555-0456",
+        telegramUserId: "67890",
+        customerName: "Jane Smith",
+        contactInfo: "+1-555-5678",
         deliveryAddress: "456 Oak Ave, City, State 67890",
         totalAmount: "275.00",
         status: "completed",
@@ -1363,6 +474,986 @@ export class MemStorage implements IStorage {
       }
     });
   }
+
+  private initializeSamplePricingTiers() {
+    const products = Array.from(this.products.values());
+    
+    products.slice(0, 3).forEach((product) => {
+      // Add pricing tiers for first few products
+      const tiers = [
+        {
+          productId: product.id,
+          minQuantity: 1,
+          maxQuantity: 9,
+          price: product.price,
+        },
+        {
+          productId: product.id,
+          minQuantity: 10,
+          maxQuantity: 49,
+          price: (parseFloat(product.price) * 0.9).toFixed(2), // 10% discount
+        },
+        {
+          productId: product.id,
+          minQuantity: 50,
+          maxQuantity: null,
+          price: (parseFloat(product.price) * 0.8).toFixed(2), // 20% discount
+        },
+      ];
+
+      tiers.forEach(tierData => {
+        const tier: PricingTier = {
+          id: randomUUID(),
+          ...tierData,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        this.pricingTiers.set(tier.id, tier);
+      });
+    });
+  }
+
+  // Implement all required methods...
+  async getProducts(): Promise<Product[]> {
+    return Array.from(this.products.values()).filter(p => p.isActive);
+  }
+
+  async getProductsByCategory(categoryId: string): Promise<Product[]> {
+    return Array.from(this.products.values()).filter(p => p.categoryId === categoryId && p.isActive);
+  }
+
+  async getFeaturedProducts(): Promise<Product[]> {
+    return Array.from(this.products.values()).filter(p => p.isFeatured && p.isActive);
+  }
+
+  async searchProducts(query: string): Promise<Product[]> {
+    const lowercaseQuery = query.toLowerCase();
+    return Array.from(this.products.values()).filter(p => 
+      p.isActive && (
+        p.name.toLowerCase().includes(lowercaseQuery) ||
+        p.description.toLowerCase().includes(lowercaseQuery)
+      )
+    );
+  }
+
+  async getProduct(id: string): Promise<Product | undefined> {
+    return this.products.get(id);
+  }
+
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const newProduct: Product = {
+      id: randomUUID(),
+      ...product,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.products.set(newProduct.id, newProduct);
+    return newProduct;
+  }
+
+  async updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined> {
+    const existing = this.products.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Product = {
+      ...existing,
+      ...product,
+      updatedAt: new Date(),
+    };
+    this.products.set(id, updated);
+    return updated;
+  }
+
+  async deleteProduct(id: string): Promise<boolean> {
+    return this.products.delete(id);
+  }
+
+  // Categories
+  async getCategories(): Promise<Category[]> {
+    return Array.from(this.categories.values()).filter(c => c.isActive);
+  }
+
+  async getCategory(id: string): Promise<Category | undefined> {
+    return this.categories.get(id);
+  }
+
+  async createCategory(category: InsertCategory): Promise<Category> {
+    const newCategory: Category = {
+      id: randomUUID(),
+      ...category,
+      createdAt: new Date(),
+    };
+    this.categories.set(newCategory.id, newCategory);
+    return newCategory;
+  }
+
+  async updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category | undefined> {
+    const existing = this.categories.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Category = {
+      ...existing,
+      ...category,
+    };
+    this.categories.set(id, updated);
+    return updated;
+  }
+
+  async deleteCategory(id: string): Promise<boolean> {
+    return this.categories.delete(id);
+  }
+
+  // Cart
+  async getCart(telegramUserId: string): Promise<Cart[]> {
+    return Array.from(this.cart.values()).filter(c => c.telegramUserId === telegramUserId);
+  }
+
+  async getCartItems(telegramUserId: string): Promise<Cart[]> {
+    return this.getCart(telegramUserId);
+  }
+
+  async addToCart(cartItem: InsertCart): Promise<Cart> {
+    const key = `${cartItem.telegramUserId}-${cartItem.productId}`;
+    const existing = this.cart.get(key);
+    
+    if (existing) {
+      existing.quantity += cartItem.quantity;
+      existing.updatedAt = new Date();
+      return existing;
+    }
+    
+    const newCartItem: Cart = {
+      id: randomUUID(),
+      ...cartItem,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.cart.set(key, newCartItem);
+    return newCartItem;
+  }
+
+  async updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined> {
+    const key = `${telegramUserId}-${productId}`;
+    const existing = this.cart.get(key);
+    
+    if (!existing) return undefined;
+    
+    existing.quantity = quantity;
+    existing.updatedAt = new Date();
+    return existing;
+  }
+
+  async removeFromCart(telegramUserId: string, productId: string): Promise<boolean> {
+    const key = `${telegramUserId}-${productId}`;
+    return this.cart.delete(key);
+  }
+
+  async clearCart(telegramUserId: string): Promise<void> {
+    const cartItems = Array.from(this.cart.entries());
+    cartItems.forEach(([key, item]) => {
+      if (item.telegramUserId === telegramUserId) {
+        this.cart.delete(key);
+      }
+    });
+  }
+
+  async getCartTotal(telegramUserId: string): Promise<{ itemCount: number; totalAmount: string }> {
+    const cartItems = await this.getCart(telegramUserId);
+    const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    
+    let totalAmount = 0;
+    for (const item of cartItems) {
+      const product = await this.getProduct(item.productId);
+      if (product) {
+        totalAmount += parseFloat(product.price) * item.quantity;
+      }
+    }
+    
+    return { itemCount, totalAmount: totalAmount.toFixed(2) };
+  }
+
+  // Wishlist
+  async addToWishlist(wishlistItem: InsertWishlist): Promise<Wishlist> {
+    const key = `${wishlistItem.telegramUserId}-${wishlistItem.productId}`;
+    const newWishlistItem: Wishlist = {
+      id: randomUUID(),
+      ...wishlistItem,
+      createdAt: new Date(),
+    };
+    this.wishlist.set(key, newWishlistItem);
+    return newWishlistItem;
+  }
+
+  async getWishlistItems(telegramUserId: string): Promise<Wishlist[]> {
+    return Array.from(this.wishlist.values()).filter(w => w.telegramUserId === telegramUserId);
+  }
+
+  // Orders
+  async getOrders(): Promise<Order[]> {
+    return Array.from(this.orders.values());
+  }
+
+  async getOrdersByUser(telegramUserId: string): Promise<Order[]> {
+    return Array.from(this.orders.values()).filter(o => o.telegramUserId === telegramUserId);
+  }
+
+  async getUserOrders(telegramUserId: string): Promise<Order[]> {
+    return this.getOrdersByUser(telegramUserId);
+  }
+
+  async getOrder(id: string): Promise<Order | undefined> {
+    return this.orders.get(id);
+  }
+
+  async createOrder(order: InsertOrder): Promise<Order> {
+    const newOrder: Order = {
+      id: randomUUID(),
+      ...order,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.orders.set(newOrder.id, newOrder);
+    return newOrder;
+  }
+
+  async updateOrder(id: string, order: Partial<InsertOrder>): Promise<Order | undefined> {
+    const existing = this.orders.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Order = {
+      ...existing,
+      ...order,
+      updatedAt: new Date(),
+    };
+    this.orders.set(id, updated);
+    return updated;
+  }
+
+  async updateOrderStatus(id: string, status: string): Promise<Order | undefined> {
+    return this.updateOrder(id, { status });
+  }
+
+  // Inquiries
+  async getInquiries(): Promise<Inquiry[]> {
+    return Array.from(this.inquiries.values());
+  }
+
+  async getInquiry(id: string): Promise<Inquiry | undefined> {
+    return this.inquiries.get(id);
+  }
+
+  async createInquiry(inquiry: InsertInquiry): Promise<Inquiry> {
+    const newInquiry: Inquiry = {
+      id: randomUUID(),
+      ...inquiry,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.inquiries.set(newInquiry.id, newInquiry);
+    return newInquiry;
+  }
+
+  async updateInquiry(id: string, inquiry: Partial<InsertInquiry>): Promise<Inquiry | undefined> {
+    const existing = this.inquiries.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Inquiry = {
+      ...existing,
+      ...inquiry,
+      updatedAt: new Date(),
+    };
+    this.inquiries.set(id, updated);
+    return updated;
+  }
+
+  async getUnreadInquiriesCount(): Promise<number> {
+    return Array.from(this.inquiries.values()).filter(i => i.status === "new").length;
+  }
+
+  // Bot Settings
+  async getBotSettings(): Promise<BotSettings[]> {
+    return Array.from(this.botSettings.values());
+  }
+
+  async getBotSetting(key: string): Promise<BotSettings | undefined> {
+    return this.botSettings.get(key);
+  }
+
+  async setBotSetting(setting: InsertBotSettings): Promise<BotSettings> {
+    const existing = this.botSettings.get(setting.key);
+    if (existing) {
+      existing.value = setting.value;
+      existing.updatedAt = new Date();
+      return existing;
+    }
+    
+    const newSetting: BotSettings = {
+      id: randomUUID(),
+      ...setting,
+      updatedAt: new Date(),
+    };
+    this.botSettings.set(setting.key, newSetting);
+    return newSetting;
+  }
+
+  // Bot Statistics
+  async getBotStats(): Promise<BotStats | undefined> {
+    return this.botStats;
+  }
+
+  async updateBotStats(stats: Partial<InsertBotStats>): Promise<BotStats> {
+    this.botStats = { ...this.botStats, ...stats, updatedAt: new Date() };
+    return this.botStats;
+  }
+
+  async incrementUserCount(): Promise<void> {
+    this.botStats.totalUsers += 1;
+    this.botStats.updatedAt = new Date();
+  }
+
+  async incrementOrderCount(): Promise<void> {
+    this.botStats.totalOrders += 1;
+    this.botStats.updatedAt = new Date();
+  }
+
+  async incrementMessageCount(): Promise<void> {
+    this.botStats.totalMessages += 1;
+    this.botStats.updatedAt = new Date();
+  }
+
+  async addRevenue(amount: string): Promise<void> {
+    this.botStats.totalRevenue = (parseFloat(this.botStats.totalRevenue) + parseFloat(amount)).toString();
+    this.botStats.updatedAt = new Date();
+  }
+
+  // Product Ratings
+  async addProductRating(rating: InsertProductRating): Promise<ProductRating> {
+    const key = `${rating.productId}-${rating.telegramUserId}`;
+    const newRating: ProductRating = {
+      id: randomUUID(),
+      ...rating,
+      createdAt: new Date(),
+    };
+    this.productRatings.set(key, newRating);
+    return newRating;
+  }
+
+  async getProductRating(productId: string, telegramUserId: string): Promise<ProductRating | undefined> {
+    const key = `${productId}-${telegramUserId}`;
+    return this.productRatings.get(key);
+  }
+
+  async getWeeklyProductRatings(): Promise<{
+    productId: string;
+    productName: string;
+    averageRating: number;
+    totalRatings: number;
+    ratingCounts: Record<number, number>;
+  }[]> {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
+    const weeklyRatings = Array.from(this.productRatings.values())
+      .filter(rating => rating.createdAt >= weekAgo);
+
+    const grouped = new Map<string, ProductRating[]>();
+    weeklyRatings.forEach(rating => {
+      const existing = grouped.get(rating.productId) || [];
+      existing.push(rating);
+      grouped.set(rating.productId, existing);
+    });
+
+    const results = [];
+    for (const [productId, ratings] of grouped) {
+      const product = this.products.get(productId);
+      if (!product) continue;
+
+      const totalRatings = ratings.length;
+      const averageRating = ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings;
+      
+      const ratingCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      ratings.forEach(rating => {
+        ratingCounts[rating.rating]++;
+      });
+
+      results.push({
+        productId,
+        productName: product.name,
+        averageRating: Math.round(averageRating * 10) / 10,
+        totalRatings,
+        ratingCounts,
+      });
+    }
+
+    return results.sort((a, b) => b.averageRating - a.averageRating);
+  }
+
+  async getProductRatings(productId: string): Promise<ProductRating[]> {
+    return Array.from(this.productRatings.values()).filter(r => r.productId === productId);
+  }
+
+  // Pricing Tiers
+  async getPricingTiers(productId: string): Promise<PricingTier[]> {
+    return Array.from(this.pricingTiers.values())
+      .filter(t => t.productId === productId)
+      .sort((a, b) => a.minQuantity - b.minQuantity);
+  }
+
+  async createPricingTier(tier: InsertPricingTier): Promise<PricingTier> {
+    const newTier: PricingTier = {
+      id: randomUUID(),
+      ...tier,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.pricingTiers.set(newTier.id, newTier);
+    return newTier;
+  }
+
+  async updatePricingTier(id: string, tier: Partial<PricingTier>): Promise<PricingTier | undefined> {
+    const existing = this.pricingTiers.get(id);
+    if (!existing) return undefined;
+    
+    const updated: PricingTier = {
+      ...existing,
+      ...tier,
+      updatedAt: new Date(),
+    };
+    this.pricingTiers.set(id, updated);
+    return updated;
+  }
+
+  async deletePricingTier(id: string): Promise<boolean> {
+    return this.pricingTiers.delete(id);
+  }
+
+  async getProductPriceForQuantity(productId: string, quantity: number): Promise<string | undefined> {
+    const tiers = await this.getPricingTiers(productId);
+    
+    if (tiers.length === 0) {
+      // No pricing tiers, return base product price
+      const product = await this.getProduct(productId);
+      return product?.price;
+    }
+
+    // Find the appropriate tier for this quantity
+    for (const tier of tiers) {
+      if (quantity >= tier.minQuantity && (tier.maxQuantity === null || quantity <= tier.maxQuantity)) {
+        return tier.price;
+      }
+    }
+
+    // If no tier matches, return the base product price
+    const product = await this.getProduct(productId);
+    return product?.price;
+  }
 }
 
-export const storage = new DatabaseStorage();
+export class DatabaseStorage implements IStorage {
+  // Products
+  async getProducts(): Promise<Product[]> {
+    return await db.select().from(products).where(eq(products.isActive, true)).orderBy(desc(products.createdAt));
+  }
+
+  async getProductsByCategory(categoryId: string): Promise<Product[]> {
+    return await db.select().from(products)
+      .where(and(eq(products.categoryId, categoryId), eq(products.isActive, true)))
+      .orderBy(desc(products.createdAt));
+  }
+
+  async getFeaturedProducts(): Promise<Product[]> {
+    return await db.select().from(products)
+      .where(and(eq(products.isFeatured, true), eq(products.isActive, true)))
+      .orderBy(desc(products.createdAt));
+  }
+
+  async searchProducts(query: string): Promise<Product[]> {
+    return await db.select().from(products)
+      .where(and(
+        eq(products.isActive, true),
+        ilike(products.name, `%${query}%`)
+      ))
+      .orderBy(desc(products.createdAt));
+  }
+
+  async getProduct(id: string): Promise<Product | undefined> {
+    const result = await db.select().from(products).where(eq(products.id, id));
+    return result[0];
+  }
+
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const result = await db.insert(products).values(product).returning();
+    return result[0];
+  }
+
+  async updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined> {
+    const result = await db.update(products)
+      .set({ ...product, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteProduct(id: string): Promise<boolean> {
+    const result = await db.delete(products).where(eq(products.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Categories
+  async getCategories(): Promise<Category[]> {
+    return await db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.name);
+  }
+
+  async getCategory(id: string): Promise<Category | undefined> {
+    const result = await db.select().from(categories).where(eq(categories.id, id));
+    return result[0];
+  }
+
+  async createCategory(category: InsertCategory): Promise<Category> {
+    const result = await db.insert(categories).values(category).returning();
+    return result[0];
+  }
+
+  async updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category | undefined> {
+    const result = await db.update(categories)
+      .set(category)
+      .where(eq(categories.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteCategory(id: string): Promise<boolean> {
+    const result = await db.delete(categories).where(eq(categories.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Cart
+  async getCart(telegramUserId: string): Promise<Cart[]> {
+    return await db.select().from(cart)
+      .where(eq(cart.telegramUserId, telegramUserId))
+      .orderBy(desc(cart.createdAt));
+  }
+
+  async getCartItems(telegramUserId: string): Promise<Cart[]> {
+    return this.getCart(telegramUserId);
+  }
+
+  async addToCart(cartItem: InsertCart): Promise<Cart> {
+    // Check if item already exists in cart
+    const existing = await db.select().from(cart)
+      .where(and(
+        eq(cart.telegramUserId, cartItem.telegramUserId),
+        eq(cart.productId, cartItem.productId)
+      ));
+
+    if (existing.length > 0) {
+      // Update existing item
+      const result = await db.update(cart)
+        .set({ 
+          quantity: existing[0].quantity + cartItem.quantity,
+          updatedAt: new Date()
+        })
+        .where(eq(cart.id, existing[0].id))
+        .returning();
+      return result[0];
+    } else {
+      // Insert new item
+      const result = await db.insert(cart).values(cartItem).returning();
+      return result[0];
+    }
+  }
+
+  async updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined> {
+    const result = await db.update(cart)
+      .set({ quantity, updatedAt: new Date() })
+      .where(and(
+        eq(cart.telegramUserId, telegramUserId),
+        eq(cart.productId, productId)
+      ))
+      .returning();
+    return result[0];
+  }
+
+  async removeFromCart(telegramUserId: string, productId: string): Promise<boolean> {
+    const result = await db.delete(cart)
+      .where(and(
+        eq(cart.telegramUserId, telegramUserId),
+        eq(cart.productId, productId)
+      ))
+      .returning();
+    return result.length > 0;
+  }
+
+  async clearCart(telegramUserId: string): Promise<void> {
+    await db.delete(cart).where(eq(cart.telegramUserId, telegramUserId));
+  }
+
+  async getCartTotal(telegramUserId: string): Promise<{ itemCount: number; totalAmount: string }> {
+    const cartItems = await this.getCart(telegramUserId);
+    const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    
+    let totalAmount = 0;
+    for (const item of cartItems) {
+      const product = await this.getProduct(item.productId);
+      if (product) {
+        const price = await this.getProductPriceForQuantity(item.productId, item.quantity);
+        totalAmount += parseFloat(price || product.price) * item.quantity;
+      }
+    }
+    
+    return { itemCount, totalAmount: totalAmount.toFixed(2) };
+  }
+
+  // Wishlist
+  async addToWishlist(wishlistItem: InsertWishlist): Promise<Wishlist> {
+    const result = await db.insert(wishlist).values(wishlistItem).returning();
+    return result[0];
+  }
+
+  async getWishlistItems(telegramUserId: string): Promise<Wishlist[]> {
+    return await db.select().from(wishlist)
+      .where(eq(wishlist.telegramUserId, telegramUserId))
+      .orderBy(desc(wishlist.createdAt));
+  }
+
+  // Orders
+  async getOrders(): Promise<Order[]> {
+    return await db.select().from(orders).orderBy(desc(orders.createdAt));
+  }
+
+  async getOrdersByUser(telegramUserId: string): Promise<Order[]> {
+    return await db.select().from(orders)
+      .where(eq(orders.telegramUserId, telegramUserId))
+      .orderBy(desc(orders.createdAt));
+  }
+
+  async getUserOrders(telegramUserId: string): Promise<Order[]> {
+    return this.getOrdersByUser(telegramUserId);
+  }
+
+  async getOrder(id: string): Promise<Order | undefined> {
+    const result = await db.select().from(orders).where(eq(orders.id, id));
+    return result[0];
+  }
+
+  async createOrder(order: InsertOrder): Promise<Order> {
+    const result = await db.insert(orders).values(order).returning();
+    return result[0];
+  }
+
+  async updateOrder(id: string, order: Partial<InsertOrder>): Promise<Order | undefined> {
+    const result = await db.update(orders)
+      .set({ ...order, updatedAt: new Date() })
+      .where(eq(orders.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async updateOrderStatus(id: string, status: string): Promise<Order | undefined> {
+    return this.updateOrder(id, { status });
+  }
+
+  // Inquiries
+  async getInquiries(): Promise<Inquiry[]> {
+    return await db.select().from(inquiries).orderBy(desc(inquiries.createdAt));
+  }
+
+  async getInquiry(id: string): Promise<Inquiry | undefined> {
+    const result = await db.select().from(inquiries).where(eq(inquiries.id, id));
+    return result[0];
+  }
+
+  async createInquiry(inquiry: InsertInquiry): Promise<Inquiry> {
+    const result = await db.insert(inquiries).values(inquiry).returning();
+    return result[0];
+  }
+
+  async updateInquiry(id: string, inquiry: Partial<InsertInquiry>): Promise<Inquiry | undefined> {
+    const result = await db.update(inquiries)
+      .set({ ...inquiry, updatedAt: new Date() })
+      .where(eq(inquiries.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async getUnreadInquiriesCount(): Promise<number> {
+    const result = await db.select({ count: sql`count(*)` }).from(inquiries)
+      .where(eq(inquiries.status, "new"));
+    return parseInt(result[0].count as string) || 0;
+  }
+
+  // Bot Settings
+  async getBotSettings(): Promise<BotSettings[]> {
+    return await db.select().from(botSettings).orderBy(botSettings.key);
+  }
+
+  async getBotSetting(key: string): Promise<BotSettings | undefined> {
+    const result = await db.select().from(botSettings).where(eq(botSettings.key, key));
+    return result[0];
+  }
+
+  async setBotSetting(setting: InsertBotSettings): Promise<BotSettings> {
+    const existing = await this.getBotSetting(setting.key);
+    
+    if (existing) {
+      const result = await db.update(botSettings)
+        .set({ value: setting.value, updatedAt: new Date() })
+        .where(eq(botSettings.key, setting.key))
+        .returning();
+      return result[0];
+    } else {
+      const result = await db.insert(botSettings).values(setting).returning();
+      return result[0];
+    }
+  }
+
+  // Bot Statistics
+  async getBotStats(): Promise<BotStats | undefined> {
+    const result = await db.select().from(botStats);
+    return result[0];
+  }
+
+  async updateBotStats(stats: Partial<InsertBotStats>): Promise<BotStats> {
+    const existing = await this.getBotStats();
+    
+    if (existing) {
+      const result = await db.update(botStats)
+        .set({ ...stats, updatedAt: new Date() })
+        .where(eq(botStats.id, existing.id))
+        .returning();
+      return result[0];
+    } else {
+      const result = await db.insert(botStats).values({
+        ...stats,
+        totalUsers: stats.totalUsers || 0,
+        totalOrders: stats.totalOrders || 0,
+        totalMessages: stats.totalMessages || 0,
+        totalRevenue: stats.totalRevenue || "0",
+      }).returning();
+      return result[0];
+    }
+  }
+
+  async incrementUserCount(): Promise<void> {
+    const stats = await this.getBotStats();
+    if (stats) {
+      await this.updateBotStats({ totalUsers: stats.totalUsers + 1 });
+    } else {
+      await this.updateBotStats({ totalUsers: 1 });
+    }
+  }
+
+  async incrementOrderCount(): Promise<void> {
+    const stats = await this.getBotStats();
+    if (stats) {
+      await this.updateBotStats({ totalOrders: stats.totalOrders + 1 });
+    } else {
+      await this.updateBotStats({ totalOrders: 1 });
+    }
+  }
+
+  async incrementMessageCount(): Promise<void> {
+    const stats = await this.getBotStats();
+    if (stats) {
+      await this.updateBotStats({ totalMessages: stats.totalMessages + 1 });
+    } else {
+      await this.updateBotStats({ totalMessages: 1 });
+    }
+  }
+
+  async addRevenue(amount: string): Promise<void> {
+    const stats = await this.getBotStats();
+    const currentRevenue = parseFloat(stats?.totalRevenue || "0");
+    const newRevenue = currentRevenue + parseFloat(amount);
+    
+    await this.updateBotStats({ totalRevenue: newRevenue.toString() });
+  }
+
+  // Product Ratings
+  async addProductRating(rating: InsertProductRating): Promise<ProductRating> {
+    // Check if user has already rated this product
+    const existing = await db.select().from(productRatings)
+      .where(and(
+        eq(productRatings.productId, rating.productId),
+        eq(productRatings.telegramUserId, rating.telegramUserId)
+      ));
+
+    if (existing.length > 0) {
+      // Update existing rating
+      const result = await db.update(productRatings)
+        .set({ rating: rating.rating })
+        .where(eq(productRatings.id, existing[0].id))
+        .returning();
+      return result[0];
+    } else {
+      // Insert new rating
+      const result = await db.insert(productRatings).values(rating).returning();
+      return result[0];
+    }
+  }
+
+  async getProductRating(productId: string, telegramUserId: string): Promise<ProductRating | undefined> {
+    const result = await db.select().from(productRatings)
+      .where(and(
+        eq(productRatings.productId, productId),
+        eq(productRatings.telegramUserId, telegramUserId)
+      ));
+    return result[0];
+  }
+
+  async getWeeklyProductRatings(): Promise<{
+    productId: string;
+    productName: string;
+    averageRating: number;
+    totalRatings: number;
+    ratingCounts: Record<number, number>;
+  }[]> {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
+    // Get ratings from the past week with product info
+    const ratings = await db.select({
+      productId: productRatings.productId,
+      productName: products.name,
+      rating: productRatings.rating,
+    })
+    .from(productRatings)
+    .innerJoin(products, eq(productRatings.productId, products.id))
+    .where(lt(productRatings.createdAt, weekAgo))
+    .orderBy(productRatings.productId);
+
+    // Group by product and calculate stats
+    const grouped = new Map<string, {
+      productName: string;
+      ratings: number[];
+    }>();
+
+    ratings.forEach(rating => {
+      if (!grouped.has(rating.productId)) {
+        grouped.set(rating.productId, {
+          productName: rating.productName,
+          ratings: [],
+        });
+      }
+      grouped.get(rating.productId)!.ratings.push(rating.rating);
+    });
+
+    const results = [];
+    for (const [productId, data] of grouped) {
+      const totalRatings = data.ratings.length;
+      const averageRating = data.ratings.reduce((sum, r) => sum + r, 0) / totalRatings;
+      
+      const ratingCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      data.ratings.forEach(rating => {
+        ratingCounts[rating]++;
+      });
+
+      results.push({
+        productId,
+        productName: data.productName,
+        averageRating: Math.round(averageRating * 10) / 10,
+        totalRatings,
+        ratingCounts,
+      });
+    }
+
+    return results.sort((a, b) => b.averageRating - a.averageRating);
+  }
+
+  async getProductRatings(productId: string): Promise<ProductRating[]> {
+    return await db.select().from(productRatings)
+      .where(eq(productRatings.productId, productId))
+      .orderBy(desc(productRatings.createdAt));
+  }
+
+  // Pricing Tiers (full implementation for DatabaseStorage)
+  async getPricingTiers(productId: string): Promise<PricingTier[]> {
+    return await db.select().from(pricingTiers)
+      .where(eq(pricingTiers.productId, productId))
+      .orderBy(asc(pricingTiers.minQuantity));
+  }
+
+  async createPricingTier(tier: InsertPricingTier): Promise<PricingTier> {
+    const result = await db.insert(pricingTiers).values(tier).returning();
+    return result[0];
+  }
+
+  async updatePricingTier(id: string, tier: Partial<PricingTier>): Promise<PricingTier | undefined> {
+    const result = await db.update(pricingTiers)
+      .set({ ...tier, updatedAt: new Date() })
+      .where(eq(pricingTiers.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deletePricingTier(id: string): Promise<boolean> {
+    const result = await db.delete(pricingTiers).where(eq(pricingTiers.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getProductPriceForQuantity(productId: string, quantity: number): Promise<string | undefined> {
+    const tiers = await this.getPricingTiers(productId);
+    
+    if (tiers.length === 0) {
+      // No pricing tiers, return base product price
+      const product = await this.getProduct(productId);
+      return product?.price;
+    }
+
+    // Find the appropriate tier for this quantity
+    for (const tier of tiers) {
+      if (quantity >= tier.minQuantity && (tier.maxQuantity === null || quantity <= tier.maxQuantity)) {
+        return tier.price;
+      }
+    }
+
+    // If no tier matches, return the base product price
+    const product = await this.getProduct(productId);
+    return product?.price;
+  }
+
+  // Payment Methods
+  async getPaymentMethods(): Promise<PaymentMethod[]> {
+    return await db.select().from(paymentMethods).orderBy(paymentMethods.sortOrder, paymentMethods.createdAt);
+  }
+
+  async getActivePaymentMethods(): Promise<PaymentMethod[]> {
+    return await db.select().from(paymentMethods)
+      .where(eq(paymentMethods.isActive, true))
+      .orderBy(paymentMethods.sortOrder, paymentMethods.createdAt);
+  }
+
+  async getPaymentMethod(id: string): Promise<PaymentMethod | undefined> {
+    const result = await db.select().from(paymentMethods).where(eq(paymentMethods.id, id));
+    return result[0];
+  }
+
+  async createPaymentMethod(method: InsertPaymentMethod): Promise<PaymentMethod> {
+    const result = await db.insert(paymentMethods).values(method).returning();
+    return result[0];
+  }
+
+  async updatePaymentMethod(id: string, method: Partial<InsertPaymentMethod>): Promise<PaymentMethod | undefined> {
+    const result = await db.update(paymentMethods)
+      .set({ ...method, updatedAt: new Date() })
+      .where(eq(paymentMethods.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deletePaymentMethod(id: string): Promise<boolean> {
+    const result = await db.delete(paymentMethods).where(eq(paymentMethods.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async reorderPaymentMethods(methods: { id: string; sortOrder: number }[]): Promise<void> {
+    const promises = methods.map(method =>
+      db.update(paymentMethods)
+        .set({ sortOrder: method.sortOrder, updatedAt: new Date() })
+        .where(eq(paymentMethods.id, method.id))
+    );
+    await Promise.all(promises);
+  }
+}
+
+export const storage = new MemStorage();

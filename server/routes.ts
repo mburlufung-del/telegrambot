@@ -9,7 +9,9 @@ import {
   insertBotSettingsSchema,
   insertOrderSchema,
   insertCartSchema,
-  insertCategorySchema
+  insertCategorySchema,
+  insertPaymentMethodSchema,
+  type PaymentMethod
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -613,6 +615,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Setting updated successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to update setting" });
+    }
+  });
+
+  // Payment methods endpoints
+  app.get("/api/payment-methods", async (req, res) => {
+    try {
+      const methods = await storage.getPaymentMethods();
+      res.json(methods);
+    } catch (error) {
+      console.error("Error getting payment methods:", error);
+      res.status(500).json({ message: "Failed to get payment methods" });
+    }
+  });
+
+  app.get("/api/payment-methods/active", async (req, res) => {
+    try {
+      const methods = await storage.getActivePaymentMethods();
+      res.json(methods);
+    } catch (error) {
+      console.error("Error getting active payment methods:", error);
+      res.status(500).json({ message: "Failed to get active payment methods" });
+    }
+  });
+
+  app.post("/api/payment-methods", async (req, res) => {
+    try {
+      const method = insertPaymentMethodSchema.parse(req.body);
+      const result = await storage.createPaymentMethod(method);
+      res.json(result);
+    } catch (error) {
+      console.error("Error creating payment method:", error);
+      res.status(500).json({ message: "Failed to create payment method" });
+    }
+  });
+
+  app.put("/api/payment-methods/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const method = insertPaymentMethodSchema.partial().parse(req.body);
+      const result = await storage.updatePaymentMethod(id, method);
+      if (!result) {
+        return res.status(404).json({ message: "Payment method not found" });
+      }
+      res.json(result);
+    } catch (error) {
+      console.error("Error updating payment method:", error);
+      res.status(500).json({ message: "Failed to update payment method" });
+    }
+  });
+
+  app.delete("/api/payment-methods/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deletePaymentMethod(id);
+      if (!success) {
+        return res.status(404).json({ message: "Payment method not found" });
+      }
+      res.json({ message: "Payment method deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting payment method:", error);
+      res.status(500).json({ message: "Failed to delete payment method" });
+    }
+  });
+
+  app.put("/api/payment-methods/reorder", async (req, res) => {
+    try {
+      const { methods } = req.body;
+      await storage.reorderPaymentMethods(methods);
+      res.json({ message: "Payment methods reordered successfully" });
+    } catch (error) {
+      console.error("Error reordering payment methods:", error);
+      res.status(500).json({ message: "Failed to reorder payment methods" });
     }
   });
 
