@@ -119,6 +119,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/products/:productId/pricing-tiers", async (req, res) => {
     try {
       const tierData = { ...req.body, productId: req.params.productId };
+      
+      // Get existing tiers to check for overlaps
+      const existingTiers = await storage.getPricingTiers(req.params.productId);
+      
+      // Validate no overlapping ranges
+      const newMin = tierData.minQuantity;
+      const newMax = tierData.maxQuantity || Infinity;
+      
+      const hasOverlap = existingTiers.some(tier => {
+        const tierMin = tier.minQuantity;
+        const tierMax = tier.maxQuantity || Infinity;
+        
+        return (newMin >= tierMin && newMin <= tierMax) || 
+               (newMax >= tierMin && newMax <= tierMax) ||
+               (newMin <= tierMin && newMax >= tierMax);
+      });
+      
+      if (hasOverlap) {
+        return res.status(400).json({ 
+          message: "Quantity ranges cannot overlap with existing pricing tiers" 
+        });
+      }
+      
       const tier = await storage.createPricingTier(tierData);
       res.status(201).json(tier);
     } catch (error) {
@@ -128,6 +151,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/pricing-tiers/:id", async (req, res) => {
     try {
+      // Get the current tier by searching through all products
+      let existingTier = null;
+      const allProducts = await storage.getProducts();
+      for (const product of allProducts) {
+        const tiers = await storage.getPricingTiers(product.id);
+        existingTier = tiers.find(t => t.id === req.params.id);
+        if (existingTier) break;
+      }
+      
+      if (!existingTier) {
+        return res.status(404).json({ message: "Pricing tier not found" });
+      }
+      
+      // If updating quantity ranges, check for overlaps
+      if (req.body.minQuantity !== undefined || req.body.maxQuantity !== undefined) {
+        const allTiers = await storage.getPricingTiers(existingTier.productId);
+        const otherTiers = allTiers.filter(t => t.id !== req.params.id);
+        
+        const newMin = req.body.minQuantity ?? existingTier.minQuantity;
+        const newMax = req.body.maxQuantity ?? existingTier.maxQuantity ?? Infinity;
+        
+        const hasOverlap = otherTiers.some(tier => {
+          const tierMin = tier.minQuantity;
+          const tierMax = tier.maxQuantity || Infinity;
+          
+          return (newMin >= tierMin && newMin <= tierMax) || 
+                 (newMax >= tierMin && newMax <= tierMax) ||
+                 (newMin <= tierMin && newMax >= tierMax);
+        });
+        
+        if (hasOverlap) {
+          return res.status(400).json({ 
+            message: "Quantity ranges cannot overlap with existing pricing tiers" 
+          });
+        }
+      }
+      
       const tier = await storage.updatePricingTier(req.params.id, req.body);
       if (!tier) {
         return res.status(404).json({ message: "Pricing tier not found" });
