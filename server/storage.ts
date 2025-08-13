@@ -542,7 +542,7 @@ export class DatabaseStorage implements IStorage {
 
   async deletePricingTier(id: string): Promise<boolean> {
     const result = await db.delete(pricingTiers).where(eq(pricingTiers.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getProductPriceForQuantity(productId: string, quantity: number): Promise<string | undefined> {
@@ -578,6 +578,7 @@ export class MemStorage implements IStorage {
   private botSettings: Map<string, BotSettings>;
   private botStats: BotStats;
   private productRatings: Map<string, ProductRating>; // key: `${productId}-${telegramUserId}`
+  private pricingTiers: Map<string, PricingTier>; // key: tierId
 
   constructor() {
     this.products = new Map();
@@ -588,6 +589,7 @@ export class MemStorage implements IStorage {
     this.inquiries = new Map();
     this.botSettings = new Map();
     this.productRatings = new Map();
+    this.pricingTiers = new Map();
     this.botStats = {
       id: randomUUID(),
       totalUsers: 0,
@@ -1228,35 +1230,56 @@ export class MemStorage implements IStorage {
       .filter(rating => rating.productId === productId);
   }
 
-  // Pricing Tiers (basic implementation for MemStorage)
+  // Pricing Tiers (full implementation for MemStorage)
   async getPricingTiers(productId: string): Promise<PricingTier[]> {
-    // MemStorage implementation - return empty array as it's mainly for database storage
-    return [];
+    return Array.from(this.pricingTiers.values())
+      .filter(tier => tier.productId === productId && tier.isActive)
+      .sort((a, b) => a.minQuantity - b.minQuantity);
   }
 
   async createPricingTier(tier: InsertPricingTier): Promise<PricingTier> {
-    // MemStorage implementation - basic in-memory tier creation
     const id = randomUUID();
     const pricingTier: PricingTier = {
       id,
       ...tier,
+      isActive: tier.isActive ?? true,
+      maxQuantity: tier.maxQuantity ?? null,
       createdAt: new Date(),
     };
+    this.pricingTiers.set(id, pricingTier);
     return pricingTier;
   }
 
   async updatePricingTier(id: string, tier: Partial<InsertPricingTier>): Promise<PricingTier | undefined> {
-    // MemStorage implementation - return undefined
-    return undefined;
+    const existing = this.pricingTiers.get(id);
+    if (!existing) return undefined;
+
+    const updated: PricingTier = { ...existing, ...tier };
+    this.pricingTiers.set(id, updated);
+    return updated;
   }
 
   async deletePricingTier(id: string): Promise<boolean> {
-    // MemStorage implementation - return false
-    return false;
+    return this.pricingTiers.delete(id);
   }
 
   async getProductPriceForQuantity(productId: string, quantity: number): Promise<string | undefined> {
-    // MemStorage implementation - return base product price
+    const tiers = await this.getPricingTiers(productId);
+    
+    if (tiers.length === 0) {
+      // No pricing tiers, return base product price
+      const product = this.products.get(productId);
+      return product?.price;
+    }
+
+    // Find the appropriate tier for this quantity
+    for (const tier of tiers) {
+      if (quantity >= tier.minQuantity && (tier.maxQuantity === null || quantity <= tier.maxQuantity)) {
+        return tier.price;
+      }
+    }
+
+    // If no tier matches, return the base product price
     const product = this.products.get(productId);
     return product?.price;
   }
