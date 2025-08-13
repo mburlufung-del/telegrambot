@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +15,7 @@ import {
   X,
   Image
 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -27,55 +27,56 @@ export default function EnhancedBroadcast() {
   const [imageUrl, setImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const sendBroadcastMutation = useMutation({
-    mutationFn: async (data: {
-      message: string;
-      imageUrl?: string;
-      targetType: 'all' | 'recent' | 'custom';
-      customUsers?: string;
-    }): Promise<{ sentCount: number; totalTargeted: number }> => {
-      try {
-        const response = await apiRequest("/api/bot/broadcast", "POST", data);
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Broadcast failed: ${response.status} - ${errorText}`);
-        }
-        return await response.json();
-      } catch (error) {
-        console.error("Broadcast mutation error:", error);
-        throw error;
+  // Use the working approach from SimpleBroadcastTest instead of useMutation
+  const sendBroadcast = async (data: {
+    message: string;
+    imageUrl?: string;
+    targetType: 'all' | 'recent' | 'custom';
+    customUsers?: string;
+  }) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/bot/broadcast", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-    },
-    onSuccess: (data: { sentCount: number; totalTargeted: number }) => {
-      const successMessage = data.sentCount > 0 
-        ? `Successfully sent to ${data.sentCount} users out of ${data.totalTargeted} targeted`
-        : `Broadcast attempted but no active users found. Database has ${data.totalTargeted} users but they may be test accounts or inactive.`;
+
+      const result = await response.json();
+      const successMessage = result.sentCount > 0 
+        ? `Successfully sent to ${result.sentCount} users out of ${result.totalTargeted} targeted`
+        : `Broadcast attempted but no active users found. Database has ${result.totalTargeted} users but they may be test accounts or inactive.`;
       
       toast({
-        title: data.sentCount > 0 ? "Broadcast Sent!" : "Broadcast Complete",
+        title: result.sentCount > 0 ? "Broadcast Sent!" : "Broadcast Complete",
         description: successMessage,
-        variant: data.sentCount > 0 ? "default" : "destructive",
+        variant: result.sentCount > 0 ? "default" : "destructive",
       });
       
       // Clear form only if at least one message was sent successfully
-      if (data.sentCount > 0) {
+      if (result.sentCount > 0) {
         setMessage("");
         setImageUrl("");
         setCustomUsers("");
         setTargetType('all');
       }
-      setIsLoading(false);
-    },
-    onError: (error: Error) => {
-      console.error("Broadcast error details:", error);
+    } catch (error) {
+      console.error("Broadcast error:", error);
       toast({
         title: "Failed to Send Broadcast",
-        description: error.message || "An unexpected error occurred",
+        description: error instanceof Error ? error.message : "Unknown error",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
-    },
-  });
+    }
+  };
 
   const handleSendBroadcast = () => {
     if (!message.trim()) {
@@ -96,8 +97,7 @@ export default function EnhancedBroadcast() {
       return;
     }
 
-    setIsLoading(true);
-    sendBroadcastMutation.mutate({
+    sendBroadcast({
       message: message.trim(),
       imageUrl: imageUrl || undefined,
       targetType,

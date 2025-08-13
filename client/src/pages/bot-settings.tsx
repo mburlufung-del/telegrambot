@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import BroadcastForm from "@/components/broadcast-form";
 import EnhancedBroadcast from "@/components/enhanced-broadcast";
-import SimpleBroadcastTest from "@/components/simple-broadcast-test";
+
 import PaymentSettings from "@/components/payment-settings";
 import type { BotSettings } from "@shared/schema";
 import { 
@@ -387,11 +387,7 @@ export default function BotSettings() {
               Send messages to bot users with optional image attachments and target audience selection
             </div>
           </DialogHeader>
-          <div className="space-y-6">
-            <SimpleBroadcastTest />
-            <hr />
-            <EnhancedBroadcast />
-          </div>
+          <EnhancedBroadcast />
         </DialogContent>
       </Dialog>
 
