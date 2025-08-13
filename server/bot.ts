@@ -118,7 +118,7 @@ export class TeleShopBot {
           if (imageUrl && imageUrl.trim() !== '') {
             // Send image with caption
             // Convert relative path to full URL
-            const baseUrl = process.env.WEBHOOK_URL || 'https://a5db4e61-9419-464b-b515-01199a70f995-00-25fppi8wyfq6l.janeway.replit.dev';
+            const baseUrl = process.env.WEBHOOK_URL || `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}`;
             const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
             
             console.log(`Sending broadcast image to user ${userId}:`, fullImageUrl);
@@ -943,12 +943,18 @@ Need help? Our support team is here for you!
     // Send product image if available
     if (product.imageUrl) {
       try {
-        await this.bot?.sendPhoto(chatId, product.imageUrl, {
+        // Convert relative path to full URL for Telegram compatibility
+        const baseUrl = process.env.WEBHOOK_URL || `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}`;
+        const fullImageUrl = product.imageUrl.startsWith('http') ? product.imageUrl : `${baseUrl}${product.imageUrl}`;
+        
+        console.log(`Sending product image: ${fullImageUrl}`);
+        
+        await this.bot?.sendPhoto(chatId, fullImageUrl, {
           caption: `📦 *${product.name}*`,
           parse_mode: 'Markdown'
         });
       } catch (error) {
-        console.log('Image sending failed, continuing with text display');
+        console.log('Image sending failed, continuing with text display:', error);
       }
     }
     
