@@ -166,29 +166,11 @@ export class MemStorage implements IStorage {
     this.initializeSampleData();
     this.initializeSampleRatings();
     this.initializeSampleOrders();
-    this.initializeDefaultPaymentMethods();
+    // Payment methods are now managed via database only
     this.initializeSamplePricingTiers();
   }
 
-  private initializeDefaultPaymentMethods() {
-    const defaultMethods = [
-      { name: "Cash on Delivery", description: "Pay when you receive your order", isActive: true, sortOrder: 0 },
-      { name: "Bank Transfer", description: "Direct bank account transfer", isActive: true, sortOrder: 1 },
-      { name: "Credit/Debit Card", description: "Visa, MasterCard, American Express", isActive: true, sortOrder: 2 },
-      { name: "PayPal", description: "Secure online payments", isActive: true, sortOrder: 3 },
-      { name: "Bitcoin", description: "Cryptocurrency payment", isActive: false, sortOrder: 4 },
-    ];
-
-    defaultMethods.forEach(method => {
-      const paymentMethod: PaymentMethod = {
-        id: randomUUID(),
-        ...method,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      this.paymentMethods.set(paymentMethod.id, paymentMethod);
-    });
-  }
+  // Payment methods are now managed via database only - no default initialization
 
   private initializeDefaultSettings() {
     const defaultSettings = [
