@@ -52,6 +52,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
   const [newSpecKey, setNewSpecKey] = useState("");
   const [newSpecValue, setNewSpecValue] = useState("");
   const [imagePreview, setImagePreview] = useState<string>(product?.imageUrl || "");
+  const [newlyCreatedProduct, setNewlyCreatedProduct] = useState<Product | null>(null);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -88,10 +89,11 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
       if (!response.ok) throw new Error("Failed to create product");
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (createdProduct) => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({ title: "Success", description: "Product created successfully" });
-      onSuccess?.();
+      setNewlyCreatedProduct(createdProduct);
+      // Don't call onSuccess immediately - let user configure pricing tiers first
     },
     onError: (error) => {
       console.error('Create product error:', error);
@@ -173,6 +175,23 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      {/* Success Message for New Product */}
+      {newlyCreatedProduct && (
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-green-800">
+              <Save className="h-5 w-5" />
+              <div>
+                <h3 className="font-semibold">Product Created Successfully!</h3>
+                <p className="text-sm text-green-600">
+                  Now you can optionally configure pricing tiers for bulk orders. Click "Complete Product Setup" when finished.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Basic Information */}
         <Card>
@@ -189,6 +208,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                 id="name"
                 {...form.register("name")}
                 placeholder="Enter product name"
+                disabled={!!newlyCreatedProduct}
                 data-testid="input-product-name"
               />
               {form.formState.errors.name && (
@@ -203,6 +223,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                 {...form.register("description")}
                 placeholder="Detailed product description"
                 rows={4}
+                disabled={!!newlyCreatedProduct}
                 data-testid="input-product-description"
               />
               {form.formState.errors.description && (
@@ -215,6 +236,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
               <Select
                 value={form.watch("categoryId")}
                 onValueChange={(value) => form.setValue("categoryId", value)}
+                disabled={!!newlyCreatedProduct}
               >
                 <SelectTrigger data-testid="select-category">
                   <SelectValue placeholder="Select category" />
@@ -521,11 +543,11 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
         </CardContent>
       </Card>
 
-      {/* Pricing Tiers - Only show for existing products */}
-      {product && (
+      {/* Pricing Tiers - Show for existing products or newly created products */}
+      {(product || newlyCreatedProduct) && (
         <PricingTiers 
-          productId={product.id} 
-          productName={product.name}
+          productId={(product?.id || newlyCreatedProduct?.id)!} 
+          productName={(product?.name || newlyCreatedProduct?.name)!}
         />
       )}
 
@@ -536,14 +558,27 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
             Cancel
           </Button>
         )}
-        <Button
-          type="submit"
-          disabled={createMutation.isPending || updateMutation.isPending}
-          data-testid="button-save"
-        >
-          <Save className="h-4 w-4 mr-2" />
-          {product ? "Update Product" : "Create Product"}
-        </Button>
+        
+        {/* Show different buttons based on state */}
+        {newlyCreatedProduct ? (
+          <Button
+            type="button"
+            onClick={() => onSuccess?.()}
+            data-testid="button-complete"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Complete Product Setup
+          </Button>
+        ) : (
+          <Button
+            type="submit"
+            disabled={createMutation.isPending || updateMutation.isPending}
+            data-testid="button-save"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {product ? "Update Product" : "Create Product"}
+          </Button>
+        )}
       </div>
     </form>
   );
