@@ -85,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/products/:id", async (req, res) => {
     try {
-      const productData = insertProductSchema.partial().parse(req.body);
+      const productData = req.body;
       const product = await storage.updateProduct(req.params.id, productData);
       if (!product) {
         return res.status(404).json({ message: "Product not found" });

@@ -18,6 +18,8 @@ interface PaymentMethodsManagerProps {
 interface PaymentMethodForm {
   name: string;
   description: string;
+  paymentInfo: string;
+  instructions: string;
   isActive: boolean;
 }
 
@@ -30,12 +32,16 @@ export function PaymentMethodsManager({ className }: PaymentMethodsManagerProps)
   const [newMethod, setNewMethod] = useState<PaymentMethodForm>({
     name: '',
     description: '',
+    paymentInfo: '',
+    instructions: '',
     isActive: true
   });
   const [editForm, setEditForm] = useState<PaymentMethodForm & { id: string }>({
     id: '',
     name: '',
     description: '',
+    paymentInfo: '',
+    instructions: '',
     isActive: true
   });
 
@@ -61,7 +67,7 @@ export function PaymentMethodsManager({ className }: PaymentMethodsManagerProps)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/payment-methods"] });
-      setNewMethod({ name: '', description: '', isActive: true });
+      setNewMethod({ name: '', description: '', paymentInfo: '', instructions: '', isActive: true });
       setIsAddingNew(false);
       toast({
         title: "Success",
@@ -147,6 +153,8 @@ export function PaymentMethodsManager({ className }: PaymentMethodsManagerProps)
       id: method.id,
       name: method.name,
       description: method.description || '',
+      paymentInfo: method.paymentInfo || '',
+      instructions: method.instructions || '',
       isActive: method.isActive
     });
     setEditingId(method.id);
@@ -171,12 +179,12 @@ export function PaymentMethodsManager({ className }: PaymentMethodsManagerProps)
 
   const handleCancelEdit = useCallback(() => {
     setEditingId(null);
-    setEditForm({ id: '', name: '', description: '', isActive: true });
+    setEditForm({ id: '', name: '', description: '', paymentInfo: '', instructions: '', isActive: true });
   }, []);
 
   const handleCancelAdd = useCallback(() => {
     setIsAddingNew(false);
-    setNewMethod({ name: '', description: '', isActive: true });
+    setNewMethod({ name: '', description: '', paymentInfo: '', instructions: '', isActive: true });
   }, []);
 
   if (isLoading) {
@@ -237,6 +245,20 @@ export function PaymentMethodsManager({ className }: PaymentMethodsManagerProps)
                     rows={2}
                     data-testid={`textarea-edit-description-${method.id}`}
                   />
+                  <Textarea
+                    value={editForm.paymentInfo}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, paymentInfo: e.target.value }))}
+                    placeholder="Payment information (bank account, crypto address, etc.)"
+                    rows={2}
+                    data-testid={`textarea-edit-payment-info-${method.id}`}
+                  />
+                  <Textarea
+                    value={editForm.instructions}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, instructions: e.target.value }))}
+                    placeholder="Step-by-step payment instructions"
+                    rows={3}
+                    data-testid={`textarea-edit-instructions-${method.id}`}
+                  />
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={editForm.isActive}
@@ -264,6 +286,22 @@ export function PaymentMethodsManager({ className }: PaymentMethodsManagerProps)
                     <p className="text-sm text-gray-600 mt-1" data-testid={`text-method-description-${method.id}`}>
                       {method.description}
                     </p>
+                  )}
+                  {method.paymentInfo && (
+                    <div className="mt-2">
+                      <p className="text-xs font-medium text-gray-700">Payment Information:</p>
+                      <p className="text-sm text-gray-600" data-testid={`text-method-payment-info-${method.id}`}>
+                        {method.paymentInfo}
+                      </p>
+                    </div>
+                  )}
+                  {method.instructions && (
+                    <div className="mt-2">
+                      <p className="text-xs font-medium text-gray-700">Instructions:</p>
+                      <p className="text-sm text-gray-600 whitespace-pre-line" data-testid={`text-method-instructions-${method.id}`}>
+                        {method.instructions}
+                      </p>
+                    </div>
                   )}
                 </div>
               )}
@@ -333,6 +371,20 @@ export function PaymentMethodsManager({ className }: PaymentMethodsManagerProps)
                 placeholder="Description (optional)"
                 rows={2}
                 data-testid="textarea-new-method-description"
+              />
+              <Textarea
+                value={newMethod.paymentInfo}
+                onChange={(e) => setNewMethod(prev => ({ ...prev, paymentInfo: e.target.value }))}
+                placeholder="Payment information (bank account, crypto address, etc.)"
+                rows={2}
+                data-testid="textarea-new-method-payment-info"
+              />
+              <Textarea
+                value={newMethod.instructions}
+                onChange={(e) => setNewMethod(prev => ({ ...prev, instructions: e.target.value }))}
+                placeholder="Step-by-step payment instructions"
+                rows={3}
+                data-testid="textarea-new-method-instructions"
               />
               <div className="flex items-center gap-2">
                 <Switch

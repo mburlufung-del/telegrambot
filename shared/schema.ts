@@ -45,6 +45,8 @@ export const paymentMethods = pgTable("payment_methods", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name").notNull(),
   description: text("description"),
+  paymentInfo: text("payment_info"), // Bank account, crypto address, etc.
+  instructions: text("instructions"), // Step-by-step payment instructions
   isActive: boolean("is_active").default(true).notNull(),
   sortOrder: integer("sort_order").default(0).notNull(),
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
