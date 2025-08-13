@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import EnhancedBroadcast from "@/components/enhanced-broadcast";
 import { PaymentMethodsManager } from "@/components/payment-methods-manager";
+import { DeliveryMethodsManager } from "@/components/delivery-methods-manager";
 
 import type { BotSettings } from "@shared/schema";
 import { 
@@ -74,9 +75,14 @@ const BOT_CONFIG_CATEGORIES = {
       { key: "currency_symbol", label: "Currency Symbol", type: "text", default: "$", description: "Symbol shown with prices" },
       { key: "currency_code", label: "Currency Code", type: "text", default: "USD", description: "Three-letter currency code" },
       { key: "minimum_order", label: "Minimum Order Amount", type: "number", default: "0", description: "Minimum order value required" },
-      { key: "shipping_cost", label: "Default Shipping Cost", type: "number", default: "0", description: "Base shipping fee" },
       { key: "tax_rate", label: "Tax Rate (%)", type: "number", default: "0", description: "Tax percentage applied" }
     ]
+  },
+  delivery: {
+    title: "Delivery Methods",
+    icon: Send,
+    description: "Shipping and delivery options management",
+    settings: []
   },
   commands: {
     title: "Custom Commands",
@@ -342,6 +348,11 @@ export default function BotSettings() {
               {/* Payment methods get special treatment */}
               {activeCategory === "payment" && (
                 <PaymentMethodsManager className="mb-6" />
+              )}
+              
+              {/* Delivery methods get special treatment */}
+              {activeCategory === "delivery" && (
+                <DeliveryMethodsManager />
               )}
               
               {BOT_CONFIG_CATEGORIES[activeCategory as keyof typeof BOT_CONFIG_CATEGORIES].settings.map(setting => (

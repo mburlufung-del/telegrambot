@@ -835,11 +835,17 @@ Need help? Our support team is here for you!
       }
       
       // Handle checkout flow
-      else if (data?.startsWith('delivery_')) {
+      else if (data?.startsWith('delivery_method_')) {
+        const parts = data.replace('delivery_method_', '').split('_');
+        const methodId = parts[0];
+        const orderNumber = parts.length > 1 ? `#${parts[1]}` : `#${Date.now().toString().slice(-6)}`;
+        await this.handleDeliverySelection(chatId, userId, methodId, orderNumber);
+      } else if (data?.startsWith('delivery_')) {
+        // Support legacy delivery format during transition
         const parts = data.replace('delivery_', '').split('_');
         const method = parts[0];
         const orderNumber = parts.length > 1 ? `#${parts[1]}` : `#${Date.now().toString().slice(-6)}`;
-        await this.handleDeliverySelection(chatId, userId, method, orderNumber);
+        await this.handleDeliverySelectionLegacy(chatId, userId, method, orderNumber);
       }
       else if (data === 'enter_address') {
         await this.handleAddressEntry(chatId, userId);
@@ -1661,27 +1667,39 @@ You can continue shopping while we prepare your response.`;
     // Generate order number at checkout start
     const orderNumber = `#${Date.now().toString().slice(-6)}`;
     
-    const message = `🚚 *Choose Delivery Method*
+    // Get active delivery methods from database
+    const deliveryMethods = await storage.getActiveDeliveryMethods();
+    
+    if (deliveryMethods.length === 0) {
+      await this.sendAutoVanishMessage(chatId, '❌ No delivery methods available. Please contact support.', {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '💬 Contact Support', callback_data: 'send_support_message' }],
+            [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          ]
+        }
+      });
+      return;
+    }
+
+    let message = `🚚 *Choose Delivery Method*
 
 **Order Number:** ${orderNumber}
 **Customer ID:** ${userId}
 
-Select your preferred delivery option:
+Select your preferred delivery option:`;
 
-📦 **Standard Delivery** (3-7 days) - Free
-🚀 **Express Delivery** (1-2 days) - $15.00
-🏪 **Store Pickup** (Same day) - Free
-🚚 **Priority Shipping** (Next day) - $25.00`;
-
-    const keyboard = {
-      inline_keyboard: [
-        [{ text: '📦 Standard (Free)', callback_data: `delivery_standard_${orderNumber}` }],
-        [{ text: '🚀 Express ($15)', callback_data: `delivery_express_${orderNumber}` }],
-        [{ text: '🏪 Store Pickup (Free)', callback_data: `delivery_pickup_${orderNumber}` }],
-        [{ text: '🚚 Priority ($25)', callback_data: `delivery_priority_${orderNumber}` }],
-        [{ text: '🔙 Back to Cart', callback_data: 'carts' }]
-      ]
-    };
+    // Build keyboard with delivery methods
+    const keyboard: any = { inline_keyboard: [] };
+    for (const method of deliveryMethods) {
+      const priceText = parseFloat(method.price) > 0 ? ` - $${method.price}` : ' - Free';
+      const timeText = method.estimatedDays ? ` (${method.estimatedDays})` : '';
+      keyboard.inline_keyboard.push([{ 
+        text: `${method.name}${timeText}${priceText}`, 
+        callback_data: `delivery_method_${method.id}_${orderNumber.replace('#', '')}` 
+      }]);
+    }
+    keyboard.inline_keyboard.push([{ text: '🔙 Back to Cart', callback_data: 'view_cart' }]);
 
     await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
@@ -1689,30 +1707,31 @@ Select your preferred delivery option:
     });
   }
 
-  private async handleDeliverySelection(chatId: number, userId: string, method: string, orderNumber: string) {
-    const deliveryMethods = {
-      standard: { name: 'Standard Delivery', time: '3-7 days', cost: 0 },
-      express: { name: 'Express Delivery', time: '1-2 days', cost: 15 },
-      pickup: { name: 'Store Pickup', time: 'Same day', cost: 0 },
-      priority: { name: 'Priority Shipping', time: 'Next day', cost: 25 }
-    };
-
-    const selected = deliveryMethods[method as keyof typeof deliveryMethods];
+  private async handleDeliverySelection(chatId: number, userId: string, methodId: string, orderNumber: string) {
+    const deliveryMethods = await storage.getActiveDeliveryMethods();
+    const selected = deliveryMethods.find(m => m.id === methodId);
     
     if (!selected) {
       await this.handleCheckoutStart(chatId, userId);
       return;
     }
 
-    if (method === 'pickup') {
-      // Skip address for pickup
-      await this.handlePaymentMethodSelection(chatId, userId, method, orderNumber);
+    const deliveryInfo = {
+      name: selected.name,
+      time: selected.estimatedDays || 'As scheduled',
+      cost: parseFloat(selected.price),
+      requiresAddress: selected.requiresAddress
+    };
+
+    if (!deliveryInfo.requiresAddress) {
+      // Skip address for methods that don't require it (e.g., pickup)
+      await this.handlePaymentMethodSelection(chatId, userId, methodId, orderNumber);
     } else {
       const message = `📍 *Customer Information & Delivery Address*
 
 **Order Number:** ${orderNumber}
-**Selected:** ${selected.name} (${selected.time})
-**Cost:** ${selected.cost === 0 ? 'Free' : `$${selected.cost}`}
+**Selected:** ${deliveryInfo.name} (${deliveryInfo.time})
+**Cost:** ${deliveryInfo.cost === 0 ? 'Free' : `$${deliveryInfo.cost}`}
 
 Please provide your information in this format:
 
@@ -1783,7 +1802,7 @@ Is this information correct?`;
     const keyboard = {
       inline_keyboard: [
         [{ text: '✅ Confirm Information', callback_data: `confirm_info_${deliveryMethod}_${orderNumber.replace('#', '')}` }],
-        [{ text: '✏️ Re-enter Information', callback_data: `delivery_${deliveryMethod}_${orderNumber.replace('#', '')}` }],
+        [{ text: '✏️ Re-enter Information', callback_data: `start_checkout` }],
         [{ text: '🔙 Change Delivery Method', callback_data: 'start_checkout' }]
       ]
     };

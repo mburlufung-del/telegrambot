@@ -690,6 +690,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delivery Methods routes
+  app.get("/api/delivery-methods", async (req, res) => {
+    try {
+      const methods = await storage.getDeliveryMethods();
+      res.json(methods);
+    } catch (error) {
+      console.error("Error getting delivery methods:", error);
+      res.status(500).json({ message: "Failed to get delivery methods" });
+    }
+  });
+
+  app.get("/api/delivery-methods/active", async (req, res) => {
+    try {
+      const methods = await storage.getActiveDeliveryMethods();
+      res.json(methods);
+    } catch (error) {
+      console.error("Error getting active delivery methods:", error);
+      res.status(500).json({ message: "Failed to get active delivery methods" });
+    }
+  });
+
+  app.post("/api/delivery-methods", async (req, res) => {
+    try {
+      const deliveryMethodData = req.body;
+      const method = await storage.createDeliveryMethod(deliveryMethodData);
+      res.json(method);
+    } catch (error) {
+      console.error("Error creating delivery method:", error);
+      res.status(500).json({ message: "Failed to create delivery method" });
+    }
+  });
+
+  app.put("/api/delivery-methods/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deliveryMethodData = req.body;
+      const method = await storage.updateDeliveryMethod(id, deliveryMethodData);
+      
+      if (!method) {
+        return res.status(404).json({ message: "Delivery method not found" });
+      }
+
+      res.json(method);
+    } catch (error) {
+      console.error("Error updating delivery method:", error);
+      res.status(500).json({ message: "Failed to update delivery method" });
+    }
+  });
+
+  app.delete("/api/delivery-methods/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteDeliveryMethod(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Delivery method not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting delivery method:", error);
+      res.status(500).json({ message: "Failed to delete delivery method" });
+    }
+  });
+
+  app.put("/api/delivery-methods/reorder", async (req, res) => {
+    try {
+      const { methods } = req.body;
+      await storage.reorderDeliveryMethods(methods);
+      res.json({ message: "Delivery methods reordered successfully" });
+    } catch (error) {
+      console.error("Error reordering delivery methods:", error);
+      res.status(500).json({ message: "Failed to reorder delivery methods" });
+    }
+  });
+
   // Bot restart route
   app.post("/api/bot/restart", async (req, res) => {
     try {

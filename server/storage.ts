@@ -13,6 +13,7 @@ import type {
   Wishlist,
   PricingTier,
   PaymentMethod,
+  DeliveryMethod,
   InsertCart,
   InsertCategory,
   InsertOrder,
@@ -24,6 +25,7 @@ import type {
   InsertWishlist,
   InsertPricingTier,
   InsertPaymentMethod,
+  InsertDeliveryMethod,
 } from "@shared/schema";
 import {
   categories,
@@ -37,6 +39,7 @@ import {
   productRatings,
   pricingTiers,
   paymentMethods,
+  deliveryMethods,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -126,6 +129,15 @@ export interface IStorage {
   updatePaymentMethod(id: string, method: Partial<InsertPaymentMethod>): Promise<PaymentMethod | undefined>;
   deletePaymentMethod(id: string): Promise<boolean>;
   reorderPaymentMethods(methods: { id: string; sortOrder: number }[]): Promise<void>;
+
+  // Delivery Methods
+  getDeliveryMethods(): Promise<DeliveryMethod[]>;
+  getActiveDeliveryMethods(): Promise<DeliveryMethod[]>;
+  getDeliveryMethod(id: string): Promise<DeliveryMethod | undefined>;
+  createDeliveryMethod(method: InsertDeliveryMethod): Promise<DeliveryMethod>;
+  updateDeliveryMethod(id: string, method: Partial<InsertDeliveryMethod>): Promise<DeliveryMethod | undefined>;
+  deleteDeliveryMethod(id: string): Promise<boolean>;
+  reorderDeliveryMethods(methods: { id: string; sortOrder: number }[]): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -140,6 +152,7 @@ export class MemStorage implements IStorage {
   private productRatings: Map<string, ProductRating>; // key: `${productId}-${telegramUserId}`
   private pricingTiers: Map<string, PricingTier>; // key: tierId
   private paymentMethods: Map<string, PaymentMethod>;
+  private deliveryMethods: Map<string, DeliveryMethod>;
 
   constructor() {
     this.products = new Map();
@@ -240,6 +253,55 @@ export class MemStorage implements IStorage {
           updatedAt: new Date()
         })
         .where(eq(paymentMethods.id, id));
+    }
+  }
+
+  // Delivery Methods Implementation
+  async getDeliveryMethods(): Promise<DeliveryMethod[]> {
+    const results = await db.select().from(deliveryMethods).orderBy(asc(deliveryMethods.sortOrder));
+    return results;
+  }
+
+  async getActiveDeliveryMethods(): Promise<DeliveryMethod[]> {
+    const results = await db.select().from(deliveryMethods)
+      .where(eq(deliveryMethods.isActive, true))
+      .orderBy(asc(deliveryMethods.sortOrder));
+    return results;
+  }
+
+  async getDeliveryMethod(id: string): Promise<DeliveryMethod | undefined> {
+    const [result] = await db.select().from(deliveryMethods).where(eq(deliveryMethods.id, id));
+    return result;
+  }
+
+  async createDeliveryMethod(method: InsertDeliveryMethod): Promise<DeliveryMethod> {
+    const [result] = await db.insert(deliveryMethods)
+      .values(method)
+      .returning();
+    return result;
+  }
+
+  async updateDeliveryMethod(id: string, method: Partial<InsertDeliveryMethod>): Promise<DeliveryMethod | undefined> {
+    const [result] = await db.update(deliveryMethods)
+      .set({ ...method, updatedAt: new Date() })
+      .where(eq(deliveryMethods.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteDeliveryMethod(id: string): Promise<boolean> {
+    const result = await db.delete(deliveryMethods).where(eq(deliveryMethods.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async reorderDeliveryMethods(methods: { id: string; sortOrder: number }[]): Promise<void> {
+    for (const { id, sortOrder } of methods) {
+      await db.update(deliveryMethods)
+        .set({ 
+          sortOrder,
+          updatedAt: new Date()
+        })
+        .where(eq(deliveryMethods.id, id));
     }
   }
 
@@ -1430,6 +1492,49 @@ export class DatabaseStorage implements IStorage {
       db.update(paymentMethods)
         .set({ sortOrder: method.sortOrder, updatedAt: new Date() })
         .where(eq(paymentMethods.id, method.id))
+    );
+    await Promise.all(promises);
+  }
+
+  // Delivery Methods
+  async getDeliveryMethods(): Promise<DeliveryMethod[]> {
+    return await db.select().from(deliveryMethods).orderBy(deliveryMethods.sortOrder, deliveryMethods.createdAt);
+  }
+
+  async getActiveDeliveryMethods(): Promise<DeliveryMethod[]> {
+    return await db.select().from(deliveryMethods)
+      .where(eq(deliveryMethods.isActive, true))
+      .orderBy(deliveryMethods.sortOrder, deliveryMethods.createdAt);
+  }
+
+  async getDeliveryMethod(id: string): Promise<DeliveryMethod | undefined> {
+    const result = await db.select().from(deliveryMethods).where(eq(deliveryMethods.id, id));
+    return result[0];
+  }
+
+  async createDeliveryMethod(method: InsertDeliveryMethod): Promise<DeliveryMethod> {
+    const result = await db.insert(deliveryMethods).values(method).returning();
+    return result[0];
+  }
+
+  async updateDeliveryMethod(id: string, method: Partial<InsertDeliveryMethod>): Promise<DeliveryMethod | undefined> {
+    const result = await db.update(deliveryMethods)
+      .set({ ...method, updatedAt: new Date() })
+      .where(eq(deliveryMethods.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteDeliveryMethod(id: string): Promise<boolean> {
+    const result = await db.delete(deliveryMethods).where(eq(deliveryMethods.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async reorderDeliveryMethods(methods: { id: string; sortOrder: number }[]): Promise<void> {
+    const promises = methods.map(method =>
+      db.update(deliveryMethods)
+        .set({ sortOrder: method.sortOrder, updatedAt: new Date() })
+        .where(eq(deliveryMethods.id, method.id))
     );
     await Promise.all(promises);
   }

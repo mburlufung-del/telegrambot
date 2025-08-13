@@ -53,6 +53,20 @@ export const paymentMethods = pgTable("payment_methods", {
   updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
 });
 
+// Delivery methods table for dynamic management
+export const deliveryMethods = pgTable("delivery_methods", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0"),
+  estimatedDays: text("estimated_days"), // e.g., "3-5 days", "Same day"
+  instructions: text("instructions"), // Special delivery instructions
+  isActive: boolean("is_active").default(true).notNull(),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+});
+
 export const orders = pgTable("orders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   telegramUserId: text("telegram_user_id").notNull(),
@@ -155,6 +169,12 @@ export const insertPaymentMethodSchema = createInsertSchema(paymentMethods).omit
   updatedAt: true,
 });
 
+export const insertDeliveryMethodSchema = createInsertSchema(deliveryMethods).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertOrderSchema = createInsertSchema(orders).omit({
   id: true,
   createdAt: true,
@@ -211,6 +231,8 @@ export type BotSettings = typeof botSettings.$inferSelect;
 export type InsertBotSettings = z.infer<typeof insertBotSettingsSchema>;
 export type PaymentMethod = typeof paymentMethods.$inferSelect;
 export type InsertPaymentMethod = z.infer<typeof insertPaymentMethodSchema>;
+export type DeliveryMethod = typeof deliveryMethods.$inferSelect;
+export type InsertDeliveryMethod = z.infer<typeof insertDeliveryMethodSchema>;
 export type BotStats = typeof botStats.$inferSelect;
 export type InsertBotStats = z.infer<typeof insertBotStatsSchema>;
 export type ProductRating = typeof productRatings.$inferSelect;
