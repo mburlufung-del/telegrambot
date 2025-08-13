@@ -14,7 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Product, Category, InsertProduct } from "@shared/schema";
-import { Plus, X, Save, Package } from "lucide-react";
+import { Plus, X, Save, Package, Upload, Image } from "lucide-react";
+import ObjectUploader from "@/components/object-uploader";
 
 const productFormSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -49,6 +50,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
   );
   const [newSpecKey, setNewSpecKey] = useState("");
   const [newSpecValue, setNewSpecValue] = useState("");
+  const [imagePreview, setImagePreview] = useState<string>(product?.imageUrl || "");
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -222,13 +224,79 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
             </div>
 
             <div>
-              <Label htmlFor="imageUrl">Image URL</Label>
-              <Input
-                id="imageUrl"
-                {...form.register("imageUrl")}
-                placeholder="https://example.com/image.jpg"
-                data-testid="input-image-url"
-              />
+              <Label>Product Image</Label>
+              <p className="text-sm text-gray-500 mb-3">
+                Upload a high-quality image directly from your device
+              </p>
+              
+              {/* Direct Image Upload */}
+              <div className="space-y-3">
+                {!imagePreview ? (
+                  <ObjectUploader
+                    onUploadComplete={(url) => {
+                      console.log('Upload completed, URL:', url);
+                      setImagePreview(url);
+                      form.setValue("imageUrl", url);
+                    }}
+                    buttonClassName="w-full h-40 border-2 border-dashed border-blue-300 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 transition-all"
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="p-3 bg-blue-100 rounded-full">
+                        <Upload className="h-8 w-8 text-blue-600" />
+                      </div>
+                      <div className="text-center">
+                        <span className="text-lg font-medium text-blue-700">Upload Product Image</span>
+                        <p className="text-sm text-blue-600 mt-1">Click here to select image from your device</p>
+                        <p className="text-xs text-gray-500 mt-2">Supports JPG, PNG, GIF up to 10MB</p>
+                      </div>
+                    </div>
+                  </ObjectUploader>
+                ) : (
+                  <div className="relative border-2 border-solid border-green-400 rounded-lg p-3 bg-green-50">
+                    <img
+                      src={imagePreview.startsWith('/objects/') ? `${window.location.origin}${imagePreview}` : imagePreview}
+                      alt="Product preview"
+                      className="w-full h-40 object-cover rounded-lg"
+                      onError={() => {
+                        console.error('Image failed to load:', imagePreview);
+                        setImagePreview("");
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-4 right-4 h-8 w-8"
+                      onClick={() => {
+                        setImagePreview("");
+                        form.setValue("imageUrl", "");
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <div className="mt-3 p-3 bg-white rounded-lg border border-green-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Image className="h-5 w-5 text-green-600" />
+                          <span className="text-sm font-medium text-green-700">Image uploaded and ready!</span>
+                        </div>
+                        <ObjectUploader
+                          onUploadComplete={(url) => {
+                            setImagePreview(url);
+                            form.setValue("imageUrl", url);
+                          }}
+                          buttonClassName="text-sm bg-blue-100 hover:bg-blue-200 text-blue-700"
+                        >
+                          Change Image
+                        </ObjectUploader>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Hidden form field for imageUrl */}
+              <input type="hidden" {...form.register("imageUrl")} />
               {form.formState.errors.imageUrl && (
                 <p className="text-sm text-red-500 mt-1">{form.formState.errors.imageUrl.message}</p>
               )}
