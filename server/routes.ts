@@ -425,6 +425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { SimpleObjectStorageService } = await import("./simpleObjectStorage.js");
       const objectStorageService = new SimpleObjectStorageService();
       const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      console.log("Generated upload URL:", uploadURL);
       res.json({ uploadURL });
     } catch (error) {
       console.error("Failed to get upload URL:", error);

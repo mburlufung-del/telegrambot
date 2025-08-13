@@ -304,12 +304,16 @@ export default function EnhancedBroadcast() {
             </p>
             
             {/* User Notice */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-3">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
               <div className="flex items-start gap-2">
-                <span className="text-yellow-600 text-sm">⚠️</span>
-                <div className="text-sm text-yellow-800">
-                  <strong>Note:</strong> Broadcasts will only reach users who have started the bot by sending /start. 
-                  Current database contains sample data - real users need to interact with your bot first.
+                <span className="text-blue-600 text-sm">💡</span>
+                <div className="text-sm text-blue-800">
+                  <div><strong>Testing broadcasts:</strong></div>
+                  <div className="mt-1">
+                    1. Get your user ID from @userinfobot on Telegram<br/>
+                    2. Send /start to your bot first<br/>
+                    3. Use "Custom User IDs" and enter your user ID for testing
+                  </div>
                 </div>
               </div>
             </div>

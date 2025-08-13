@@ -118,10 +118,29 @@ export class TeleShopBot {
           if (imageUrl && imageUrl.trim() !== '') {
             // Send image with caption
             console.log(`Sending broadcast image to user ${userId}:`, imageUrl);
-            await this.bot.sendPhoto(chatId, imageUrl, {
-              caption: message,
-              parse_mode: 'Markdown'
-            });
+            
+            // Check if the image URL is accessible
+            try {
+              const imageResponse = await fetch(imageUrl, { method: 'HEAD' });
+              console.log(`Image URL check for ${userId}: ${imageResponse.status} ${imageResponse.statusText}`);
+              
+              if (!imageResponse.ok) {
+                console.log(`Image URL not accessible: ${imageResponse.status}, falling back to text message`);
+                await this.bot.sendMessage(chatId, `${message}\n\n[Image attachment was not accessible]`, {
+                  parse_mode: 'Markdown'
+                });
+              } else {
+                await this.bot.sendPhoto(chatId, imageUrl, {
+                  caption: message,
+                  parse_mode: 'Markdown'
+                });
+              }
+            } catch (urlError) {
+              console.log(`Error checking image URL: ${urlError}, falling back to text message`);
+              await this.bot.sendMessage(chatId, `${message}\n\n[Image attachment failed to load]`, {
+                parse_mode: 'Markdown'
+              });
+            }
           } else {
             // Send text message only
             await this.bot.sendMessage(chatId, message, {
