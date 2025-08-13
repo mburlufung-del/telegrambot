@@ -422,6 +422,7 @@ export class TeleShopBot {
   private async handleOrdersCommand(chatId: number, userId: string) {
     try {
       const userOrders = await storage.getUserOrders(userId);
+      console.log(`Raw orders for user ${userId}:`, userOrders.length);
       
       if (userOrders.length === 0) {
         const message = '📦 *Your Orders*\n\nYou have no orders yet.\n\nStart shopping to create your first order!';
@@ -439,39 +440,17 @@ export class TeleShopBot {
         return;
       }
 
-      let message = '📦 Your Orders\n\n';
+      // Show all orders regardless of status for debugging
+      let message = `📦 Your Orders (${userOrders.length} total)\n\n`;
       
-      // Show only successful orders (completed/shipped/delivered)
-      const visibleOrders = userOrders.filter(order => 
-        order.status === 'completed' || 
-        order.status === 'shipped' || 
-        order.status === 'delivered' ||
-        order.status === 'processing'
-      );
-      
-      console.log(`Orders debug for user ${userId}:`, {
-        totalOrders: userOrders.length,
-        orderStatuses: userOrders.map(o => o.status),
-        visibleOrders: visibleOrders.length
-      });
-      
-      if (visibleOrders.length === 0) {
-        const pendingCount = userOrders.filter(o => o.status === 'pending').length;
-        if (pendingCount > 0) {
-          message += `You have ${pendingCount} pending order${pendingCount > 1 ? 's' : ''} being processed.\n\nCompleted orders will appear here once shipped.`;
-        } else {
-          message += 'You have no orders yet.\n\nStart shopping to see your order history here!';
-        }
-      } else {
-        for (let i = 0; i < visibleOrders.length; i++) {
-          const order = visibleOrders[i];
-          const orderDate = new Date(order.createdAt || Date.now()).toLocaleDateString();
-          
-          message += `${i + 1}. Order #${order.id.slice(-6).toUpperCase()}\n`;
-          message += `   💰 Total: $${order.totalAmount}\n`;
-          message += `   📅 Date: ${orderDate}\n`;
-          message += `   ✅ Status: ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}\n\n`;
-        }
+      for (let i = 0; i < userOrders.length; i++) {
+        const order = userOrders[i];
+        const orderDate = new Date(order.createdAt || Date.now()).toLocaleDateString();
+        
+        message += `${i + 1}. Order #${order.id.slice(-6).toUpperCase()}\n`;
+        message += `   💰 Total: $${order.totalAmount}\n`;
+        message += `   📅 Date: ${orderDate}\n`;
+        message += `   📋 Status: ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}\n\n`;
       }
 
       const keyboard = {
@@ -482,6 +461,7 @@ export class TeleShopBot {
         ]
       };
       
+      console.log(`Sending orders message for user ${userId}: ${message.length} chars`);
       await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: keyboard
