@@ -20,11 +20,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Image } from "lucide-react";
 import { insertProductSchema } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@shared/schema";
+import { ObjectUploader } from "@/components/object-uploader";
 
 interface ProductModalProps {
   open: boolean;
@@ -225,58 +226,87 @@ export default function ProductModal({ open, onOpenChange, product }: ProductMod
               </div>
 
               <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="imageUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Product Image URL</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="https://example.com/image.jpg"
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            handleImageUrlChange(e.target.value);
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Image Preview */}
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                  {imagePreview ? (
-                    <div className="relative">
-                      <img
-                        src={imagePreview}
-                        alt="Product preview"
-                        className="w-full h-32 object-cover rounded-lg"
-                        onError={() => setImagePreview("")}
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2 h-6 w-6"
-                        onClick={() => {
-                          setImagePreview("");
-                          form.setValue("imageUrl", "");
-                        }}
+                <div>
+                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Product Image
+                  </label>
+                  <p className="text-sm text-gray-500 mb-3">
+                    Upload a high-quality image of your product
+                  </p>
+                  
+                  {/* Image Upload */}
+                  <div className="space-y-3">
+                    {!imagePreview ? (
+                      <ObjectUploader
+                        onUploadComplete={handleImageUrlChange}
+                        buttonClassName="w-full h-32 border-2 border-dashed border-gray-300 hover:border-gray-400"
                       >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-600">
-                        Enter an image URL above to see preview
-                      </p>
-                    </div>
-                  )}
+                        <div className="flex flex-col items-center gap-2">
+                          <Upload className="h-8 w-8 text-gray-400" />
+                          <span className="text-sm text-gray-600">Click to upload image</span>
+                          <span className="text-xs text-gray-400">JPG, PNG, GIF up to 10MB</span>
+                        </div>
+                      </ObjectUploader>
+                    ) : (
+                      <div className="relative border-2 border-dashed border-green-300 rounded-lg p-2">
+                        <img
+                          src={imagePreview.startsWith('/objects/') ? `${window.location.origin}${imagePreview}` : imagePreview}
+                          alt="Product preview"
+                          className="w-full h-32 object-cover rounded-lg"
+                          onError={() => setImagePreview("")}
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-3 right-3 h-6 w-6"
+                          onClick={() => {
+                            setImagePreview("");
+                            form.setValue("imageUrl", "");
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                        <div className="mt-2 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Image className="h-4 w-4 text-green-600" />
+                            <span className="text-sm text-green-700">Image uploaded successfully</span>
+                          </div>
+                          <ObjectUploader
+                            onUploadComplete={handleImageUrlChange}
+                            buttonClassName="text-xs"
+                          >
+                            Change Image
+                          </ObjectUploader>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Manual URL input as fallback */}
+                  <div className="mt-3">
+                    <FormField
+                      control={form.control}
+                      name="imageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs text-gray-500">Or enter image URL manually</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="https://example.com/image.jpg"
+                              className="text-sm"
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                handleImageUrlChange(e.target.value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
