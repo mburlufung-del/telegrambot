@@ -18,6 +18,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ProductForm from "@/components/product-form";
+import SystemIntegrationStatus from "@/components/system-integration-status";
 import { useState } from "react";
 import type { Product, Inquiry, BotStats } from "@shared/schema";
 
@@ -255,57 +256,14 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Bot Conversation Preview */}
+          {/* System Integration Status */}
           <Card>
             <CardHeader>
-              <CardTitle>Bot Conversation Preview</CardTitle>
-              <p className="text-sm text-gray-600">See how customers interact with your bot</p>
+              <CardTitle>System Integration</CardTitle>
+              <p className="text-sm text-gray-600">Bot and dashboard integration status</p>
             </CardHeader>
             <CardContent>
-              <div className="bg-gray-50 rounded-lg p-4 max-h-80 overflow-y-auto">
-                <div className="space-y-3">
-                  {/* Bot message */}
-                  <div className="flex">
-                    <div className="w-8 h-8 bg-telegram rounded-full flex items-center justify-center flex-shrink-0">
-                      <MessageCircle className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="ml-3 bg-white rounded-lg p-3 shadow-sm max-w-xs">
-                      <p className="text-sm">Welcome to our store! Type /catalog to see our products or /help for assistance.</p>
-                    </div>
-                  </div>
-                  
-                  {/* User message */}
-                  <div className="flex justify-end">
-                    <div className="bg-telegram text-white rounded-lg p-3 max-w-xs">
-                      <p className="text-sm">/catalog</p>
-                    </div>
-                  </div>
-                  
-                  {/* Bot response */}
-                  <div className="flex">
-                    <div className="w-8 h-8 bg-telegram rounded-full flex items-center justify-center flex-shrink-0">
-                      <MessageCircle className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="ml-3 bg-white rounded-lg p-3 shadow-sm max-w-xs">
-                      <p className="text-sm">Here are our featured products:</p>
-                      {recentProducts.length > 0 && (
-                        <div className="mt-2 space-y-2">
-                          {recentProducts.slice(0, 2).map((product, index) => (
-                            <div key={product.id} className="text-xs bg-gray-50 p-2 rounded">
-                              📱 {product.name} - ${product.price}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      <p className="text-xs mt-2 text-gray-600">Reply with product number for details</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <Button className="w-full mt-4 bg-telegram hover:bg-blue-700">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Test Bot in Full Screen
-              </Button>
+              <SystemIntegrationStatus />
             </CardContent>
           </Card>
         </div>

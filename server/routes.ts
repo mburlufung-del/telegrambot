@@ -440,6 +440,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Integration testing route
+  app.get("/api/integration/test", async (req, res) => {
+    try {
+      const tests = {
+        database: false,
+        bot: false,
+        storage: false,
+        products: false,
+        orders: false,
+        categories: false,
+        settings: false
+      };
+
+      const errors = [];
+
+      // Test database connection
+      try {
+        const products = await storage.getProducts();
+        tests.database = true;
+        tests.products = products.length >= 0; // Even 0 products is valid
+      } catch (error) {
+        errors.push(`Database: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+
+      // Test bot status
+      try {
+        const isReady = await teleShopBot.isReady();
+        tests.bot = isReady === true;
+        if (!isReady) errors.push("Bot: Not ready or offline");
+      } catch (error) {
+        errors.push(`Bot: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+
+      // Test storage operations
+      try {
+        const stats = await storage.getBotStats();
+        tests.storage = stats !== undefined;
+      } catch (error) {
+        errors.push(`Storage: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+
+      // Test orders system
+      try {
+        const orders = await storage.getOrders();
+        tests.orders = Array.isArray(orders);
+      } catch (error) {
+        errors.push(`Orders: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+
+      // Test categories
+      try {
+        const categories = await storage.getCategories();
+        tests.categories = Array.isArray(categories);
+      } catch (error) {
+        errors.push(`Categories: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+
+      // Test settings
+      try {
+        const settings = await storage.getBotSettings();
+        tests.settings = settings !== undefined;
+      } catch (error) {
+        errors.push(`Settings: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+
+      const allTestsPassed = Object.values(tests).every(test => test === true);
+      const passedCount = Object.values(tests).filter(test => test === true).length;
+      const totalTests = Object.keys(tests).length;
+
+      res.json({
+        success: allTestsPassed,
+        tests,
+        passed: passedCount,
+        total: totalTests,
+        errors: errors.length > 0 ? errors : null,
+        timestamp: new Date().toISOString(),
+        ready_for_deployment: allTestsPassed && errors.length === 0,
+        deployment_checklist: {
+          bot_online: tests.bot,
+          database_connected: tests.database,
+          storage_operational: tests.storage,
+          orders_system: tests.orders,
+          products_loaded: tests.products,
+          categories_available: tests.categories,
+          settings_configured: tests.settings
+        }
+      });
+    } catch (error) {
+      console.error("Integration test failed:", error);
+      res.status(500).json({ 
+        message: "Integration test failed", 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        ready_for_deployment: false
+      });
+    }
+  });
+
+  // Bot health check route
+  app.get("/api/bot/health", async (req, res) => {
+    try {
+      const isReady = await teleShopBot.isReady();
+      const config = teleShopBot.getConfig();
+      const uptime = process.uptime();
+      
+      res.json({
+        bot_status: isReady ? 'healthy' : 'unhealthy',
+        ready: isReady,
+        mode: config?.mode || 'polling',
+        environment: process.env.NODE_ENV || 'development',
+        uptime_seconds: Math.floor(uptime),
+        uptime_formatted: `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m`,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        bot_status: 'error',
+        ready: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Webhook endpoint for production deployments
   app.post("/webhook", (req, res) => {
     teleShopBot.handleWebhookUpdate(req, res);
