@@ -350,6 +350,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                   placeholder="0.00"
                   type="number"
                   step="0.01"
+                  disabled={!!newlyCreatedProduct}
                   data-testid="input-price"
                 />
                 {form.formState.errors.price && (
@@ -378,6 +379,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                   {...form.register("stock", { valueAsNumber: true })}
                   placeholder="0"
                   type="number"
+                  disabled={!!newlyCreatedProduct}
                   data-testid="input-stock"
                 />
                 {form.formState.errors.stock && (
@@ -390,6 +392,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                 <Select
                   value={form.watch("unit")}
                   onValueChange={(value) => form.setValue("unit", value)}
+                  disabled={!!newlyCreatedProduct}
                 >
                   <SelectTrigger data-testid="select-unit">
                     <SelectValue placeholder="Select unit" />
@@ -418,6 +421,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                   {...form.register("minOrderQuantity", { valueAsNumber: true })}
                   placeholder="1"
                   type="number"
+                  disabled={!!newlyCreatedProduct}
                   data-testid="input-min-quantity"
                 />
               </div>
@@ -429,6 +433,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                   {...form.register("maxOrderQuantity", { valueAsNumber: true })}
                   placeholder="No limit"
                   type="number"
+                  disabled={!!newlyCreatedProduct}
                   data-testid="input-max-quantity"
                 />
               </div>
