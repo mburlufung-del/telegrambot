@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import ObjectUploader from "@/components/object-uploader";
+
 
 export default function EnhancedBroadcast() {
   const { toast } = useToast();
@@ -33,8 +33,9 @@ export default function EnhancedBroadcast() {
       imageUrl?: string;
       targetType: 'all' | 'recent' | 'custom';
       customUsers?: string;
-    }) => {
-      return await apiRequest("/api/bot/broadcast", "POST", data);
+    }): Promise<{ sentCount: number; totalTargeted: number }> => {
+      const response = await apiRequest("/api/bot/broadcast", "POST", data);
+      return response.json();
     },
     onSuccess: (data: { sentCount: number; totalTargeted: number }) => {
       toast({
@@ -85,13 +86,7 @@ export default function EnhancedBroadcast() {
     });
   };
 
-  const handleImageUpload = (uploadedImageUrl: string) => {
-    setImageUrl(uploadedImageUrl);
-    toast({
-      title: "Image Uploaded",
-      description: "Image ready for broadcast",
-    });
-  };
+
 
   const removeImage = () => {
     setImageUrl("");
@@ -141,38 +136,39 @@ export default function EnhancedBroadcast() {
             </div>
           </div>
 
-          {/* Image Upload Section */}
+          {/* Image URL Input (Alternative to Upload) */}
           <div className="space-y-3">
-            <Label>Image Attachment (Optional)</Label>
-            {!imageUrl ? (
-              <ObjectUploader
-                onUploadComplete={handleImageUpload}
-                buttonClassName="w-full"
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Image for Broadcast
-              </ObjectUploader>
-            ) : (
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Image className="h-5 w-5 text-green-600" />
-                    <span className="text-sm font-medium">Image attached</span>
-                    <Badge variant="secondary">Ready</Badge>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={removeImage}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+            <Label htmlFor="imageUrl">Image URL (Optional)</Label>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                id="imageUrl"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {imageUrl && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={removeImage}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            {imageUrl && (
+              <div className="border rounded-lg p-3 bg-blue-50">
+                <div className="flex items-center gap-2">
+                  <Image className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm text-blue-700">Image URL ready for broadcast</span>
                 </div>
-                <p className="text-xs text-gray-600 mt-2">
-                  Image will be sent with your broadcast message
-                </p>
               </div>
             )}
+            <p className="text-xs text-gray-500">
+              Provide a direct image URL that will be sent with your broadcast message
+            </p>
           </div>
 
           {/* Target Audience */}
@@ -255,7 +251,7 @@ export default function EnhancedBroadcast() {
                 {imageUrl && (
                   <div className="flex items-center gap-2 text-sm text-blue-700">
                     <Image className="h-4 w-4" />
-                    <span>Image attachment included</span>
+                    <span>Image: {imageUrl.length > 50 ? `${imageUrl.substring(0, 50)}...` : imageUrl}</span>
                   </div>
                 )}
                 <div className="bg-white rounded p-3 border">

@@ -407,17 +407,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Object storage route for serving public assets
+  // Simple public object serving - placeholder for now
   app.get("/public-objects/:filePath(*)", async (req, res) => {
     try {
-      const filePath = req.params.filePath;
-      const { ObjectStorageService } = await import("./objectStorage.js");
-      const objectStorageService = new ObjectStorageService();
-      const file = await objectStorageService.searchPublicObject(filePath);
-      if (!file) {
-        return res.status(404).json({ error: "File not found" });
-      }
-      objectStorageService.downloadObject(file, res);
+      // For now, return 404 until Google Cloud Storage is properly set up
+      res.status(404).json({ error: "File not found" });
     } catch (error) {
       console.error("Error searching for public object:", error);
       return res.status(500).json({ error: "Internal server error" });
@@ -427,8 +421,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Object storage upload endpoint
   app.post("/api/objects/upload", async (req, res) => {
     try {
-      const { ObjectStorageService } = await import("./objectStorage.js");
-      const objectStorageService = new ObjectStorageService();
+      const { SimpleObjectStorageService } = await import("./simpleObjectStorage.js");
+      const objectStorageService = new SimpleObjectStorageService();
       const uploadURL = await objectStorageService.getObjectEntityUploadURL();
       res.json({ uploadURL });
     } catch (error) {
@@ -437,18 +431,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Object storage download endpoint
+  // Simple object serving endpoint - serve from bucket directly
   app.get("/objects/:objectPath(*)", async (req, res) => {
     try {
-      const { ObjectStorageService, ObjectNotFoundError } = await import("./objectStorage.js");
-      const objectStorageService = new ObjectStorageService();
-      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
-      objectStorageService.downloadObject(objectFile, res);
+      // For now, redirect to external storage or return 404
+      // This can be enhanced when Google Cloud Storage package is properly installed
+      res.status(404).json({ error: "Object not found" });
     } catch (error) {
       console.error("Error accessing object:", error);
-      if (error instanceof Error && error.name === 'ObjectNotFoundError') {
-        return res.sendStatus(404);
-      }
       return res.sendStatus(500);
     }
   });
