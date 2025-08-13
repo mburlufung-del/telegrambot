@@ -168,8 +168,28 @@ export default function EnhancedBroadcast() {
         throw new Error(`Upload failed: ${uploadResponse.status}`);
       }
 
-      // Set the uploaded image
-      setImageUrl(uploadURL);
+      // Convert the upload URL to our object serving endpoint
+      const url = new URL(uploadURL);
+      const objectPath = url.pathname;
+      
+      // Convert from /bucket-name/.private/uploads/uuid to /objects/uploads/uuid
+      const pathParts = objectPath.split('/');
+      let convertedImageUrl: string;
+      
+      if (pathParts.length >= 4) {
+        // Format: /bucket-name/.private/uploads/uuid -> /objects/uploads/uuid
+        const uploadPath = pathParts.slice(3).join('/'); // Gets "uploads/uuid"
+        convertedImageUrl = `/objects/${uploadPath}`;
+      } else {
+        console.error('Unexpected upload URL format:', uploadURL);
+        convertedImageUrl = `/objects/uploads/${Date.now()}-${file.name}`;
+      }
+      
+      console.log('Original upload URL:', uploadURL);
+      console.log('Converted image URL:', convertedImageUrl);
+      
+      // Set the converted image URL
+      setImageUrl(convertedImageUrl);
       setUploadedImageName(file.name);
       setUploadProgress(100);
       
