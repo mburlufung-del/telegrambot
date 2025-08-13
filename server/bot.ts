@@ -114,10 +114,9 @@ export class TeleShopBot {
           
           if (imageUrl && imageUrl.trim() !== '') {
             // Send image with caption
-            // Convert object path to full URL for Telegram
-            const baseUrl = process.env.WEBHOOK_URL || 'https://a5db4e61-9419-464b-b515-01199a70f995-00-25fppi8wyfq6l.janeway.replit.dev';
-            const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
-            await this.bot.sendPhoto(chatId, fullImageUrl, {
+            // Use the image URL directly - it's already a full signed URL from Google Cloud Storage
+            console.log(`Sending broadcast image to user ${userId}:`, imageUrl);
+            await this.bot.sendPhoto(chatId, imageUrl, {
               caption: message,
               parse_mode: 'Markdown'
             });
