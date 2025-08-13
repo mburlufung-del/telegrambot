@@ -25,7 +25,7 @@ const productFormSchema = z.object({
   stock: z.number().min(0, "Stock must be non-negative"),
   minOrderQuantity: z.number().min(1, "Minimum order quantity must be at least 1"),
   maxOrderQuantity: z.number().optional(),
-  imageUrl: z.string().url().optional().or(z.literal("")),
+  imageUrl: z.string().optional(),
   categoryId: z.string().min(1, "Category is required"),
   unit: z.string().min(1, "Measurement unit is required"),
   isActive: z.boolean(),
@@ -92,7 +92,8 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
       toast({ title: "Success", description: "Product created successfully" });
       onSuccess?.();
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Create product error:', error);
       toast({ title: "Error", description: "Failed to create product", variant: "destructive" });
     },
   });
@@ -118,14 +119,21 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
   });
 
   const onSubmit = (data: ProductFormData) => {
+    console.log('Form submission data:', data);
+    console.log('Form errors:', form.formState.errors);
+    
     const productData: InsertProduct = {
       ...data,
+      compareAtPrice: data.compareAtPrice || null,
+      maxOrderQuantity: data.maxOrderQuantity || null,
       tags: JSON.stringify(tags),
       specifications: JSON.stringify({
         ...specifications,
         unit: data.unit,
       }),
     };
+
+    console.log('Product data to submit:', productData);
 
     if (product) {
       updateMutation.mutate(productData);
