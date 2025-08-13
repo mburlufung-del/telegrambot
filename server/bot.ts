@@ -79,8 +79,8 @@ export class TeleShopBot {
       if (targetType === 'all') {
         // Get all users who have interacted with the bot (from orders)
         const orders = await storage.getOrders();
-        const userIds = [...new Set(orders.map(order => order.telegramUserId))];
-        targetUserIds = userIds;
+        const uniqueUserIds = new Set(orders.map(order => order.telegramUserId));
+        targetUserIds = Array.from(uniqueUserIds);
       } else if (targetType === 'recent') {
         // Get users from recent orders (last 30 days)
         const orders = await storage.getOrders();
@@ -90,8 +90,8 @@ export class TeleShopBot {
         const recentOrders = orders.filter(order => 
           new Date(order.createdAt) > thirtyDaysAgo
         );
-        const userIds = [...new Set(recentOrders.map(order => order.telegramUserId))];
-        targetUserIds = userIds;
+        const uniqueUserIds = new Set(recentOrders.map(order => order.telegramUserId));
+        targetUserIds = Array.from(uniqueUserIds);
       } else if (targetType === 'custom' && customUsers) {
         // Parse custom user IDs
         targetUserIds = customUsers
@@ -107,14 +107,16 @@ export class TeleShopBot {
       let sentCount = 0;
       const totalTargeted = targetUserIds.length;
 
+      console.log(`Attempting to broadcast to ${targetUserIds.length} users:`, targetUserIds);
+
       // Send to each user
       for (const userId of targetUserIds) {
         try {
           const chatId = parseInt(userId);
+          console.log(`Attempting to send to user ${userId} (chatId: ${chatId})`);
           
           if (imageUrl && imageUrl.trim() !== '') {
             // Send image with caption
-            // Use the image URL directly - it's already a full signed URL from Google Cloud Storage
             console.log(`Sending broadcast image to user ${userId}:`, imageUrl);
             await this.bot.sendPhoto(chatId, imageUrl, {
               caption: message,
@@ -128,16 +130,26 @@ export class TeleShopBot {
           }
           
           sentCount++;
+          console.log(`Successfully sent broadcast to user ${userId}`);
           
           // Small delay to avoid rate limiting
-          await new Promise(resolve => setTimeout(resolve, 50));
-        } catch (error) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (error: any) {
           console.error(`Failed to send broadcast to user ${userId}:`, error);
+          
+          // If chat not found, the user hasn't started the bot - this is expected
+          if (error?.response?.body?.description?.includes('chat not found')) {
+            console.log(`User ${userId} hasn't started the bot yet - skipping`);
+          }
           // Continue with other users even if one fails
         }
       }
 
-      return { sentCount, totalTargeted };
+      return { 
+        sentCount, 
+        totalTargeted,
+        message: sentCount === 0 ? 'No users have started the bot yet. Users must send /start to the bot before receiving broadcasts.' : undefined
+      };
     } catch (error) {
       console.error('Broadcast error:', error);
       throw error;

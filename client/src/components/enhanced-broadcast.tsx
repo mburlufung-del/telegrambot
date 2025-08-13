@@ -53,10 +53,10 @@ export default function EnhancedBroadcast() {
       const result = await response.json();
       const successMessage = result.sentCount > 0 
         ? `Successfully sent to ${result.sentCount} users out of ${result.totalTargeted} targeted`
-        : `Broadcast attempted but no active users found. Database has ${result.totalTargeted} users but they may be test accounts or inactive.`;
+        : result.message || `No active users found. Found ${result.totalTargeted} users in database but none have started the bot.`;
       
       toast({
-        title: result.sentCount > 0 ? "Broadcast Sent!" : "Broadcast Complete",
+        title: result.sentCount > 0 ? "Broadcast Sent!" : "No Active Users",
         description: successMessage,
         variant: result.sentCount > 0 ? "default" : "destructive",
       });
@@ -302,6 +302,17 @@ export default function EnhancedBroadcast() {
             <p className="text-xs text-gray-500">
               Upload an image to include with your broadcast message. The image will be stored securely and sent to users.
             </p>
+            
+            {/* User Notice */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-3">
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-600 text-sm">⚠️</span>
+                <div className="text-sm text-yellow-800">
+                  <strong>Note:</strong> Broadcasts will only reach users who have started the bot by sending /start. 
+                  Current database contains sample data - real users need to interact with your bot first.
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Target Audience */}
