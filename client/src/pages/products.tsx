@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import ProductModal from "@/components/product-modal";
+import ProductForm from "@/components/product-form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Product } from "@shared/schema";
 
 export default function Products() {
@@ -236,11 +237,31 @@ export default function Products() {
         </Card>
       )}
 
-      <ProductModal
-        open={isProductModalOpen}
-        onOpenChange={handleModalClose}
-        product={editingProduct}
-      />
+      <Dialog open={isProductModalOpen} onOpenChange={(open) => {
+        setIsProductModalOpen(open);
+        if (!open) {
+          setEditingProduct(undefined);
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingProduct ? "Edit Product" : "Add New Product"}
+            </DialogTitle>
+          </DialogHeader>
+          <ProductForm 
+            product={editingProduct}
+            onSuccess={() => {
+              setIsProductModalOpen(false);
+              setEditingProduct(undefined);
+            }}
+            onCancel={() => {
+              setIsProductModalOpen(false);
+              setEditingProduct(undefined);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

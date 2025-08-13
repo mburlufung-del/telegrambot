@@ -471,6 +471,8 @@ export class DatabaseStorage implements IStorage {
   async getProductRatings(productId: string): Promise<ProductRating[]> {
     return await db.select().from(productRatings).where(eq(productRatings.productId, productId));
   }
+
+
 }
 
 export class MemStorage implements IStorage {

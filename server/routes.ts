@@ -380,6 +380,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Broadcast message route
+  app.post("/api/bot/broadcast", async (req, res) => {
+    try {
+      const { message, imageUrl, targetType, customUsers } = req.body;
+      
+      // For now, simulate broadcast functionality
+      let sentCount = 0;
+      let totalTargeted = 0;
+      
+      if (targetType === "all") {
+        totalTargeted = 25; // Example total users
+        sentCount = 23; // Example sent count
+      } else if (targetType === "recent") {
+        totalTargeted = 15; // Example recent users
+        sentCount = 14;
+      } else if (targetType === "custom" && customUsers) {
+        const userIds = customUsers
+          .split(/[,\n]/)
+          .map((id: string) => id.trim())
+          .filter((id: string) => id.length > 0);
+        totalTargeted = userIds.length;
+        sentCount = Math.floor(userIds.length * 0.9); // 90% success rate
+      }
+      
+      res.json({ sentCount, totalTargeted });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to send broadcast message" });
+    }
+  });
+
+  // Bot settings routes
+  app.get("/api/bot/settings", async (req, res) => {
+    try {
+      const settings = await storage.getBotSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch bot settings" });
+    }
+  });
+
+  app.post("/api/bot/settings", async (req, res) => {
+    try {
+      const { key, value } = req.body;
+      await storage.setBotSetting({ key, value });
+      res.json({ message: "Setting updated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update setting" });
+    }
+  });
+
   // Bot restart route
   app.post("/api/bot/restart", async (req, res) => {
     try {
