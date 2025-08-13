@@ -11,10 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import BroadcastForm from "@/components/broadcast-form";
 import EnhancedBroadcast from "@/components/enhanced-broadcast";
 
-import PaymentSettings from "@/components/payment-settings";
 import type { BotSettings } from "@shared/schema";
 import { 
   Bot, 
@@ -24,27 +22,81 @@ import {
   User, 
   Save,
   Settings,
-  Plus,
-  Command
+  Command,
+  Info,
+  Zap
 } from "lucide-react";
 
-const botSettingSchema = z.object({
-  key: z.string().min(1, "Key is required"),
-  value: z.string().min(1, "Value is required"),
-});
-
-type BotSettingData = z.infer<typeof botSettingSchema>;
-
-const operatorSchema = z.object({
-  username: z.string().min(1, "Username is required").startsWith("@", "Username must start with @"),
-  displayName: z.string().min(1, "Display name is required"),
-});
-
-type OperatorData = z.infer<typeof operatorSchema>;
+// Bot configuration categories for organized settings
+const BOT_CONFIG_CATEGORIES = {
+  general: {
+    title: "General Information",
+    icon: Info,
+    description: "Basic bot information and identity",
+    settings: [
+      { key: "bot_name", label: "Bot Name", type: "text", default: "TeleShop Bot", description: "The display name for your bot" },
+      { key: "bot_description", label: "Bot Description", type: "textarea", default: "Your friendly shopping assistant", description: "Brief description of what your bot does" },
+      { key: "bot_username", label: "Bot Username", type: "text", default: "@teleshop_bot", description: "The Telegram username (with @)" },
+      { key: "welcome_message", label: "Welcome Message", type: "textarea", default: "🛍️ Welcome to TeleShop!\n\nChoose an option below:", description: "Message shown when users start the bot" }
+    ]
+  },
+  messages: {
+    title: "Bot Messages",
+    icon: MessageSquare,
+    description: "Configure all bot responses and messages",
+    settings: [
+      { key: "help_message", label: "Help Message", type: "textarea", default: "🔹 Available Commands:\n\n🏠 Main Menu - Return to main options\n📦 Catalog - Browse all products", description: "Help command response" },
+      { key: "contact_message", label: "Contact Message", type: "textarea", default: "📞 Contact Information:\n\n👤 Operator: @murzion", description: "Contact information display" },
+      { key: "order_confirmation", label: "Order Confirmation", type: "textarea", default: "✅ Order confirmed! We'll process your order and contact you within 24 hours.", description: "Message after successful order" },
+      { key: "out_of_stock_message", label: "Out of Stock Message", type: "textarea", default: "❌ Sorry, this item is currently out of stock.", description: "Shown when items are unavailable" },
+      { key: "cart_empty_message", label: "Empty Cart Message", type: "textarea", default: "🛒 Your cart is empty. Start shopping to add items!", description: "Shown when cart is empty" },
+      { key: "payment_instructions", label: "Payment Instructions", type: "textarea", default: "💳 Please follow the payment instructions provided by our operator.", description: "Payment guidance for users" }
+    ]
+  },
+  operator: {
+    title: "Operator Settings",
+    icon: User,
+    description: "Customer support operator information",
+    settings: [
+      { key: "operator_username", label: "Operator Username", type: "text", default: "@murzion", description: "Support contact username (with @)" },
+      { key: "operator_name", label: "Operator Name", type: "text", default: "Support Team", description: "Display name for support" },
+      { key: "support_hours", label: "Support Hours", type: "text", default: "Mon-Fri 9AM-6PM EST", description: "Available support hours" },
+      { key: "support_email", label: "Support Email", type: "email", default: "support@teleshop.com", description: "Contact email address" },
+      { key: "response_time", label: "Expected Response Time", type: "text", default: "Within 24 hours", description: "How quickly you respond" }
+    ]
+  },
+  payment: {
+    title: "Payment & Commerce",
+    icon: CreditCard,
+    description: "Payment methods and pricing settings",
+    settings: [
+      { key: "payment_methods", label: "Available Payment Methods", type: "textarea", default: "💳 Payment Methods:\n• Cash on Delivery\n• Bank Transfer\n• Credit/Debit Card", description: "List of accepted payment methods" },
+      { key: "currency_symbol", label: "Currency Symbol", type: "text", default: "$", description: "Symbol shown with prices" },
+      { key: "currency_code", label: "Currency Code", type: "text", default: "USD", description: "Three-letter currency code" },
+      { key: "minimum_order", label: "Minimum Order Amount", type: "number", default: "0", description: "Minimum order value required" },
+      { key: "shipping_cost", label: "Default Shipping Cost", type: "number", default: "0", description: "Base shipping fee" },
+      { key: "tax_rate", label: "Tax Rate (%)", type: "number", default: "0", description: "Tax percentage applied" }
+    ]
+  },
+  commands: {
+    title: "Custom Commands",
+    icon: Command,
+    description: "Create custom bot commands and responses",
+    settings: [
+      { key: "custom_command_1", label: "Custom Command 1", type: "text", default: "", description: "Command without / (e.g., 'info')" },
+      { key: "custom_response_1", label: "Response for Command 1", type: "textarea", default: "", description: "What the bot replies with" },
+      { key: "custom_command_2", label: "Custom Command 2", type: "text", default: "", description: "Command without / (e.g., 'faq')" },
+      { key: "custom_response_2", label: "Response for Command 2", type: "textarea", default: "", description: "What the bot replies with" },
+      { key: "custom_command_3", label: "Custom Command 3", type: "text", default: "", description: "Command without / (e.g., 'about')" },
+      { key: "custom_response_3", label: "Response for Command 3", type: "textarea", default: "", description: "What the bot replies with" }
+    ]
+  }
+};
 
 export default function BotSettings() {
   const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
-  const [isCustomCommandModalOpen, setIsCustomCommandModalOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("general");
+  const [editingSettings, setEditingSettings] = useState<{[key: string]: string}>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -52,22 +104,40 @@ export default function BotSettings() {
     queryKey: ["/api/bot/settings"],
   });
 
-  const updateSettingMutation = useMutation({
-    mutationFn: async (data: BotSettingData) => {
-      const response = await fetch("/api/bot/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error("Failed to update setting");
-      return response.json();
+  // Helper function to get setting value
+  const getSettingValue = (key: string) => {
+    const setting = settings.find(s => s.key === key);
+    if (setting?.value) return setting.value;
+    
+    // Find default value from categories
+    for (const category of Object.values(BOT_CONFIG_CATEGORIES)) {
+      const settingDef = category.settings.find(s => s.key === key);
+      if (settingDef) return settingDef.default;
+    }
+    return "";
+  };
+
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async (settingsToUpdate: {[key: string]: string}) => {
+      const promises = Object.entries(settingsToUpdate).map(([key, value]) =>
+        fetch("/api/bot/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key, value }),
+        })
+      );
+      const responses = await Promise.all(promises);
+      const failed = responses.filter(r => !r.ok);
+      if (failed.length > 0) throw new Error(`Failed to update ${failed.length} settings`);
+      return responses;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bot/settings"] });
-      toast({ title: "Success", description: "Bot setting updated successfully" });
+      toast({ title: "Success", description: "Bot settings updated successfully" });
+      setEditingSettings({});
     },
     onError: () => {
-      toast({ title: "Error", description: "Failed to update bot setting", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to update some bot settings", variant: "destructive" });
     },
   });
 
@@ -88,370 +158,212 @@ export default function BotSettings() {
     },
   });
 
-  // Get specific settings
-  const getSetting = (key: string) => settings.find(s => s.key === key)?.value || "";
+  const handleSaveCategory = () => {
+    const categorySettings = BOT_CONFIG_CATEGORIES[activeCategory as keyof typeof BOT_CONFIG_CATEGORIES];
+    const settingsToUpdate: {[key: string]: string} = {};
+    
+    categorySettings.settings.forEach(setting => {
+      const currentValue = editingSettings[setting.key] ?? getSettingValue(setting.key);
+      settingsToUpdate[setting.key] = currentValue;
+    });
+    
+    bulkUpdateMutation.mutate(settingsToUpdate);
+  };
 
-  // Forms for different settings
-  const welcomeForm = useForm({
-    defaultValues: { value: getSetting("welcome_message") },
-  });
+  const handleInputChange = (key: string, value: string) => {
+    setEditingSettings(prev => ({ ...prev, [key]: value }));
+  };
 
-  const helpForm = useForm({
-    defaultValues: { value: getSetting("help_message") },
-  });
+  const hasUnsavedChanges = Object.keys(editingSettings).length > 0;
 
-  const contactForm = useForm({
-    defaultValues: { value: getSetting("contact_message") },
-  });
-
-  const operatorForm = useForm<OperatorData>({
-    resolver: zodResolver(operatorSchema),
-    defaultValues: {
-      username: "@murzion",
-      displayName: "Support Team",
-    },
-  });
-
-  const customCommandForm = useForm<BotSettingData>({
-    resolver: zodResolver(botSettingSchema),
-    defaultValues: {
-      key: "",
-      value: "",
-    },
-  });
-
-  const handleUpdateSetting = (key: string, value: string) => {
-    updateSettingMutation.mutate({ key, value });
+  const renderSettingInput = (setting: any) => {
+    const currentValue = editingSettings[setting.key] ?? getSettingValue(setting.key);
+    
+    switch (setting.type) {
+      case "textarea":
+        return (
+          <Textarea
+            value={currentValue}
+            onChange={(e) => handleInputChange(setting.key, e.target.value)}
+            placeholder={setting.default}
+            className="min-h-[100px] resize-none"
+            data-testid={`textarea-${setting.key}`}
+          />
+        );
+      case "number":
+        return (
+          <Input
+            type="number"
+            value={currentValue}
+            onChange={(e) => handleInputChange(setting.key, e.target.value)}
+            placeholder={setting.default}
+            min="0"
+            step="0.01"
+            data-testid={`input-${setting.key}`}
+          />
+        );
+      case "email":
+        return (
+          <Input
+            type="email"
+            value={currentValue}
+            onChange={(e) => handleInputChange(setting.key, e.target.value)}
+            placeholder={setting.default}
+            data-testid={`input-${setting.key}`}
+          />
+        );
+      default:
+        return (
+          <Input
+            type="text"
+            value={currentValue}
+            onChange={(e) => handleInputChange(setting.key, e.target.value)}
+            placeholder={setting.default}
+            data-testid={`input-${setting.key}`}
+          />
+        );
+    }
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div className="container mx-auto p-6 max-w-7xl">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Bot Settings</h1>
-          <p className="text-gray-600 mt-1">Configure your Telegram bot behavior and messages</p>
+          <h1 className="text-3xl font-bold">Bot Management</h1>
+          <p className="text-muted-foreground mt-1">Configure all aspects of your Telegram bot</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2">
+          {hasUnsavedChanges && (
+            <Button
+              onClick={handleSaveCategory}
+              disabled={bulkUpdateMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+              data-testid="button-save-changes"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {bulkUpdateMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          )}
           <Button
             onClick={() => setIsBroadcastModalOpen(true)}
             variant="outline"
             data-testid="button-broadcast"
           >
-            <Send className="mr-2 h-4 w-4" />
+            <Send className="h-4 w-4 mr-2" />
             Broadcast
           </Button>
           <Button
             onClick={() => restartBotMutation.mutate()}
             disabled={restartBotMutation.isPending}
+            variant="outline"
             data-testid="button-restart-bot"
           >
-            <Bot className="mr-2 h-4 w-4" />
+            <Bot className="h-4 w-4 mr-2" />
             {restartBotMutation.isPending ? "Restarting..." : "Restart Bot"}
           </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="messages" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
-          <TabsTrigger value="messages" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            <span className="hidden sm:inline">Messages</span>
-          </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            <span className="hidden sm:inline">Payments</span>
-          </TabsTrigger>
-          <TabsTrigger value="operator" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            <span className="hidden sm:inline">Operator</span>
-          </TabsTrigger>
-          <TabsTrigger value="commands" className="flex items-center gap-2">
-            <Command className="h-4 w-4" />
-            <span className="hidden sm:inline">Commands</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="messages" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Welcome Message */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bot className="h-5 w-5" />
-                  Welcome Message
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={welcomeForm.handleSubmit((data) => 
-                  handleUpdateSetting("welcome_message", data.value)
-                )} className="space-y-4">
-                  <div>
-                    <Label htmlFor="welcome">Message Content</Label>
-                    <Textarea
-                      id="welcome"
-                      {...welcomeForm.register("value")}
-                      placeholder="Enter welcome message..."
-                      rows={6}
-                      className="resize-none"
-                      data-testid="input-welcome-message"
-                    />
-                  </div>
-                  <Button type="submit" disabled={updateSettingMutation.isPending} data-testid="button-save-welcome">
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Welcome Message
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* Help Message */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" />
-                  Help Message
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={helpForm.handleSubmit((data) => 
-                  handleUpdateSetting("help_message", data.value)
-                )} className="space-y-4">
-                  <div>
-                    <Label htmlFor="help">Message Content</Label>
-                    <Textarea
-                      id="help"
-                      {...helpForm.register("value")}
-                      placeholder="Enter help message..."
-                      rows={6}
-                      className="resize-none"
-                      data-testid="input-help-message"
-                    />
-                  </div>
-                  <Button type="submit" disabled={updateSettingMutation.isPending} data-testid="button-save-help">
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Help Message
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* Contact Message */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Contact Information Message
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={contactForm.handleSubmit((data) => 
-                  handleUpdateSetting("contact_message", data.value)
-                )} className="space-y-4">
-                  <div>
-                    <Label htmlFor="contact">Message Content</Label>
-                    <Textarea
-                      id="contact"
-                      {...contactForm.register("value")}
-                      placeholder="Enter contact information..."
-                      rows={4}
-                      className="resize-none"
-                      data-testid="input-contact-message"
-                    />
-                  </div>
-                  <Button type="submit" disabled={updateSettingMutation.isPending} data-testid="button-save-contact">
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Contact Message
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="payments">
-          <PaymentSettings />
-        </TabsContent>
-
-        <TabsContent value="operator" className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Settings Categories Sidebar */}
+        <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Operator Settings
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Settings Categories
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-2">
+              <nav className="space-y-1">
+                {Object.entries(BOT_CONFIG_CATEGORIES).map(([key, category]) => {
+                  const Icon = category.icon;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setActiveCategory(key)}
+                      data-testid={`nav-${key}`}
+                      className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors ${
+                        activeCategory === key
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span className="text-left">{category.title}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </CardContent>
+          </Card>
+
+          {/* Bot Status */}
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Zap className="h-5 w-5" />
+                Bot Status
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={operatorForm.handleSubmit((data) => {
-                handleUpdateSetting("operator_username", data.username);
-                handleUpdateSetting("operator_display_name", data.displayName);
-              })} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="username">Telegram Username</Label>
-                    <Input
-                      id="username"
-                      {...operatorForm.register("username")}
-                      placeholder="@username"
-                      data-testid="input-operator-username"
-                    />
-                    {operatorForm.formState.errors.username && (
-                      <p className="text-sm text-red-500 mt-1">
-                        {operatorForm.formState.errors.username.message}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="displayName">Display Name</Label>
-                    <Input
-                      id="displayName"
-                      {...operatorForm.register("displayName")}
-                      placeholder="Support Team"
-                      data-testid="input-operator-display-name"
-                    />
-                    {operatorForm.formState.errors.displayName && (
-                      <p className="text-sm text-red-500 mt-1">
-                        {operatorForm.formState.errors.displayName.message}
-                      </p>
-                    )}
-                  </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Status</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm font-medium">Online</span>
                 </div>
-                <Button type="submit" disabled={updateSettingMutation.isPending} data-testid="button-save-operator">
-                  <Save className="h-4 w-4 mr-2" />
-                  Update Operator Settings
-                </Button>
-              </form>
+              </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="commands" className="space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-lg font-semibold">Custom Commands</h3>
-              <p className="text-gray-600">Add custom command buttons and information responses</p>
-            </div>
-            <Button
-              onClick={() => setIsCustomCommandModalOpen(true)}
-              data-testid="button-add-command"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Command
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {settings
-              .filter(setting => setting.key.startsWith("custom_command_"))
-              .map((setting) => (
-                <Card key={setting.id}>
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      /{setting.key.replace("custom_command_", "")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-3">{setting.value}</p>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">Edit</Button>
-                      <Button variant="destructive" size="sm">Delete</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            
-            {settings.filter(s => s.key.startsWith("custom_command_")).length === 0 && (
-              <Card className="md:col-span-2">
-                <CardContent className="flex flex-col items-center justify-center py-8">
-                  <Command className="h-12 w-12 text-gray-300 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No custom commands yet</h3>
-                  <p className="text-gray-600 text-center mb-4">
-                    Create custom commands to provide quick information to your customers
+        {/* Settings Content */}
+        <div className="lg:col-span-3">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                {(() => {
+                  const category = BOT_CONFIG_CATEGORIES[activeCategory as keyof typeof BOT_CONFIG_CATEGORIES];
+                  const Icon = category.icon;
+                  return <Icon className="h-5 w-5" />;
+                })()}
+                <div>
+                  <CardTitle>
+                    {BOT_CONFIG_CATEGORIES[activeCategory as keyof typeof BOT_CONFIG_CATEGORIES].title}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {BOT_CONFIG_CATEGORIES[activeCategory as keyof typeof BOT_CONFIG_CATEGORIES].description}
                   </p>
-                  <Button onClick={() => setIsCustomCommandModalOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Your First Command
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {BOT_CONFIG_CATEGORIES[activeCategory as keyof typeof BOT_CONFIG_CATEGORIES].settings.map(setting => (
+                <div key={setting.key} className="space-y-2">
+                  <Label htmlFor={setting.key} className="text-sm font-medium">
+                    {setting.label}
+                  </Label>
+                  {renderSettingInput(setting)}
+                  {setting.description && (
+                    <p className="text-xs text-muted-foreground">
+                      {setting.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Broadcast Modal */}
       <Dialog open={isBroadcastModalOpen} onOpenChange={setIsBroadcastModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="broadcast-description">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Broadcast Message</DialogTitle>
-            <div id="broadcast-description" className="sr-only">
-              Send messages to bot users with optional image attachments and target audience selection
-            </div>
+            <DialogTitle>Send Broadcast Message</DialogTitle>
           </DialogHeader>
-          <EnhancedBroadcast />
-        </DialogContent>
-      </Dialog>
-
-      {/* Custom Command Modal */}
-      <Dialog open={isCustomCommandModalOpen} onOpenChange={setIsCustomCommandModalOpen}>
-        <DialogContent className="max-w-2xl" aria-describedby="custom-command-description">
-          <DialogHeader>
-            <DialogTitle>Add Custom Command</DialogTitle>
-            <div id="custom-command-description" className="sr-only">
-              Create custom bot commands with automatic responses for common inquiries
-            </div>
-          </DialogHeader>
-          <form onSubmit={customCommandForm.handleSubmit((data) => {
-            updateSettingMutation.mutate({
-              key: `custom_command_${data.key}`,
-              value: data.value,
-            });
-            setIsCustomCommandModalOpen(false);
-            customCommandForm.reset();
-          })} className="space-y-4">
-            <div>
-              <Label htmlFor="commandKey">Command Name</Label>
-              <Input
-                id="commandKey"
-                {...customCommandForm.register("key")}
-                placeholder="e.g., delivery, pricing, about"
-                data-testid="input-command-key"
-              />
-              {customCommandForm.formState.errors.key && (
-                <p className="text-sm text-red-500 mt-1">
-                  {customCommandForm.formState.errors.key.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="commandValue">Response Message</Label>
-              <Textarea
-                id="commandValue"
-                {...customCommandForm.register("value")}
-                placeholder="Enter the response message for this command..."
-                rows={4}
-                data-testid="input-command-value"
-              />
-              {customCommandForm.formState.errors.value && (
-                <p className="text-sm text-red-500 mt-1">
-                  {customCommandForm.formState.errors.value.message}
-                </p>
-              )}
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsCustomCommandModalOpen(false)}
-                data-testid="button-cancel-command"
-              >
-                Cancel
-              </Button>
-              <Button type="submit" data-testid="button-save-command">
-                <Save className="h-4 w-4 mr-2" />
-                Add Command
-              </Button>
-            </div>
-          </form>
+          <EnhancedBroadcast onClose={() => setIsBroadcastModalOpen(false)} />
         </DialogContent>
       </Dialog>
     </div>
