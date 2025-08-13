@@ -17,6 +17,8 @@ import {
   type InsertBotStats,
   type ProductRating,
   type InsertProductRating,
+  type PricingTier,
+  type InsertPricingTier,
   type OrderItem
 } from "@shared/schema";
 import { randomUUID } from "crypto";
@@ -84,6 +86,13 @@ export interface IStorage {
   getProductRating(productId: string, telegramUserId: string): Promise<ProductRating | undefined>;
   getWeeklyProductRatings(): Promise<{ productId: string; productName: string; averageRating: number; totalRatings: number; ratingCounts: Record<number, number> }[]>;
   getProductRatings(productId: string): Promise<ProductRating[]>;
+
+  // Pricing Tiers
+  getPricingTiers(productId: string): Promise<PricingTier[]>;
+  createPricingTier(tier: InsertPricingTier): Promise<PricingTier>;
+  updatePricingTier(id: string, tier: Partial<InsertPricingTier>): Promise<PricingTier | undefined>;
+  deletePricingTier(id: string): Promise<boolean>;
+  getProductPriceForQuantity(productId: string, quantity: number): Promise<string | undefined>;
 }
 
 import { db } from "./db";
@@ -97,7 +106,8 @@ import {
   inquiries, 
   botSettings, 
   botStats, 
-  productRatings 
+  productRatings,
+  pricingTiers 
 } from "@shared/schema";
 
 export class DatabaseStorage implements IStorage {
@@ -513,6 +523,48 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(productRatings).where(eq(productRatings.productId, productId));
   }
 
+  // Pricing Tiers
+  async getPricingTiers(productId: string): Promise<PricingTier[]> {
+    return await db.select().from(pricingTiers)
+      .where(and(eq(pricingTiers.productId, productId), eq(pricingTiers.isActive, true)))
+      .orderBy(pricingTiers.minQuantity);
+  }
+
+  async createPricingTier(tier: InsertPricingTier): Promise<PricingTier> {
+    const result = await db.insert(pricingTiers).values(tier).returning();
+    return result[0];
+  }
+
+  async updatePricingTier(id: string, tier: Partial<InsertPricingTier>): Promise<PricingTier | undefined> {
+    const result = await db.update(pricingTiers).set(tier).where(eq(pricingTiers.id, id)).returning();
+    return result[0];
+  }
+
+  async deletePricingTier(id: string): Promise<boolean> {
+    const result = await db.delete(pricingTiers).where(eq(pricingTiers.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getProductPriceForQuantity(productId: string, quantity: number): Promise<string | undefined> {
+    const tiers = await this.getPricingTiers(productId);
+    
+    if (tiers.length === 0) {
+      // No pricing tiers, return base product price
+      const product = await this.getProduct(productId);
+      return product?.price;
+    }
+
+    // Find the appropriate tier for this quantity
+    for (const tier of tiers) {
+      if (quantity >= tier.minQuantity && (tier.maxQuantity === null || quantity <= tier.maxQuantity)) {
+        return tier.price;
+      }
+    }
+
+    // If no tier matches, return the base product price
+    const product = await this.getProduct(productId);
+    return product?.price;
+  }
 
 }
 
@@ -1174,6 +1226,39 @@ export class MemStorage implements IStorage {
   async getProductRatings(productId: string): Promise<ProductRating[]> {
     return Array.from(this.productRatings.values())
       .filter(rating => rating.productId === productId);
+  }
+
+  // Pricing Tiers (basic implementation for MemStorage)
+  async getPricingTiers(productId: string): Promise<PricingTier[]> {
+    // MemStorage implementation - return empty array as it's mainly for database storage
+    return [];
+  }
+
+  async createPricingTier(tier: InsertPricingTier): Promise<PricingTier> {
+    // MemStorage implementation - basic in-memory tier creation
+    const id = randomUUID();
+    const pricingTier: PricingTier = {
+      id,
+      ...tier,
+      createdAt: new Date(),
+    };
+    return pricingTier;
+  }
+
+  async updatePricingTier(id: string, tier: Partial<InsertPricingTier>): Promise<PricingTier | undefined> {
+    // MemStorage implementation - return undefined
+    return undefined;
+  }
+
+  async deletePricingTier(id: string): Promise<boolean> {
+    // MemStorage implementation - return false
+    return false;
+  }
+
+  async getProductPriceForQuantity(productId: string, quantity: number): Promise<string | undefined> {
+    // MemStorage implementation - return base product price
+    const product = this.products.get(productId);
+    return product?.price;
   }
 
   private initializeSampleOrders() {

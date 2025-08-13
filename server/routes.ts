@@ -106,6 +106,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Pricing Tiers routes
+  app.get("/api/products/:productId/pricing-tiers", async (req, res) => {
+    try {
+      const tiers = await storage.getPricingTiers(req.params.productId);
+      res.json(tiers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch pricing tiers" });
+    }
+  });
+
+  app.post("/api/products/:productId/pricing-tiers", async (req, res) => {
+    try {
+      const tierData = { ...req.body, productId: req.params.productId };
+      const tier = await storage.createPricingTier(tierData);
+      res.status(201).json(tier);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid pricing tier data" });
+    }
+  });
+
+  app.put("/api/pricing-tiers/:id", async (req, res) => {
+    try {
+      const tier = await storage.updatePricingTier(req.params.id, req.body);
+      if (!tier) {
+        return res.status(404).json({ message: "Pricing tier not found" });
+      }
+      res.json(tier);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid pricing tier data" });
+    }
+  });
+
+  app.delete("/api/pricing-tiers/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deletePricingTier(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Pricing tier not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete pricing tier" });
+    }
+  });
+
+  app.get("/api/products/:productId/price/:quantity", async (req, res) => {
+    try {
+      const quantity = parseInt(req.params.quantity);
+      const price = await storage.getProductPriceForQuantity(req.params.productId, quantity);
+      res.json({ price });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get price for quantity" });
+    }
+  });
+
   // Categories routes
   app.get("/api/categories", async (req, res) => {
     try {

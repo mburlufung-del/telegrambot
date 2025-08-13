@@ -96,6 +96,21 @@ export const productRatings = pgTable("product_ratings", {
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
+export const pricingTiers = pgTable("pricing_tiers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  productId: varchar("product_id").notNull().references(() => products.id),
+  minQuantity: integer("min_quantity").notNull(),
+  maxQuantity: integer("max_quantity"), // null means unlimited
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+export const insertPricingTierSchema = createInsertSchema(pricingTiers).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
   createdAt: true,
@@ -179,4 +194,6 @@ export type BotStats = typeof botStats.$inferSelect;
 export type InsertBotStats = z.infer<typeof insertBotStatsSchema>;
 export type ProductRating = typeof productRatings.$inferSelect;
 export type InsertProductRating = z.infer<typeof insertProductRatingSchema>;
+export type PricingTier = typeof pricingTiers.$inferSelect;
+export type InsertPricingTier = z.infer<typeof insertPricingTierSchema>;
 export type OrderItem = z.infer<typeof orderItemSchema>;

@@ -478,11 +478,14 @@ export class TeleShopBot {
         const product = await storage.getProduct(item.productId);
         
         if (product) {
-          const itemTotal = parseFloat(product.price) * item.quantity;
+          // Use pricing tier price if available, otherwise use base price
+          const tierPrice = await storage.getProductPriceForQuantity(item.productId, item.quantity);
+          const effectivePrice = tierPrice || product.price;
+          const itemTotal = parseFloat(effectivePrice) * item.quantity;
           totalAmount += itemTotal;
           
           cartMessage += `${i + 1}. *${product.name}*\n`;
-          cartMessage += `   Qty: ${item.quantity} × $${product.price} = $${itemTotal.toFixed(2)}\n\n`;
+          cartMessage += `   Qty: ${item.quantity} × $${effectivePrice} = $${itemTotal.toFixed(2)}\n\n`;
 
           // Add quantity control buttons for each item
           const minusEnabled = item.quantity > 1;
@@ -1064,7 +1067,10 @@ Need help? Our support team is here for you!
         quantity: quantity
       });
 
-      const total = (parseFloat(product.price) * quantity).toFixed(2);
+      // Use pricing tier price if available, otherwise use base price
+      const tierPrice = await storage.getProductPriceForQuantity(productId, quantity);
+      const effectivePrice = tierPrice || product.price;
+      const total = (parseFloat(effectivePrice) * quantity).toFixed(2);
       
       // Get updated cart to show final quantity
       const updatedCartItems = await storage.getCartItems(userId);
@@ -1073,7 +1079,10 @@ Need help? Our support team is here for you!
       
       let message;
       if (existingItem) {
-        message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Added: ${quantity}\n• Total in cart: ${finalQuantity}\n• Item total: $${(parseFloat(product.price) * finalQuantity).toFixed(2)}`;
+        // Calculate effective price for final quantity
+        const tierPriceForFinal = await storage.getProductPriceForQuantity(productId, finalQuantity);
+        const effectiveFinalPrice = tierPriceForFinal || product.price;
+        message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Added: ${quantity}\n• Total in cart: ${finalQuantity}\n• Item total: $${(parseFloat(effectiveFinalPrice) * finalQuantity).toFixed(2)}`;
       } else {
         message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Total: $${total}`;
       }
@@ -1247,12 +1256,15 @@ Need help? Our support team is here for you!
       for (const item of cartItems) {
         const product = await storage.getProduct(item.productId);
         if (product) {
-          const itemTotal = parseFloat(product.price) * item.quantity;
+          // Use pricing tier price if available, otherwise use base price
+          const tierPrice = await storage.getProductPriceForQuantity(item.productId, item.quantity);
+          const effectivePrice = tierPrice || product.price;
+          const itemTotal = parseFloat(effectivePrice) * item.quantity;
           totalAmount += itemTotal;
           orderItems.push({
             productName: product.name,
             quantity: item.quantity,
-            price: product.price,
+            price: effectivePrice,
             total: itemTotal.toFixed(2)
           });
         }
@@ -1816,7 +1828,10 @@ Select your preferred payment option:
     for (const item of cartItems) {
       const product = await storage.getProduct(item.productId);
       if (product) {
-        total += parseFloat(product.price) * item.quantity;
+        // Use pricing tier price if available, otherwise use base price
+        const tierPrice = await storage.getProductPriceForQuantity(item.productId, item.quantity);
+        const effectivePrice = tierPrice || product.price;
+        total += parseFloat(effectivePrice) * item.quantity;
       }
     }
 
@@ -1951,12 +1966,15 @@ Include your Order Number: ${orderNumber}`;
       for (const item of cartItems) {
         const product = await storage.getProduct(item.productId);
         if (product) {
-          const itemTotal = parseFloat(product.price) * item.quantity;
+          // Use pricing tier price if available, otherwise use base price
+          const tierPrice = await storage.getProductPriceForQuantity(item.productId, item.quantity);
+          const effectivePrice = tierPrice || product.price;
+          const itemTotal = parseFloat(effectivePrice) * item.quantity;
           total += itemTotal;
           orderItems.push({
             productId: product.id,
             productName: product.name,
-            price: product.price,
+            price: effectivePrice,
             quantity: item.quantity,
             total: itemTotal.toFixed(2)
           });

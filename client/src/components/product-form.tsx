@@ -16,6 +16,7 @@ import { apiRequest } from "@/lib/queryClient";
 import type { Product, Category, InsertProduct } from "@shared/schema";
 import { Plus, X, Save, Package, Upload, Image } from "lucide-react";
 import ObjectUploader from "@/components/object-uploader";
+import PricingTiers from "@/components/pricing-tiers";
 
 const productFormSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -519,6 +520,14 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
           </div>
         </CardContent>
       </Card>
+
+      {/* Pricing Tiers - Only show for existing products */}
+      {product && (
+        <PricingTiers 
+          productId={product.id} 
+          productName={product.name}
+        />
+      )}
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-4 justify-end">
