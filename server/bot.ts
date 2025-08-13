@@ -348,11 +348,11 @@ export class TeleShopBot {
         await this.handleAddressEntry(chatId, userId);
       } else if (data === 'confirm_address') {
         await this.handleAddressConfirmation(chatId, userId);
-      } else if (data?.startsWith('payment_')) {
-        const parts = data.replace('payment_', '').split('_');
-        const method = parts[0];
+      } else if (data?.startsWith('payment_method_')) {
+        const parts = data.replace('payment_method_', '').split('_');
+        const methodId = parts[0];
         const orderNumber = parts.length > 1 ? `#${parts[1]}` : `#${Date.now().toString().slice(-6)}`;
-        await this.handlePaymentSelection(chatId, userId, method, orderNumber);
+        await this.handlePaymentSelection(chatId, userId, methodId, orderNumber);
       } else if (data?.startsWith('complete_order')) {
         const parts = data.split('_');
         const orderNumber = parts.length > 2 ? `#${parts[2]}` : `#${Date.now().toString().slice(-6)}`;
@@ -1800,29 +1800,35 @@ Is this information correct?`;
   }
 
   private async handlePaymentMethodSelection(chatId: number, userId: string, deliveryMethod: string, orderNumber: string, customerName?: string, customerPhone?: string, customerAddress?: string, username?: string) {
-    const message = `💳 *Choose Payment Method*
+    // Get active payment methods from database
+    const paymentMethods = await storage.getActivePaymentMethods();
+    
+    let message = `💳 *Choose Payment Method*
 
 **Order Number:** ${orderNumber}
 **Customer:** ${customerName || `User ${userId}`}
 
-Select your preferred payment option:
-
-💳 **Credit/Debit Card**
-🏦 **Bank Transfer**
-₿ **Cryptocurrency (Bitcoin)**
-💰 **Cash on Delivery** (if available)
-📱 **PayPal**`;
+Select your preferred payment option:`;
 
     const keyboard = {
-      inline_keyboard: [
-        [{ text: '💳 Credit/Debit Card', callback_data: `payment_card_${orderNumber.replace('#', '')}` }],
-        [{ text: '🏦 Bank Transfer', callback_data: `payment_bank_${orderNumber.replace('#', '')}` }],
-        [{ text: '₿ Bitcoin', callback_data: `payment_bitcoin_${orderNumber.replace('#', '')}` }],
-        [{ text: '💰 Cash on Delivery', callback_data: `payment_cod_${orderNumber.replace('#', '')}` }],
-        [{ text: '📱 PayPal', callback_data: `payment_paypal_${orderNumber.replace('#', '')}` }],
-        [{ text: '🔙 Back to Delivery', callback_data: 'start_checkout' }]
-      ]
+      inline_keyboard: [] as any[]
     };
+
+    // Add payment methods from database
+    for (const method of paymentMethods) {
+      message += `\n💳 **${method.name}**`;
+      if (method.description) {
+        message += ` - ${method.description}`;
+      }
+      
+      keyboard.inline_keyboard.push([{
+        text: `💳 ${method.name}`,
+        callback_data: `payment_method_${method.id}_${orderNumber.replace('#', '')}`
+      }]);
+    }
+
+    // Add back button
+    keyboard.inline_keyboard.push([{ text: '🔙 Back to Delivery', callback_data: 'start_checkout' }]);
 
     await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
@@ -1830,7 +1836,7 @@ Select your preferred payment option:
     });
   }
 
-  private async handlePaymentSelection(chatId: number, userId: string, method: string, orderNumber: string) {
+  private async handlePaymentSelection(chatId: number, userId: string, methodId: string, orderNumber: string) {
     const cartItems = await storage.getCartItems(userId);
     let total = 0;
     
@@ -1844,100 +1850,33 @@ Select your preferred payment option:
       }
     }
 
-    const paymentMethods = {
-      card: {
-        name: 'Credit/Debit Card',
-        instructions: `💳 **Credit/Debit Card Payment**
-
-📋 **Instructions:**
-1. Use our secure payment link
-2. Enter your card details
-3. Confirm payment
-4. Screenshot confirmation
-
-**Payment Link:** https://pay.teleshop.com/card
-**Amount:** $${total.toFixed(2)}`,
-        hasQR: false
-      },
-      bank: {
-        name: 'Bank Transfer',
-        instructions: `🏦 **Bank Transfer Details**
-
-**Bank:** TeleShop Bank
-**Account:** 1234567890
-**Routing:** 123456789
-**Amount:** $${total.toFixed(2)}
-**Reference:** Order-${orderNumber.replace('#', '')}
-
-📋 **Steps:**
-1. Transfer exact amount
-2. Use reference number
-3. Screenshot confirmation
-4. Contact support with proof`,
-        hasQR: false
-      },
-      bitcoin: {
-        name: 'Bitcoin',
-        instructions: `₿ **Bitcoin Payment**
-
-**Wallet Address:**
-bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh
-
-**Amount:** $${total.toFixed(2)} USD (≈ 0.00234 BTC)
-
-📋 **Steps:**
-1. Send exact BTC amount
-2. Include transaction fee
-3. Screenshot transaction
-4. Wait for confirmation`,
-        hasQR: true,
-        qrData: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh'
-      },
-      cod: {
-        name: 'Cash on Delivery',
-        instructions: `💰 **Cash on Delivery**
-
-**Amount:** $${total.toFixed(2)}
-
-📋 **Instructions:**
-✅ Available for your area
-✅ Pay when package arrives
-✅ Have exact amount ready
-✅ ID required for delivery
-
-No upfront payment needed!`,
-        hasQR: false
-      },
-      paypal: {
-        name: 'PayPal',
-        instructions: `📱 **PayPal Payment**
-
-**PayPal Email:** payments@teleshop.com
-**Amount:** $${total.toFixed(2)}
-
-📋 **Steps:**
-1. Send to payments@teleshop.com
-2. Mark as "Goods & Services"
-3. Include your User ID: ${userId}
-4. Screenshot confirmation`,
-        hasQR: false
-      }
-    };
-
-    const selected = paymentMethods[method as keyof typeof paymentMethods];
-    
-    if (!selected) {
+    // Get payment method from database
+    const paymentMethod = await storage.getPaymentMethod(methodId);
+    if (!paymentMethod) {
       await this.handlePaymentMethodSelection(chatId, userId, 'standard', orderNumber);
       return;
     }
 
-    let message = `**Order Number:** ${orderNumber}\n\n${selected.instructions}\n\n`;
-    
-    if (method !== 'cod') {
-      message += `📸 **After Payment:**
+    let message = `💳 **${paymentMethod.name} Payment**
+
+**Order Number:** ${orderNumber}
+**Total Amount:** $${total.toFixed(2)}`;
+
+    if (paymentMethod.description) {
+      message += `\n\n${paymentMethod.description}`;
+    }
+
+    if (paymentMethod.paymentInfo) {
+      message += `\n\n**Payment Information:**\n${paymentMethod.paymentInfo}`;
+    }
+
+    if (paymentMethod.instructions) {
+      message += `\n\n**Instructions:**\n${paymentMethod.instructions}`;
+    }
+
+    message += `\n\n📸 **After Payment:**
 Send screenshot of payment confirmation to @murzion
 Include your Order Number: ${orderNumber}`;
-    }
 
     const keyboard = {
       inline_keyboard: [
