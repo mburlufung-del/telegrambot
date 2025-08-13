@@ -123,6 +123,14 @@ export class TeleShopBot {
             
             console.log(`Sending broadcast image to user ${userId}:`, fullImageUrl);
             
+            // Test the image URL accessibility first
+            try {
+              const testResponse = await fetch(fullImageUrl, { method: 'HEAD' });
+              console.log(`Image URL test for ${userId}: ${testResponse.status}`);
+            } catch (testError) {
+              console.log(`Image URL test failed: ${testError}`);
+            }
+            
             try {
               await this.bot.sendPhoto(chatId, fullImageUrl, {
                 caption: message,

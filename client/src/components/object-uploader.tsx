@@ -96,12 +96,24 @@ export default function ObjectUploader({
 
       setUploadProgress(75);
 
-      // Get the public URL - extract from uploadURL
+      // Extract object path from the upload URL to create our serving URL
       const url = new URL(uploadURL);
       const objectPath = url.pathname;
       
-      // Convert to our object serving path
-      const imageUrl = `/objects${objectPath.replace(/^\/[^\/]+/, '')}`;
+      // Convert from /bucket-name/path to /objects/uploads/uuid
+      const pathParts = objectPath.split('/');
+      let imageUrl: string;
+      
+      if (pathParts.length >= 4) {
+        // Format: /bucket-name/.private/uploads/uuid -> /objects/uploads/uuid
+        const uploadPath = pathParts.slice(3).join('/'); // Gets "uploads/uuid"
+        imageUrl = `/objects/${uploadPath}`;
+      } else {
+        console.error('Unexpected upload URL format:', uploadURL);
+        imageUrl = `/objects/uploads/${Date.now()}-${selectedFile.name}`;
+      }
+      
+      console.log('Generated image URL:', imageUrl);
       
       setUploadProgress(100);
       setIsComplete(true);
