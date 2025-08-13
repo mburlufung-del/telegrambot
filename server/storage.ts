@@ -457,13 +457,22 @@ export class DatabaseStorage implements IStorage {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
+    console.log(`Fetching ratings from past week (since ${oneWeekAgo.toISOString()})`);
+
     const ratings = await db.select({
       productId: productRatings.productId,
       rating: productRatings.rating,
-      productName: products.name
+      productName: products.name,
+      createdAt: productRatings.createdAt
     }).from(productRatings)
     .innerJoin(products, eq(productRatings.productId, products.id))
-    .where(sql`${productRatings.createdAt} >= ${oneWeekAgo}`);
+    .where(gte(productRatings.createdAt, oneWeekAgo));
+
+    console.log(`Found ${ratings.length} ratings from past week:`, ratings.map(r => ({
+      product: r.productName,
+      rating: r.rating,
+      date: r.createdAt
+    })));
 
     const groupedRatings: Record<string, { productName: string; ratings: number[] }> = {};
 
@@ -477,7 +486,7 @@ export class DatabaseStorage implements IStorage {
       groupedRatings[r.productId].ratings.push(r.rating);
     });
 
-    return Object.entries(groupedRatings).map(([productId, data]) => {
+    const result = Object.entries(groupedRatings).map(([productId, data]) => {
       const ratings = data.ratings;
       const averageRating = ratings.reduce((a, b) => a + b, 0) / ratings.length;
       const totalRatings = ratings.length;
@@ -495,6 +504,9 @@ export class DatabaseStorage implements IStorage {
         ratingCounts
       };
     });
+
+    console.log(`Returning ${result.length} products with ratings from past week`);
+    return result;
   }
 
   async getProductRatings(productId: string): Promise<ProductRating[]> {

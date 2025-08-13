@@ -564,7 +564,7 @@ export class TeleShopBot {
       return;
     }
 
-    let message = '⭐ *Weekly Product Ratings*\n\nHere are the most rated products this week:\n\n';
+    let message = '⭐ *Weekly Product Ratings*\n\nProducts rated in the past 7 days:\n\n';
     
     console.log('Processing ratings for display:', weeklyRatings);
     weeklyRatings.slice(0, 10).forEach((rating, index) => {
