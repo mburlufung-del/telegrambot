@@ -99,6 +99,7 @@ export const productRatings = pgTable("product_ratings", {
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 });
 
 export const insertInquirySchema = createInsertSchema(inquiries).omit({
