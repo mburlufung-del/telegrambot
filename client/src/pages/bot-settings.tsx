@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import BroadcastForm from "@/components/broadcast-form";
+import AdvancedBroadcast from "@/components/advanced-broadcast";
 import PaymentSettings from "@/components/payment-settings";
 import type { BotSettings } from "@shared/schema";
 import { 

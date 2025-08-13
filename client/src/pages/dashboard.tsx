@@ -16,7 +16,8 @@ import {
   ExternalLink
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import ProductModal from "@/components/product-modal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ProductForm from "@/components/product-form";
 import { useState } from "react";
 import type { Product, Inquiry, BotStats } from "@shared/schema";
 
@@ -348,10 +349,17 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <ProductModal 
-        open={isProductModalOpen} 
-        onOpenChange={setIsProductModalOpen}
-      />
+      <Dialog open={isProductModalOpen} onOpenChange={setIsProductModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Product</DialogTitle>
+          </DialogHeader>
+          <ProductForm 
+            onSuccess={() => setIsProductModalOpen(false)}
+            onCancel={() => setIsProductModalOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
