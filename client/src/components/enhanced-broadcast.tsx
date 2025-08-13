@@ -34,11 +34,17 @@ export default function EnhancedBroadcast() {
       targetType: 'all' | 'recent' | 'custom';
       customUsers?: string;
     }): Promise<{ sentCount: number; totalTargeted: number }> => {
-      const response = await apiRequest("/api/bot/broadcast", "POST", data);
-      if (!response.ok) {
-        throw new Error(`Broadcast failed: ${response.status} ${response.statusText}`);
+      try {
+        const response = await apiRequest("/api/bot/broadcast", "POST", data);
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Broadcast failed: ${response.status} - ${errorText}`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.error("Broadcast mutation error:", error);
+        throw error;
       }
-      return response.json();
     },
     onSuccess: (data: { sentCount: number; totalTargeted: number }) => {
       const successMessage = data.sentCount > 0 
@@ -61,6 +67,7 @@ export default function EnhancedBroadcast() {
       setIsLoading(false);
     },
     onError: (error: Error) => {
+      console.error("Broadcast error details:", error);
       toast({
         title: "Failed to Send Broadcast",
         description: error.message || "An unexpected error occurred",

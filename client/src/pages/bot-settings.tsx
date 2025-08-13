@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import BroadcastForm from "@/components/broadcast-form";
 import EnhancedBroadcast from "@/components/enhanced-broadcast";
+import SimpleBroadcastTest from "@/components/simple-broadcast-test";
 import PaymentSettings from "@/components/payment-settings";
 import type { BotSettings } from "@shared/schema";
 import { 
@@ -379,19 +380,29 @@ export default function BotSettings() {
 
       {/* Broadcast Modal */}
       <Dialog open={isBroadcastModalOpen} onOpenChange={setIsBroadcastModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="broadcast-description">
           <DialogHeader>
             <DialogTitle>Broadcast Message</DialogTitle>
+            <div id="broadcast-description" className="sr-only">
+              Send messages to bot users with optional image attachments and target audience selection
+            </div>
           </DialogHeader>
-          <EnhancedBroadcast />
+          <div className="space-y-6">
+            <SimpleBroadcastTest />
+            <hr />
+            <EnhancedBroadcast />
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Custom Command Modal */}
       <Dialog open={isCustomCommandModalOpen} onOpenChange={setIsCustomCommandModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby="custom-command-description">
           <DialogHeader>
             <DialogTitle>Add Custom Command</DialogTitle>
+            <div id="custom-command-description" className="sr-only">
+              Create custom bot commands with automatic responses for common inquiries
+            </div>
           </DialogHeader>
           <form onSubmit={customCommandForm.handleSubmit((data) => {
             updateSettingMutation.mutate({
