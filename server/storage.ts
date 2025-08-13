@@ -213,55 +213,52 @@ export class MemStorage implements IStorage {
 
   // Payment Methods Implementation
   async getPaymentMethods(): Promise<PaymentMethod[]> {
-    return Array.from(this.paymentMethods.values()).sort((a, b) => a.sortOrder - b.sortOrder);
+    const results = await db.select().from(paymentMethods).orderBy(asc(paymentMethods.sortOrder));
+    return results;
   }
 
   async getActivePaymentMethods(): Promise<PaymentMethod[]> {
-    return Array.from(this.paymentMethods.values())
-      .filter(method => method.isActive)
-      .sort((a, b) => a.sortOrder - b.sortOrder);
+    const results = await db.select().from(paymentMethods)
+      .where(eq(paymentMethods.isActive, true))
+      .orderBy(asc(paymentMethods.sortOrder));
+    return results;
   }
 
   async getPaymentMethod(id: string): Promise<PaymentMethod | undefined> {
-    return this.paymentMethods.get(id);
+    const [result] = await db.select().from(paymentMethods).where(eq(paymentMethods.id, id));
+    return result;
   }
 
   async createPaymentMethod(method: InsertPaymentMethod): Promise<PaymentMethod> {
-    const newMethod: PaymentMethod = {
-      id: randomUUID(),
-      ...method,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.paymentMethods.set(newMethod.id, newMethod);
+    const [newMethod] = await db.insert(paymentMethods).values(method).returning();
     return newMethod;
   }
 
   async updatePaymentMethod(id: string, method: Partial<InsertPaymentMethod>): Promise<PaymentMethod | undefined> {
-    const existing = this.paymentMethods.get(id);
-    if (!existing) return undefined;
-    
-    const updated: PaymentMethod = {
-      ...existing,
-      ...method,
-      updatedAt: new Date(),
-    };
-    this.paymentMethods.set(id, updated);
+    const [updated] = await db.update(paymentMethods)
+      .set({
+        ...method,
+        updatedAt: new Date(),
+      })
+      .where(eq(paymentMethods.id, id))
+      .returning();
     return updated;
   }
 
   async deletePaymentMethod(id: string): Promise<boolean> {
-    return this.paymentMethods.delete(id);
+    const result = await db.delete(paymentMethods).where(eq(paymentMethods.id, id));
+    return result.rowCount > 0;
   }
 
   async reorderPaymentMethods(methods: { id: string; sortOrder: number }[]): Promise<void> {
-    methods.forEach(({ id, sortOrder }) => {
-      const method = this.paymentMethods.get(id);
-      if (method) {
-        method.sortOrder = sortOrder;
-        method.updatedAt = new Date();
-      }
-    });
+    for (const { id, sortOrder } of methods) {
+      await db.update(paymentMethods)
+        .set({ 
+          sortOrder,
+          updatedAt: new Date()
+        })
+        .where(eq(paymentMethods.id, id));
+    }
   }
 
   // Initialize other sample data methods...
