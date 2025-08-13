@@ -17,6 +17,7 @@ import type { Product, Category, InsertProduct } from "@shared/schema";
 import { Plus, X, Save, Package, Upload, Image } from "lucide-react";
 import ObjectUploader from "@/components/object-uploader";
 import PricingTiers from "@/components/pricing-tiers";
+import InlinePricingTiers, { type PricingTierData } from "@/components/inline-pricing-tiers";
 
 const productFormSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -53,6 +54,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
   const [newSpecValue, setNewSpecValue] = useState("");
   const [imagePreview, setImagePreview] = useState<string>(product?.imageUrl || "");
   const [newlyCreatedProduct, setNewlyCreatedProduct] = useState<Product | null>(null);
+  const [pricingTiers, setPricingTiers] = useState<PricingTierData[]>([]);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -80,7 +82,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: InsertProduct) => {
+    mutationFn: async (data: InsertProduct & { pricingTiers?: PricingTierData[] }) => {
       const response = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -89,11 +91,44 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
       if (!response.ok) throw new Error("Failed to create product");
       return response.json();
     },
-    onSuccess: (createdProduct) => {
+    onSuccess: async (createdProduct) => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      toast({ title: "Success", description: "Product created successfully" });
+      
+      // If pricing tiers were configured, save them
+      if (pricingTiers.length > 0) {
+        try {
+          await Promise.all(
+            pricingTiers.map(tier => 
+              fetch(`/api/products/${createdProduct.id}/pricing-tiers`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  minQuantity: tier.minQuantity,
+                  maxQuantity: tier.maxQuantity || null,
+                  price: tier.price,
+                  isActive: true,
+                }),
+              })
+            )
+          );
+          toast({ 
+            title: "Success", 
+            description: `Product and ${pricingTiers.length} pricing tiers created successfully` 
+          });
+        } catch (error) {
+          console.error('Error creating pricing tiers:', error);
+          toast({ 
+            title: "Warning", 
+            description: "Product created but some pricing tiers failed to save", 
+            variant: "destructive" 
+          });
+        }
+      } else {
+        toast({ title: "Success", description: "Product created successfully" });
+      }
+      
       setNewlyCreatedProduct(createdProduct);
-      // Don't call onSuccess immediately - let user configure pricing tiers first
+      // Don't call onSuccess immediately - let user configure more pricing tiers if needed
     },
     onError: (error) => {
       console.error('Create product error:', error);
@@ -124,6 +159,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
   const onSubmit = (data: ProductFormData) => {
     console.log('Form submission data:', data);
     console.log('Form errors:', form.formState.errors);
+    console.log('Pricing tiers:', pricingTiers);
     
     const productData: InsertProduct = {
       ...data,
@@ -143,6 +179,14 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
     } else {
       createMutation.mutate(productData);
     }
+  };
+
+  const completeProductSetup = () => {
+    toast({ 
+      title: "Success", 
+      description: "Product setup completed successfully!" 
+    });
+    onSuccess?.();
   };
 
   const addTag = () => {
@@ -548,7 +592,16 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
         </CardContent>
       </Card>
 
-      {/* Pricing Tiers - Show for existing products or newly created products */}
+      {/* Inline Pricing Tiers - Show for new products */}
+      {!product && !newlyCreatedProduct && (
+        <InlinePricingTiers 
+          tiers={pricingTiers}
+          onTiersChange={setPricingTiers}
+          basePrice={form.watch("price")}
+        />
+      )}
+
+      {/* Server-side Pricing Tiers - Show for existing products or newly created products */}
       {(product || newlyCreatedProduct) && (
         <PricingTiers 
           productId={(product?.id || newlyCreatedProduct?.id)!} 
@@ -568,7 +621,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
         {newlyCreatedProduct ? (
           <Button
             type="button"
-            onClick={() => onSuccess?.()}
+            onClick={completeProductSetup}
             data-testid="button-complete"
           >
             <Save className="h-4 w-4 mr-2" />
