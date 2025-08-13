@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { teleShopBot } from "./bot";
+import { SimpleObjectStorageService } from "./simpleObjectStorage";
 import { 
   insertProductSchema, 
   insertInquirySchema, 

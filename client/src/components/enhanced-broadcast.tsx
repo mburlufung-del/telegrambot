@@ -1,5 +1,4 @@
-import { useState } from "react";
-
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,7 +24,10 @@ export default function EnhancedBroadcast() {
   const [targetType, setTargetType] = useState<'all' | 'recent' | 'custom'>('all');
   const [customUsers, setCustomUsers] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [uploadedImageName, setUploadedImageName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use the working approach from SimpleBroadcastTest instead of useMutation
   const sendBroadcast = async (data: {
@@ -63,6 +65,7 @@ export default function EnhancedBroadcast() {
       if (result.sentCount > 0) {
         setMessage("");
         setImageUrl("");
+        setUploadedImageName("");
         setCustomUsers("");
         setTargetType('all');
       }
@@ -107,8 +110,92 @@ export default function EnhancedBroadcast() {
 
 
 
+
+
+  // Handle image upload
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid File",
+        description: "Please select an image file (JPG, PNG, GIF)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Image must be smaller than 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadProgress(0);
+    setIsLoading(true);
+
+    try {
+      // Get upload URL
+      const response = await fetch("/api/objects/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to get upload URL: ${response.status}`);
+      }
+
+      const { uploadURL } = await response.json();
+
+      // Upload file to object storage
+      const uploadResponse = await fetch(uploadURL, {
+        method: "PUT",
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Upload failed: ${uploadResponse.status}`);
+      }
+
+      // Set the uploaded image
+      setImageUrl(uploadURL);
+      setUploadedImageName(file.name);
+      setUploadProgress(100);
+      
+      toast({
+        title: "Image Uploaded Successfully",
+        description: `${file.name} is ready for broadcast`,
+      });
+
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast({
+        title: "Upload Failed",
+        description: error instanceof Error ? error.message : "Failed to upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const removeImage = () => {
     setImageUrl("");
+    setUploadedImageName("");
     toast({
       title: "Image Removed",
       description: "Image removed from broadcast",
@@ -155,38 +242,65 @@ export default function EnhancedBroadcast() {
             </div>
           </div>
 
-          {/* Image URL Input (Alternative to Upload) */}
+          {/* Image Upload */}
           <div className="space-y-3">
-            <Label htmlFor="imageUrl">Image URL (Optional)</Label>
-            <div className="flex gap-2">
-              <input
-                type="url"
-                id="imageUrl"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {imageUrl && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={removeImage}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+            <Label>Image Attachment (Optional)</Label>
+            <div className="flex flex-col gap-3">
+              {!imageUrl ? (
+                <div className="relative">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-20 border-dashed border-2 hover:bg-gray-50"
+                    disabled={isLoading}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      {isLoading ? (
+                        <>
+                          <div className="animate-spin h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full" />
+                          <span className="text-sm">Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-6 w-6 text-gray-400" />
+                          <span className="text-sm text-gray-600">Click to upload image</span>
+                          <span className="text-xs text-gray-400">JPG, PNG, GIF up to 10MB</span>
+                        </>
+                      )}
+                    </div>
+                  </Button>
+                </div>
+              ) : (
+                <div className="border rounded-lg p-3 bg-green-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Image className="h-4 w-4 text-green-600" />
+                      <span className="text-sm text-green-700">
+                        {uploadedImageName || "Image uploaded and ready"}
+                      </span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={removeImage}
+                      className="px-3"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               )}
             </div>
-            {imageUrl && (
-              <div className="border rounded-lg p-3 bg-blue-50">
-                <div className="flex items-center gap-2">
-                  <Image className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm text-blue-700">Image URL ready for broadcast</span>
-                </div>
-              </div>
-            )}
             <p className="text-xs text-gray-500">
-              Provide a direct image URL that will be sent with your broadcast message
+              Upload an image to include with your broadcast message. The image will be stored securely and sent to users.
             </p>
           </div>
 
