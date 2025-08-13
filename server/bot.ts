@@ -117,29 +117,31 @@ export class TeleShopBot {
           
           if (imageUrl && imageUrl.trim() !== '') {
             // Send image with caption
-            console.log(`Sending broadcast image to user ${userId}:`, imageUrl);
+            // Convert relative path to full URL
+            const baseUrl = process.env.WEBHOOK_URL || 'https://a5db4e61-9419-464b-b515-01199a70f995-00-25fppi8wyfq6l.janeway.replit.dev';
+            const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
             
-            // Check if the image URL is accessible
+            console.log(`Sending broadcast image to user ${userId}:`, fullImageUrl);
+            
             try {
-              const imageResponse = await fetch(imageUrl, { method: 'HEAD' });
-              console.log(`Image URL check for ${userId}: ${imageResponse.status} ${imageResponse.statusText}`);
-              
-              if (!imageResponse.ok) {
-                console.log(`Image URL not accessible: ${imageResponse.status}, falling back to text message`);
-                await this.bot.sendMessage(chatId, `${message}\n\n[Image attachment was not accessible]`, {
-                  parse_mode: 'Markdown'
-                });
-              } else {
-                await this.bot.sendPhoto(chatId, imageUrl, {
+              await this.bot.sendPhoto(chatId, fullImageUrl, {
+                caption: message,
+                parse_mode: 'Markdown'
+              });
+            } catch (photoError: any) {
+              console.log(`Failed to send photo, trying as document:`, photoError?.message);
+              // Fallback to sending as document if photo fails
+              try {
+                await this.bot.sendDocument(chatId, fullImageUrl, {
                   caption: message,
                   parse_mode: 'Markdown'
                 });
+              } catch (docError) {
+                console.log(`Document also failed, sending text only:`, docError);
+                await this.bot.sendMessage(chatId, `${message}\n\n[Image could not be sent - ${fullImageUrl}]`, {
+                  parse_mode: 'Markdown'
+                });
               }
-            } catch (urlError) {
-              console.log(`Error checking image URL: ${urlError}, falling back to text message`);
-              await this.bot.sendMessage(chatId, `${message}\n\n[Image attachment failed to load]`, {
-                parse_mode: 'Markdown'
-              });
             }
           } else {
             // Send text message only

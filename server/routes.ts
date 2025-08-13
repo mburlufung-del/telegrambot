@@ -433,6 +433,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve uploaded objects (for images in broadcasts)
+  app.get("/objects/*", async (req, res) => {
+    try {
+      const { SimpleObjectStorageService } = await import("./simpleObjectStorage.js");
+      const objectStorageService = new SimpleObjectStorageService();
+      
+      // Get the object path from the URL
+      const objectPath = req.path.replace('/objects', '');
+      const privateObjectDir = objectStorageService.getPrivateObjectDir();
+      const fullObjectPath = `${privateObjectDir}${objectPath}`;
+      
+      // Get a signed download URL
+      const { bucketName, objectName } = parseObjectPath(fullObjectPath);
+      const downloadURL = await signObjectURL({
+        bucketName,
+        objectName,
+        method: "GET",
+        ttlSec: 3600, // 1 hour
+      });
+      
+      // Redirect to the signed URL
+      res.redirect(downloadURL);
+    } catch (error) {
+      console.error("Failed to serve object:", error);
+      res.status(404).json({ message: "Object not found" });
+    }
+  });
+
   // Simple object serving endpoint - serve from bucket directly
   app.get("/objects/:objectPath(*)", async (req, res) => {
     try {
@@ -605,4 +633,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Helper functions for object storage
+function parseObjectPath(path: string): {
+  bucketName: string;
+  objectName: string;
+} {
+  if (!path.startsWith("/")) {
+    path = `/${path}`;
+  }
+  const pathParts = path.split("/");
+  if (pathParts.length < 3) {
+    throw new Error("Invalid path: must contain at least a bucket name");
+  }
+
+  const bucketName = pathParts[1];
+  const objectName = pathParts.slice(2).join("/");
+
+  return {
+    bucketName,
+    objectName,
+  };
+}
+
+async function signObjectURL({
+  bucketName,
+  objectName,
+  method,
+  ttlSec,
+}: {
+  bucketName: string;
+  objectName: string;
+  method: "GET" | "PUT" | "DELETE" | "HEAD";
+  ttlSec: number;
+}): Promise<string> {
+  const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
+  const request = {
+    bucket_name: bucketName,
+    object_name: objectName,
+    method,
+    expires_at: new Date(Date.now() + ttlSec * 1000).toISOString(),
+  };
+  
+  const response = await fetch(
+    `${REPLIT_SIDECAR_ENDPOINT}/object-storage/signed-object-url`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error(
+      `Failed to sign object URL, errorcode: ${response.status}, ` +
+        `make sure you're running on Replit`
+    );
+  }
+
+  const { signed_url: signedURL } = await response.json();
+  return signedURL;
 }
