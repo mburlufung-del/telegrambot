@@ -35,17 +35,29 @@ export default function EnhancedBroadcast() {
       customUsers?: string;
     }): Promise<{ sentCount: number; totalTargeted: number }> => {
       const response = await apiRequest("/api/bot/broadcast", "POST", data);
+      if (!response.ok) {
+        throw new Error(`Broadcast failed: ${response.status} ${response.statusText}`);
+      }
       return response.json();
     },
     onSuccess: (data: { sentCount: number; totalTargeted: number }) => {
+      const successMessage = data.sentCount > 0 
+        ? `Successfully sent to ${data.sentCount} users out of ${data.totalTargeted} targeted`
+        : `Broadcast attempted but no active users found. Database has ${data.totalTargeted} users but they may be test accounts or inactive.`;
+      
       toast({
-        title: "Broadcast Sent Successfully",
-        description: `Message sent to ${data.sentCount} users out of ${data.totalTargeted} targeted.`,
+        title: data.sentCount > 0 ? "Broadcast Sent!" : "Broadcast Complete",
+        description: successMessage,
+        variant: data.sentCount > 0 ? "default" : "destructive",
       });
-      setMessage("");
-      setImageUrl("");
-      setCustomUsers("");
-      setTargetType('all');
+      
+      // Clear form only if at least one message was sent successfully
+      if (data.sentCount > 0) {
+        setMessage("");
+        setImageUrl("");
+        setCustomUsers("");
+        setTargetType('all');
+      }
       setIsLoading(false);
     },
     onError: (error: Error) => {
