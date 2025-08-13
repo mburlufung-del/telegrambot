@@ -100,7 +100,16 @@ export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-});
+}).transform((data: any) => ({
+  ...data,
+  // Convert empty strings to null for optional decimal fields
+  compareAtPrice: data.compareAtPrice === "" ? null : data.compareAtPrice,
+  maxOrderQuantity: data.maxOrderQuantity === "" || data.maxOrderQuantity === 0 ? null : data.maxOrderQuantity,
+  imageUrl: data.imageUrl === "" ? null : data.imageUrl,
+  categoryId: data.categoryId === "" ? null : data.categoryId,
+  tags: data.tags === "" ? null : data.tags,
+  specifications: data.specifications === "" ? null : data.specifications,
+}));
 
 export const insertInquirySchema = createInsertSchema(inquiries).omit({
   id: true,
