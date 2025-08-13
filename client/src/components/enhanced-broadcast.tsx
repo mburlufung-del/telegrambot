@@ -18,7 +18,11 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 
-export default function EnhancedBroadcast() {
+interface EnhancedBroadcastProps {
+  onClose?: () => void;
+}
+
+export default function EnhancedBroadcast({ onClose }: EnhancedBroadcastProps) {
   const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [targetType, setTargetType] = useState<'all' | 'recent' | 'custom'>('all');
