@@ -56,6 +56,95 @@ export class TeleShopBot {
     return await this.initialize();
   }
 
+  // Broadcast message to users
+  async broadcastMessage({
+    message,
+    imageUrl,
+    targetType,
+    customUsers
+  }: {
+    message: string;
+    imageUrl?: string;
+    targetType: 'all' | 'recent' | 'custom';
+    customUsers?: string;
+  }) {
+    if (!this.bot) {
+      throw new Error('Bot not initialized');
+    }
+
+    let targetUserIds: string[] = [];
+    
+    try {
+      // Get target users based on type
+      if (targetType === 'all') {
+        // Get all users who have interacted with the bot (from orders)
+        const orders = await storage.getOrders();
+        const userIds = [...new Set(orders.map(order => order.telegramUserId))];
+        targetUserIds = userIds;
+      } else if (targetType === 'recent') {
+        // Get users from recent orders (last 30 days)
+        const orders = await storage.getOrders();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const recentOrders = orders.filter(order => 
+          new Date(order.createdAt) > thirtyDaysAgo
+        );
+        const userIds = [...new Set(recentOrders.map(order => order.telegramUserId))];
+        targetUserIds = userIds;
+      } else if (targetType === 'custom' && customUsers) {
+        // Parse custom user IDs
+        targetUserIds = customUsers
+          .split(/[,\n]/)
+          .map((id: string) => id.trim())
+          .filter((id: string) => id.length > 0);
+      }
+
+      if (targetUserIds.length === 0) {
+        return { sentCount: 0, totalTargeted: 0, error: 'No target users found' };
+      }
+
+      let sentCount = 0;
+      const totalTargeted = targetUserIds.length;
+
+      // Send to each user
+      for (const userId of targetUserIds) {
+        try {
+          const chatId = parseInt(userId);
+          
+          if (imageUrl && imageUrl.trim() !== '') {
+            // Send image with caption
+            // Convert object path to full URL for Telegram
+            const baseUrl = process.env.WEBHOOK_URL || 'https://a5db4e61-9419-464b-b515-01199a70f995-00-25fppi8wyfq6l.janeway.replit.dev';
+            const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
+            await this.bot.sendPhoto(chatId, fullImageUrl, {
+              caption: message,
+              parse_mode: 'Markdown'
+            });
+          } else {
+            // Send text message only
+            await this.bot.sendMessage(chatId, message, {
+              parse_mode: 'Markdown'
+            });
+          }
+          
+          sentCount++;
+          
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 50));
+        } catch (error) {
+          console.error(`Failed to send broadcast to user ${userId}:`, error);
+          // Continue with other users even if one fails
+        }
+      }
+
+      return { sentCount, totalTargeted };
+    } catch (error) {
+      console.error('Broadcast error:', error);
+      throw error;
+    }
+  }
+
   private async sendAutoVanishMessage(chatId: number, text: string, options: any = {}) {
     if (!this.bot) return;
 
