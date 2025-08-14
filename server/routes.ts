@@ -1554,31 +1554,61 @@ railway run npm run db:push</pre>
   });
 
   // File download endpoints for Railway deployment package
-  app.get("/RAILWAY-SOURCE-COMPLETE.zip", (req, res) => {
-    import("path").then(path => {
-      const filePath = path.join(process.cwd(), "RAILWAY-SOURCE-COMPLETE.zip");
-      res.download(filePath, "TeleShop-Bot-Complete.zip");
-    }).catch(() => {
-      res.status(404).send("File not found");
-    });
+  app.get("/download/package", (req, res) => {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = path.join(process.cwd(), 'RAILWAY-SOURCE-COMPLETE.zip');
+      
+      if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Disposition', 'attachment; filename=TeleShop-Bot-Complete.zip');
+        res.setHeader('Content-Type', 'application/zip');
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+      } else {
+        res.status(404).send('File not found');
+      }
+    } catch (error) {
+      res.status(500).send('Error downloading file');
+    }
   });
 
-  app.get("/DOWNLOAD-INSTRUCTIONS.md", (req, res) => {
-    import("path").then(path => {
-      const filePath = path.join(process.cwd(), "DOWNLOAD-INSTRUCTIONS.md");
-      res.download(filePath, "Deployment-Instructions.md");
-    }).catch(() => {
-      res.status(404).send("File not found");
-    });
+  app.get("/download/instructions", (req, res) => {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = path.join(process.cwd(), 'DOWNLOAD-INSTRUCTIONS.md');
+      
+      if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Disposition', 'attachment; filename=Deployment-Instructions.md');
+        res.setHeader('Content-Type', 'text/markdown');
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+      } else {
+        res.status(404).send('File not found');
+      }
+    } catch (error) {
+      res.status(500).send('Error downloading file');
+    }
   });
 
-  app.get("/ENV-TEMPLATE.txt", (req, res) => {
-    import("path").then(path => {
-      const filePath = path.join(process.cwd(), "ENV-TEMPLATE.txt");
-      res.download(filePath, "Environment-Variables.txt");
-    }).catch(() => {
-      res.status(404).send("File not found");
-    });
+  app.get("/download/env", (req, res) => {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = path.join(process.cwd(), 'ENV-TEMPLATE.txt');
+      
+      if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Disposition', 'attachment; filename=Environment-Variables.txt');
+        res.setHeader('Content-Type', 'text/plain');
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+      } else {
+        res.status(404).send('File not found');
+      }
+    } catch (error) {
+      res.status(500).send('Error downloading file');
+    }
   });
 
   const httpServer = createServer(app);
