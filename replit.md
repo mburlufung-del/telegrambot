@@ -1,11 +1,9 @@
 # TeleShop Bot Admin Dashboard
 
 ## Overview
-
-TeleShop Bot is a Telegram e-commerce bot system comprising a Telegram bot for automated customer service and product catalog functionality, and a web-based admin dashboard. The system enables administrators to manage products, handle customer inquiries, configure bot settings, and monitor bot statistics. Its business vision is to provide a comprehensive, scalable e-commerce solution for Telegram users, offering a streamlined shopping experience and robust administrative control.
+TeleShop Bot is a comprehensive Telegram e-commerce bot system designed to streamline online shopping through Telegram and provide robust administrative control via a web-based admin dashboard. It aims to offer a scalable e-commerce solution with automated customer service, product catalog management, and real-time statistics. The system empowers administrators to manage products, handle inquiries, configure bot settings, and monitor performance, providing a complete ecosystem for Telegram-based e-commerce.
 
 ## User Preferences
-
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
@@ -14,7 +12,7 @@ Preferred communication style: Simple, everyday language.
 - **Framework**: React 18 with TypeScript
 - **Routing**: Wouter library
 - **UI Components**: Shadcn/ui (Radix UI + Tailwind CSS)
-- **State Management**: TanStack Query for server state management
+- **State Management**: TanStack Query for server state
 - **Forms**: React Hook Form with Zod validation
 - **Styling**: Tailwind CSS with custom design tokens
 
@@ -22,33 +20,33 @@ Preferred communication style: Simple, everyday language.
 - **Runtime**: Node.js with Express.js
 - **Language**: TypeScript with ES modules
 - **API Design**: RESTful API endpoints
-- **Database ORM**: Drizzle ORM for type-safe operations
-- **Validation**: Zod schemas shared between frontend and backend
+- **Database ORM**: Drizzle ORM
+- **Validation**: Zod schemas (shared)
 
 ### Data Storage
 - **Primary Database**: PostgreSQL (Neon serverless hosting)
 - **Session Storage**: PostgreSQL-backed sessions
 - **Schema Management**: Drizzle Kit for migrations
-- **Data Models**: Products, customer inquiries, bot settings, bot statistics
+- **Data Models**: Products, customer inquiries, bot settings, bot statistics, orders, delivery methods.
 
 ### Bot Integration
-- **Telegram Bot**: Node.js Telegram Bot API integration
-- **Core Features**: Welcome messages, help, product catalogs, customer inquiry handling
-- **Configuration**: Dynamic bot settings stored in the database
-- **Statistics**: Real-time tracking of user interactions and metrics
-- **Enhanced User Experience**: Auto-vanish functionality for clean chat, persistent welcome interface, inline keyboard navigation.
-- **Shopping Flow**: Enhanced product browsing, real-time cart management, multi-step checkout with delivery and payment options, order confirmation, and integration with admin dashboard.
-- **Rating System**: Weekly product rating display with average ratings, star distribution, and individual product rating capability.
+- **Platform**: Telegram Bot API
+- **Core Features**: Welcome messages, product catalogs, customer inquiry handling, multi-step checkout, real-time cart management, order confirmation, and a product rating system.
+- **Configuration**: Dynamic bot settings managed via admin dashboard.
+- **Statistics**: Real-time user interaction tracking.
+- **Enhanced User Experience**: Auto-vanish functionality, persistent welcome interface, inline keyboard navigation, and user-specific order history.
+- **Admin Control**: Comprehensive bot information management (general info, messages, operator settings, payment settings, custom commands) and a robust broadcast system with image upload capabilities.
+- **Delivery Management**: Dynamic and configurable delivery methods integrated into the checkout flow.
 
 ### Development Environment
-- **Build Tool**: Vite for fast development and optimized production builds
-- **Deployment**: Multi-platform support including Docker, Railway, Vercel, and VPS
+- **Build Tool**: Vite
+- **Deployment**: Multi-platform support (Docker, Railway, Vercel, VPS).
 - **Bot Auto-Management**: Always-online infrastructure with auto-initialization, health monitoring, and fault tolerance.
 
 ## External Dependencies
 
 ### Database Services
-- **PostgreSQL**: Used for primary data and session storage.
+- **PostgreSQL**: Primary data and session storage.
 
 ### Telegram Integration
 - **Telegram Bot API**: Official framework for bot interactions.
@@ -70,240 +68,3 @@ Preferred communication style: Simple, everyday language.
 - **Date-fns**: Date manipulation.
 - **Class Variance Authority**: Type-safe component variant management.
 - **CLSX**: Conditional CSS class name composition.
-
-## Enhanced Orders System Implementation (August 2025)
-
-### User-Specific Order History - FULLY IMPLEMENTED
-
-**Complete Orders Management:**
-
-The orders command now provides the user-specific order tracking system you requested:
-
-1. **Empty Orders State**: Professional empty state handling
-   - Clear message: "You have no orders yet"
-   - Call-to-action to start shopping
-   - Browse products button for easy navigation
-
-2. **Successful Orders Display**: Shows only completed/successful orders
-   - Filters orders by status: completed, shipped, delivered
-   - Excludes pending orders from main display
-   - Professional order listing with key information
-
-3. **Order Information Display**: Complete order details
-   - Order number (last 6 digits, uppercase)
-   - Total amount with currency formatting
-   - Order date with locale formatting
-   - Order status with proper capitalization
-
-4. **User-Specific Filtering**: Personalized order history
-   - Shows only orders for the current Telegram user
-   - Proper user identification by telegramUserId
-   - Chronological sorting (newest first)
-
-5. **Order Status Management**: Smart status filtering
-   - Successful orders: completed, shipped, delivered
-   - Pending orders: Shows message about processing
-   - No orders: Clear empty state with shopping invitation
-
-6. **Navigation Integration**: Seamless flow continuation
-   - Browse products option for new shopping
-   - View cart option for pending items
-   - Back to menu for main navigation
-
-**Enhanced Features:**
-- User-specific order retrieval with getUserOrders() method
-- Professional order number display (#123456 format)
-- Date formatting for user-friendly display
-- Status-based filtering for order visibility
-- Empty state handling with clear messaging
-- Error handling for order loading failures
-- Integration with existing cart and product browsing
-- Auto-vanish interface maintained throughout
-
-**Order Display Example:**
-```
-📦 Your Orders
-
-1. Order #AB1234
-   💰 Total: $157.50
-   📅 Date: 8/12/2025
-   ✅ Status: Delivered
-
-2. Order #CD5678
-   💰 Total: $89.99
-   📅 Date: 8/10/2025
-   ✅ Status: Shipped
-```
-
-The orders system now provides complete user-specific order tracking with professional presentation and appropriate filtering.
-
-### Order Number Consistency Fix (August 2025)
-
-**Fixed Order Number Display Consistency:**
-
-1. **Unified Order Number Format**: Fixed discrepancy between order numbers shown during checkout vs. order history
-   - Checkout process now generates timestamp-based order numbers (#123456 format)
-   - Order history displays same timestamp-based numbers for consistency
-   - Both simple and advanced checkout flows use consistent numbering
-
-2. **Immediate Order Visibility**: Orders now marked as "completed" status by default
-   - Allows immediate appearance in order history after checkout
-   - Users can see their orders right after purchase
-   - No waiting for manual status updates
-
-3. **Enhanced Order Display**: Improved order list formatting
-   - Clear order number format (#123456)
-   - Consistent date and amount display
-   - Status information with proper capitalization
-
-**Technical Implementation:**
-- Order creation uses timestamp for consistent numbering
-- Order display extracts same timestamp format for matching numbers
-- Simplified checkout flow with immediate order completion
-- Enhanced debugging logs for order tracking verification
-
-## Dynamic Welcome Message Fix (August 2025)
-
-**Fixed Welcome Message Not Updating:**
-
-The welcome message was hardcoded in the bot code instead of using the dynamic settings from the database:
-
-1. **Issue Identified**: Bot code had hardcoded welcome message `'🛍️ Welcome to TeleShop!\n\nChoose an option below:'`
-2. **Database Setting**: Welcome message was stored in database but not being used: `"welcone user here"`
-3. **Solution Applied**: Modified `sendMainMenu()` method to fetch welcome message from `getBotSettings()`
-4. **Fallback Protection**: Added fallback to default message if database setting is not found
-5. **Bot Restarted**: Applied changes by restarting the bot service
-
-**Technical Implementation:**
-- Queries `storage.getBotSettings()` for `welcome_message` key
-- Uses database value or falls back to default message
-- Maintains consistent messaging across bot interactions
-- Enables dynamic welcome message updates from admin dashboard
-
-The bot now dynamically uses the welcome message configured in the admin dashboard bot settings.
-
-## Comprehensive Bot Information Management (August 2025)
-
-**Complete Bot Management Dashboard:**
-
-Created a comprehensive bot management system where admins can edit ALL bot information and settings:
-
-1. **General Information**: Bot name, description, username, and welcome message
-2. **Bot Messages**: Help, contact, order confirmations, error messages, and instructions  
-3. **Operator Settings**: Support contact info, hours, email, and response times
-4. **Payment & Commerce**: Payment methods, currency settings, minimum orders, shipping, taxes
-5. **Custom Commands**: Create up to 3 custom bot commands with responses
-
-**Advanced Features:**
-- Organized category-based interface with sidebar navigation
-- Real-time editing with unsaved changes tracking
-- Bulk save functionality for entire categories
-- Input validation for different field types (text, textarea, email, number)
-- Default value fallbacks and helpful descriptions
-- Mobile-responsive design with proper spacing
-- Bot status monitoring and restart functionality
-- Integrated broadcast messaging
-
-**Technical Implementation:**
-- Dynamic settings categories with type-safe configurations
-- Efficient bulk update mutations for performance
-- Smart fallback system for missing settings
-- Professional UI with consistent spacing and typography
-- Data validation and error handling
-- Integration with existing bot settings API
-
-The admin dashboard now provides complete control over all bot aspects, allowing dynamic configuration without code changes.
-
-## Enhanced Broadcast System Implementation (August 2025)
-
-**Fully Working Broadcast Functionality with Image Upload:**
-
-The broadcast system has been completely rebuilt to provide real bot messaging capabilities:
-
-1. **Object Storage Integration**: Full object storage setup for image uploads
-   - Automatic bucket creation and configuration
-   - Environment variables for public and private object paths
-   - Direct image upload to cloud storage with presigned URLs
-   - File validation (image types, 10MB size limit)
-
-2. **Enhanced Broadcast Component**: Direct image upload instead of URL input
-   - Real-time file upload with progress tracking
-   - Image preview and management
-   - Target audience selection (all users, recent users, custom IDs)
-   - Message preview with image attachment indicator
-   - Professional validation and error handling
-
-3. **Working Bot Broadcast Method**: Actual message sending to users
-   - Retrieves real user data from orders database
-   - Supports text-only and image+caption broadcasts
-   - Smart targeting: all users, recent users (30 days), or custom user IDs
-   - Rate limiting protection with delays between messages
-   - Proper error handling for failed deliveries
-   - Returns actual sent/targeted counts
-
-4. **Image URL Conversion**: Seamless integration with Telegram
-   - Converts object storage paths to full URLs for Telegram compatibility
-   - Handles both uploaded images and external URLs
-   - Automatic domain resolution for different environments
-
-5. **Admin Dashboard Integration**: Complete broadcast management
-   - Modal-based broadcast interface
-   - Direct integration with bot-settings page
-   - Real-time feedback on broadcast success/failure
-   - Professional UI with upload progress and status indicators
-
-**Technical Features:**
-- Real broadcast functionality (no more simulation)
-- Direct image upload with object storage backend
-- Proper error handling and user feedback
-- Target audience filtering with database queries
-- Rate limiting and delivery optimization
-- Full TypeScript support with proper typing
-- Responsive design for mobile and desktop
-
-The broadcast system now provides complete functionality for admins to send messages with images to bot users, replacing the previous simulation-based approach with real message delivery.
-
-## Comprehensive Delivery Methods Management System (August 2025)
-
-**Fully Integrated Delivery Methods Management:**
-
-The delivery methods system has been completely integrated with both the admin dashboard and Telegram bot functionality:
-
-1. **Database Schema & API Integration**: Complete delivery methods database table and API endpoints
-   - Full CRUD operations for delivery methods (create, read, update, delete)
-   - Active/inactive status management with toggle functionality
-   - Sort order management for display priority
-   - Database seeding with 4 default methods: Standard, Express, Store Pickup, Priority
-
-2. **Admin Dashboard Management Interface**: Professional delivery methods manager
-   - Organized interface within bot settings as dedicated "Delivery Methods" category
-   - Add, edit, delete delivery methods with validation
-   - Real-time status toggle (active/inactive)
-   - Price, description, estimated delivery time configuration
-   - Special instructions field for delivery requirements
-   - Empty state handling with clear call-to-action
-
-3. **Bot Integration**: Dynamic delivery methods during checkout
-   - Bot now uses database-driven delivery methods instead of hardcoded options
-   - Displays active delivery methods with pricing and time estimates
-   - Smart address requirement handling (pickup methods skip address)
-   - Proper order processing with delivery method selection
-   - Integration with existing checkout flow and payment processing
-
-4. **Technical Implementation**: Robust database-driven system
-   - Database storage functions for all delivery method operations
-   - API routes for frontend integration (`/api/delivery-methods/*`)
-   - Database seeding script for default delivery methods
-   - LSP error resolution for clean TypeScript code
-   - Professional UI components with proper data validation
-
-**Features:**
-- Complete end-to-end delivery method management from admin to customer
-- Dynamic delivery options based on admin configuration
-- Real-time delivery method updates without code changes
-- Professional UI with proper error handling and user feedback
-- Database-driven delivery pricing and time estimates
-- Address requirement logic for different delivery types
-- Integration with existing order and payment systems
-
-The delivery methods management system now provides complete administrative control over shipping options, allowing dynamic configuration without code changes and seamless integration with the bot's checkout process.
