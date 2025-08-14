@@ -1553,6 +1553,25 @@ railway run npm run db:push</pre>
     teleShopBot.handleWebhookUpdate(req, res);
   });
 
+  // File download endpoints for Railway deployment package
+  app.get("/RAILWAY-SOURCE-COMPLETE.zip", (req, res) => {
+    const path = require("path");
+    const filePath = path.join(process.cwd(), "RAILWAY-SOURCE-COMPLETE.zip");
+    res.download(filePath, "TeleShop-Bot-Complete.zip");
+  });
+
+  app.get("/DOWNLOAD-INSTRUCTIONS.md", (req, res) => {
+    const path = require("path");
+    const filePath = path.join(process.cwd(), "DOWNLOAD-INSTRUCTIONS.md");
+    res.download(filePath, "Deployment-Instructions.md");
+  });
+
+  app.get("/ENV-TEMPLATE.txt", (req, res) => {
+    const path = require("path");
+    const filePath = path.join(process.cwd(), "ENV-TEMPLATE.txt");
+    res.download(filePath, "Environment-Variables.txt");
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
