@@ -282,8 +282,16 @@ export class MemStorage implements IStorage {
   }
 
   async updateDeliveryMethod(id: string, method: Partial<InsertDeliveryMethod>): Promise<DeliveryMethod | undefined> {
+    const updateData = { ...method };
+    // Remove any undefined or null values and ensure proper date handling
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key as keyof typeof updateData] === undefined || updateData[key as keyof typeof updateData] === null) {
+        delete updateData[key as keyof typeof updateData];
+      }
+    });
+    
     const [result] = await db.update(deliveryMethods)
-      .set({ ...method, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(deliveryMethods.id, id))
       .returning();
     return result;
@@ -297,10 +305,7 @@ export class MemStorage implements IStorage {
   async reorderDeliveryMethods(methods: { id: string; sortOrder: number }[]): Promise<void> {
     for (const { id, sortOrder } of methods) {
       await db.update(deliveryMethods)
-        .set({ 
-          sortOrder,
-          updatedAt: new Date()
-        })
+        .set({ sortOrder })
         .where(eq(deliveryMethods.id, id));
     }
   }
