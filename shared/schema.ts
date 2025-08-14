@@ -69,6 +69,7 @@ export const deliveryMethods = pgTable("delivery_methods", {
 
 export const orders = pgTable("orders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  orderNumber: varchar("order_number").unique(), // User-visible order number
   telegramUserId: text("telegram_user_id").notNull(),
   customerName: text("customer_name").notNull(),
   contactInfo: text("contact_info").notNull(),

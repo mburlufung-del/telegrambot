@@ -586,10 +586,11 @@ export class TeleShopBot {
         const order = userOrders[i];
         const orderDate = new Date(order.createdAt || Date.now()).toLocaleDateString();
         
-        // Generate consistent order number based on creation timestamp
-        const orderNumber = order.createdAt ? 
-          new Date(order.createdAt).getTime().toString().slice(-6) : 
-          order.id.slice(-6).toUpperCase();
+        // Use stored order number if available, fallback to timestamp-based for older orders
+        const orderNumber = order.orderNumber || 
+          (order.createdAt ? 
+            new Date(order.createdAt).getTime().toString().slice(-6) : 
+            order.id.slice(-6).toUpperCase());
         
         message += `${i + 1}. Order #${orderNumber}\n`;
         message += `   💰 Total: $${order.totalAmount}\n`;
@@ -1906,6 +1907,7 @@ Include your Order Number: ${orderNumber}`;
 
       // Create order with completed status since payment is confirmed
       const orderId = await storage.createOrder({
+        orderNumber: orderNumber.replace('#', ''), // Store the consistent order number
         customerName: `User ${userId}`,
         telegramUserId: userId,
         contactInfo: 'Telegram contact',
@@ -1917,14 +1919,9 @@ Include your Order Number: ${orderNumber}`;
       // Clear cart
       await storage.clearCart(userId);
       
-      // Generate consistent order number based on order creation timestamp (matches order history display)
-      const finalOrderNumber = orderId.createdAt ? 
-        new Date(orderId.createdAt).getTime().toString().slice(-6) : 
-        orderId.id.slice(-6).toUpperCase();
-      
       const message = `🎉 **Order Confirmed!**
 
-**Order Number:** #${finalOrderNumber}
+**Order Number:** ${orderNumber}
 **Customer ID:** ${userId}
 **Total:** $${total.toFixed(2)}
 **Status:** Completed
@@ -1937,7 +1934,7 @@ Include your Order Number: ${orderNumber}`;
 
 📞 **Support Contact:**
 • Telegram: @murzion
-• Include your order number: #${finalOrderNumber}
+• Include your order number: ${orderNumber}
 
 **Estimated Processing:** 1-2 business days
 
