@@ -1241,10 +1241,9 @@ Need help? Our support team is here for you!
         { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}_1` }
       ]);
     } else {
-      // Out of stock - still show wishlist and notification options
+      // Out of stock - show wishlist option
       actionButtons.push([
-        { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}_1` },
-        { text: '🔔 Notify When Available', callback_data: `notify_${productId}` }
+        { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}_1` }
       ]);
     }
 
