@@ -623,7 +623,7 @@ export class TeleShopBot {
   // Handle cart viewing with actual cart items
   private async handleCartsCommand(chatId: number, userId: string) {
     try {
-      const cartItems = await storage.getCartItems(userId);
+      const cartItems = await storage.getCart(userId);
       
       if (cartItems.length === 0) {
         const message = '🛒 *Your Shopping Cart*\n\nYour cart is empty. Start shopping to add items!';
@@ -796,7 +796,7 @@ export class TeleShopBot {
 
   private async handleWishlistCommand(chatId: number, userId: string) {
     try {
-      const wishlistItems = await storage.getWishlistItems(userId);
+      const wishlistItems = await storage.getWishlist(userId);
       
       if (wishlistItems.length === 0) {
         const message = '❤️ *Your Wishlist*\n\nYour wishlist is empty.\n\nBrowse products and add items you love to your wishlist!';
@@ -849,7 +849,7 @@ export class TeleShopBot {
 
   private async handleRatingCommand(chatId: number, userId: string) {
     console.log('Fetching weekly ratings...');
-    const weeklyRatings = await storage.getWeeklyProductRatings();
+    const weeklyRatings = await storage.getProductRatings();
     console.log('Weekly ratings found:', weeklyRatings.length);
     
     if (weeklyRatings.length === 0) {
@@ -872,7 +872,7 @@ export class TeleShopBot {
     let message = '⭐ *Weekly Product Ratings*\n\nProducts rated in the past 7 days:\n\n';
     
     console.log('Processing ratings for display:', weeklyRatings);
-    weeklyRatings.slice(0, 10).forEach((rating, index) => {
+    weeklyRatings.slice(0, 10).forEach((rating: any, index: number) => {
       console.log(`Rating ${index + 1}:`, rating);
       const stars = '⭐'.repeat(Math.round(rating.averageRating));
       const starsDisplay = stars.padEnd(5, '☆');
@@ -1246,7 +1246,7 @@ Need help? Our support team is here for you!
       }
 
       // Check if item already exists in cart to show proper message
-      const existingCartItems = await storage.getCartItems(userId);
+      const existingCartItems = await storage.getCart(userId);
       const existingItem = existingCartItems.find(item => item.productId === productId);
       
       await storage.addToCart({
@@ -1261,7 +1261,7 @@ Need help? Our support team is here for you!
       const total = (parseFloat(effectivePrice) * quantity).toFixed(2);
       
       // Get updated cart to show final quantity
-      const updatedCartItems = await storage.getCartItems(userId);
+      const updatedCartItems = await storage.getCart(userId);
       const finalItem = updatedCartItems.find(item => item.productId === productId);
       const finalQuantity = finalItem ? finalItem.quantity : quantity;
       
@@ -1371,7 +1371,7 @@ Need help? Our support team is here for you!
       // Save the rating to storage
       try {
         console.log(`Saving rating: Product ${productId}, User ${userId}, Rating ${rating}`);
-        await storage.addProductRating({
+        await storage.createProductRating({
           productId: productId,
           telegramUserId: userId,
           rating: rating
@@ -1433,7 +1433,7 @@ Need help? Our support team is here for you!
   // Start the multi-step checkout process  
   private async handleCheckoutStart(chatId: number, userId: string) {
     try {
-      const cartItems = await storage.getCartItems(userId);
+      const cartItems = await storage.getCart(userId);
       
       if (cartItems.length === 0) {
         const message = '🛒 Your cart is empty. Add items before checkout.';
@@ -2010,7 +2010,7 @@ Select your preferred payment option:`;
   }
 
   private async handlePaymentSelection(chatId: number, userId: string, methodId: string, orderNumber: string) {
-    const cartItems = await storage.getCartItems(userId);
+    const cartItems = await storage.getCart(userId);
     let total = 0;
     
     for (const item of cartItems) {
@@ -2072,7 +2072,7 @@ Include your Order Number: ${orderNumber}`;
 
   private async handleOrderCompletion(chatId: number, userId: string, orderNumber: string) {
     try {
-      const cartItems = await storage.getCartItems(userId);
+      const cartItems = await storage.getCart(userId);
       
       if (cartItems.length === 0) {
         await this.sendTrackedMessage(chatId, '🛒 No items in cart to checkout.', {
