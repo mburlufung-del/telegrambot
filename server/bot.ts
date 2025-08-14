@@ -845,7 +845,7 @@ Need help? Our support team is here for you!
         const parts = data.replace('delivery_', '').split('_');
         const method = parts[0];
         const orderNumber = parts.length > 1 ? `#${parts[1]}` : `#${Date.now().toString().slice(-6)}`;
-        await this.handleDeliverySelectionLegacy(chatId, userId, method, orderNumber);
+        await this.handleDeliverySelection(chatId, userId, method, orderNumber);
       }
       else if (data === 'enter_address') {
         await this.handleAddressEntry(chatId, userId);
@@ -1720,7 +1720,7 @@ Select your preferred delivery option:`;
       name: selected.name,
       time: selected.estimatedDays || 'As scheduled',
       cost: parseFloat(selected.price),
-      requiresAddress: selected.requiresAddress
+      requiresAddress: !selected.name.toLowerCase().includes('pickup') // Store pickup doesn't require address
     };
 
     if (!deliveryInfo.requiresAddress) {
@@ -1763,7 +1763,7 @@ Type your complete information below:`;
       // Set up address listener
       this.bot?.once('message', async (msg) => {
         if (msg.chat.id === chatId && msg.text && !msg.text.startsWith('/')) {
-          await this.handleAddressConfirmation(chatId, userId, msg.text, method, orderNumber, msg.from?.username);
+          await this.handleAddressConfirmation(chatId, userId, msg.text, methodId, orderNumber, msg.from?.username);
         }
       });
     }
