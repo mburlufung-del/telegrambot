@@ -1077,7 +1077,7 @@ export class DatabaseStorage implements IStorage {
   async getCart(telegramUserId: string): Promise<Cart[]> {
     return await db.select().from(cart)
       .where(eq(cart.telegramUserId, telegramUserId))
-      .orderBy(desc(cart.createdAt));
+      .orderBy(desc(cart.addedAt));
   }
 
   async getCartItems(telegramUserId: string): Promise<Cart[]> {
@@ -1096,8 +1096,7 @@ export class DatabaseStorage implements IStorage {
       // Update existing item
       const result = await db.update(cart)
         .set({ 
-          quantity: existing[0].quantity + cartItem.quantity,
-          updatedAt: new Date()
+          quantity: existing[0].quantity + cartItem.quantity
         })
         .where(eq(cart.id, existing[0].id))
         .returning();
@@ -1111,7 +1110,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined> {
     const result = await db.update(cart)
-      .set({ quantity, updatedAt: new Date() })
+      .set({ quantity })
       .where(and(
         eq(cart.telegramUserId, telegramUserId),
         eq(cart.productId, productId)
