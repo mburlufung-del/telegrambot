@@ -1555,21 +1555,30 @@ railway run npm run db:push</pre>
 
   // File download endpoints for Railway deployment package
   app.get("/RAILWAY-SOURCE-COMPLETE.zip", (req, res) => {
-    const path = require("path");
-    const filePath = path.join(process.cwd(), "RAILWAY-SOURCE-COMPLETE.zip");
-    res.download(filePath, "TeleShop-Bot-Complete.zip");
+    import("path").then(path => {
+      const filePath = path.join(process.cwd(), "RAILWAY-SOURCE-COMPLETE.zip");
+      res.download(filePath, "TeleShop-Bot-Complete.zip");
+    }).catch(() => {
+      res.status(404).send("File not found");
+    });
   });
 
   app.get("/DOWNLOAD-INSTRUCTIONS.md", (req, res) => {
-    const path = require("path");
-    const filePath = path.join(process.cwd(), "DOWNLOAD-INSTRUCTIONS.md");
-    res.download(filePath, "Deployment-Instructions.md");
+    import("path").then(path => {
+      const filePath = path.join(process.cwd(), "DOWNLOAD-INSTRUCTIONS.md");
+      res.download(filePath, "Deployment-Instructions.md");
+    }).catch(() => {
+      res.status(404).send("File not found");
+    });
   });
 
   app.get("/ENV-TEMPLATE.txt", (req, res) => {
-    const path = require("path");
-    const filePath = path.join(process.cwd(), "ENV-TEMPLATE.txt");
-    res.download(filePath, "Environment-Variables.txt");
+    import("path").then(path => {
+      const filePath = path.join(process.cwd(), "ENV-TEMPLATE.txt");
+      res.download(filePath, "Environment-Variables.txt");
+    }).catch(() => {
+      res.status(404).send("File not found");
+    });
   });
 
   const httpServer = createServer(app);
