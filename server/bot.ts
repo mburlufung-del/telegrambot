@@ -1744,13 +1744,20 @@ Need more help? Contact our support team!`;
         isRead: false
       });
 
+      // Load dynamic operator settings
+      const botSettings = await storage.getBotSettings();
+      const operatorContactSetting = botSettings.find(s => s.key === 'operator_username');
+      const responseTimeSetting = botSettings.find(s => s.key === 'response_time');
+      const operatorContact = operatorContactSetting?.value || '@murzion';
+      const responseTime = responseTimeSetting?.value || '2-4 hours';
+      
       const confirmMessage = `✅ *Message Sent Successfully!*
 
-Your support request has been received. Our team will respond within 2-4 hours.
+Your support request has been received. Our team will respond within ${responseTime}.
 
 **Your message:** "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"
 
-**Contact @murzion directly:** You can also message @murzion on Telegram${username ? ` mentioning your username @${username}` : ` with your User ID: ${userId}`}
+**Contact ${operatorContact} directly:** You can also message ${operatorContact} on Telegram${username ? ` mentioning your username @${username}` : ` with your User ID: ${userId}`}
 
 **Ticket ID:** #${Date.now().toString().slice(-6)}
 
@@ -1966,8 +1973,13 @@ Select your preferred payment option:`;
       message += `\n\n**Instructions:**\n${paymentMethod.instructions}`;
     }
 
+    // Load dynamic operator settings
+    const botSettings = await storage.getBotSettings();
+    const operatorContactSetting = botSettings.find(s => s.key === 'operator_username');
+    const operatorContact = operatorContactSetting?.value || '@murzion';
+    
     message += `\n\n📸 **After Payment:**
-Send screenshot of payment confirmation to @murzion
+Send screenshot of payment confirmation to ${operatorContact}
 Include your Order Number: ${orderNumber}`;
 
     const keyboard = {
@@ -2035,6 +2047,11 @@ Include your Order Number: ${orderNumber}`;
       // Clear cart
       await storage.clearCart(userId);
       
+      // Load dynamic operator settings
+      const botSettings = await storage.getBotSettings();
+      const operatorContactSetting = botSettings.find(s => s.key === 'operator_username');
+      const operatorContact = operatorContactSetting?.value || '@murzion';
+      
       const message = `🎉 **Order Confirmed!**
 
 **Order Number:** ${orderNumber}
@@ -2049,7 +2066,7 @@ Include your Order Number: ${orderNumber}`;
 4. Delivery tracking info
 
 📞 **Support Contact:**
-• Telegram: @murzion
+• Telegram: ${operatorContact}
 • Include your order number: ${orderNumber}
 
 **Estimated Processing:** 1-2 business days
