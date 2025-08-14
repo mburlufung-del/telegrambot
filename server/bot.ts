@@ -839,13 +839,13 @@ export class TeleShopBot {
   }
 
   private async handleOperatorCommand(chatId: number, userId: string) {
-    // Dynamically load operator settings from database
+    // Dynamically load operator settings from database using correct keys
     const botSettings = await storage.getBotSettings();
-    const operatorContactSetting = botSettings.find(s => s.key === 'operator_contact');
-    const operatorEmailSetting = botSettings.find(s => s.key === 'operator_email');
+    const operatorContactSetting = botSettings.find(s => s.key === 'operator_username');
+    const operatorEmailSetting = botSettings.find(s => s.key === 'support_email');
     const operatorPhoneSetting = botSettings.find(s => s.key === 'operator_phone');
     const responseTimeSetting = botSettings.find(s => s.key === 'response_time');
-    const businessHoursSetting = botSettings.find(s => s.key === 'business_hours');
+    const businessHoursSetting = botSettings.find(s => s.key === 'support_hours');
     
     const operatorContact = operatorContactSetting?.value || '@murzion';
     const operatorEmail = operatorEmailSetting?.value || 'support@teleshop.com';
@@ -1603,9 +1603,9 @@ Need help? Our support team is here for you!
 
   // Operator Support Methods
   private async handleSendSupportMessage(chatId: number, userId: string) {
-    // Dynamically load operator settings
+    // Dynamically load operator settings using correct keys
     const botSettings = await storage.getBotSettings();
-    const operatorContactSetting = botSettings.find(s => s.key === 'operator_contact');
+    const operatorContactSetting = botSettings.find(s => s.key === 'operator_username');
     const responseTimeSetting = botSettings.find(s => s.key === 'response_time');
     
     const operatorContact = operatorContactSetting?.value || '@murzion';
@@ -1646,9 +1646,9 @@ Type your message below and send it:`;
   }
 
   private async handleEmailSupport(chatId: number, userId: string) {
-    // Dynamically load operator settings
+    // Dynamically load operator settings using correct keys
     const botSettings = await storage.getBotSettings();
-    const operatorEmailSetting = botSettings.find(s => s.key === 'operator_email');
+    const operatorEmailSetting = botSettings.find(s => s.key === 'support_email');
     const responseTimeSetting = botSettings.find(s => s.key === 'response_time');
     
     const operatorEmail = operatorEmailSetting?.value || 'support@teleshop.com';
