@@ -1240,11 +1240,6 @@ Need help? Our support team is here for you!
         { text: '🛒 Add to Cart', callback_data: `addcart_${productId}_1` },
         { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}_1` }
       ]);
-    } else {
-      // Out of stock - show wishlist option
-      actionButtons.push([
-        { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}_1` }
-      ]);
     }
 
     // Rating and navigation
