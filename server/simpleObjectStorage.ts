@@ -73,6 +73,22 @@ export class SimpleObjectStorageService {
     const entityId = rawObjectPath.slice(objectEntityDir.length);
     return `/objects/${entityId}`;
   }
+
+  // Gets a download URL for an existing object
+  async getObjectDownloadURL(objectPath: string): Promise<string> {
+    const privateObjectDir = this.getPrivateObjectDir();
+    const cleanPath = objectPath.replace('/objects', '');
+    const fullObjectPath = `${privateObjectDir}${cleanPath}`;
+    
+    const { bucketName, objectName } = parseObjectPath(fullObjectPath);
+    
+    return signObjectURL({
+      bucketName,
+      objectName,
+      method: "GET",
+      ttlSec: 3600, // 1 hour
+    });
+  }
 }
 
 function parseObjectPath(path: string): {

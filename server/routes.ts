@@ -674,19 +674,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { SimpleObjectStorageService } = await import("./simpleObjectStorage.js");
       const objectStorageService = new SimpleObjectStorageService();
       
-      // Get the object path from the URL
-      const objectPath = req.path.replace('/objects', '');
-      const privateObjectDir = objectStorageService.getPrivateObjectDir();
-      const fullObjectPath = `${privateObjectDir}${objectPath}`;
-      
-      // Get a signed download URL
-      const { bucketName, objectName } = parseObjectPath(fullObjectPath);
-      const downloadURL = await signObjectURL({
-        bucketName,
-        objectName,
-        method: "GET",
-        ttlSec: 3600, // 1 hour
-      });
+      // Get the object path from the URL and serve directly
+      const downloadURL = await objectStorageService.getObjectDownloadURL(req.path);
       
       // Redirect to the signed URL
       res.redirect(downloadURL);
@@ -696,17 +685,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Simple object serving endpoint - serve from bucket directly
-  app.get("/objects/:objectPath(*)", async (req, res) => {
-    try {
-      // For now, redirect to external storage or return 404
-      // This can be enhanced when Google Cloud Storage package is properly installed
-      res.status(404).json({ error: "Object not found" });
-    } catch (error) {
-      console.error("Error accessing object:", error);
-      return res.sendStatus(500);
-    }
-  });
+
 
   // Bot settings routes
   app.get("/api/bot/settings", async (req, res) => {
@@ -1078,65 +1057,4 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-// Helper functions for object storage
-function parseObjectPath(path: string): {
-  bucketName: string;
-  objectName: string;
-} {
-  if (!path.startsWith("/")) {
-    path = `/${path}`;
-  }
-  const pathParts = path.split("/");
-  if (pathParts.length < 3) {
-    throw new Error("Invalid path: must contain at least a bucket name");
-  }
-
-  const bucketName = pathParts[1];
-  const objectName = pathParts.slice(2).join("/");
-
-  return {
-    bucketName,
-    objectName,
-  };
-}
-
-async function signObjectURL({
-  bucketName,
-  objectName,
-  method,
-  ttlSec,
-}: {
-  bucketName: string;
-  objectName: string;
-  method: "GET" | "PUT" | "DELETE" | "HEAD";
-  ttlSec: number;
-}): Promise<string> {
-  const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
-  const request = {
-    bucket_name: bucketName,
-    object_name: objectName,
-    method,
-    expires_at: new Date(Date.now() + ttlSec * 1000).toISOString(),
-  };
-  
-  const response = await fetch(
-    `${REPLIT_SIDECAR_ENDPOINT}/object-storage/signed-object-url`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
-    }
-  );
-  
-  if (!response.ok) {
-    throw new Error(
-      `Failed to sign object URL, errorcode: ${response.status}, ` +
-        `make sure you're running on Replit`
-    );
-  }
-
-  const { signed_url: signedURL } = await response.json();
-  return signedURL;
-}
+// Object storage helper functions moved to simpleObjectStorage.ts
