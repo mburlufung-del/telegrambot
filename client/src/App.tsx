@@ -11,6 +11,7 @@ import Orders from "@/pages/orders";
 import Inquiries from "@/pages/inquiries";
 import BotSettings from "@/pages/bot-settings";
 import Analytics from "@/pages/analytics";
+import Broadcast from "@/pages/broadcast";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 
@@ -27,6 +28,7 @@ function Router() {
             <Route path="/categories" component={Categories} />
             <Route path="/orders" component={Orders} />
             <Route path="/inquiries" component={Inquiries} />
+            <Route path="/broadcast" component={Broadcast} />
             <Route path="/bot-settings" component={BotSettings} />
             <Route path="/analytics" component={Analytics} />
             <Route component={NotFound} />

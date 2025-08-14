@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import EnhancedBroadcast from "@/components/enhanced-broadcast";
 import { PaymentMethodsManager } from "@/components/payment-methods-manager";
@@ -375,9 +375,12 @@ export default function BotSettings() {
 
       {/* Broadcast Modal */}
       <Dialog open={isBroadcastModalOpen} onOpenChange={setIsBroadcastModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Send Broadcast Message</DialogTitle>
+            <DialogDescription>
+              Send messages to all bot users or specific groups. You can include text and images.
+            </DialogDescription>
           </DialogHeader>
           <EnhancedBroadcast onClose={() => setIsBroadcastModalOpen(false)} />
         </DialogContent>
