@@ -363,8 +363,29 @@ export class TeleShopBot {
     // Handle /start command and main menu requests
     this.bot.onText(/\/start/, async (msg) => {
       const chatId = msg.chat.id;
+      const userId = msg.from?.id.toString() || '';
+      const userName = msg.from?.first_name || 'there';
+      
       await storage.incrementMessageCount();
-      await this.sendMainMenu(chatId);
+      
+      // Update user statistics for dashboard integration
+      try {
+        const existingOrders = await storage.getOrdersByUserId(userId);
+        if (existingOrders.length === 0) {
+          console.log(`[NEW USER] Welcome ${userName} (${userId}) - updating dashboard stats`);
+        }
+      } catch (error) {
+        console.log(`[USER STATS] Error checking user stats: ${error}`);
+      }
+      
+      // Send personalized welcome message
+      const welcomeMessage = `🎉 Welcome to our Shop, ${userName}! 
+
+🛍️ *Your one-stop destination for amazing products*
+
+Use the buttons below to explore our catalog, manage your cart, or get support.`;
+      
+      await this.sendMainMenu(chatId, welcomeMessage);
     });
 
     // Handle text messages
@@ -377,10 +398,26 @@ export class TeleShopBot {
       }
 
       const chatId = msg.chat.id;
+      const userId = msg.from?.id.toString() || '';
       const messageText = msg.text?.toLowerCase() || '';
       
       console.log(`[MESSAGE] Processing text: "${messageText}"`);
       await storage.incrementMessageCount();
+      
+      // Create customer inquiry if it's not a command or known keyword
+      if (!messageText.startsWith('/') && messageText !== 'menu' && messageText !== 'main menu') {
+        try {
+          await storage.createInquiry({
+            telegramUserId: userId,
+            customerName: msg.from?.first_name || 'Anonymous',
+            contactInfo: `Telegram User: ${userId}`,
+            message: msg.text || ''
+          });
+          console.log(`[INQUIRY] Created new inquiry from user ${userId}`);
+        } catch (error) {
+          console.log(`[INQUIRY] Failed to create inquiry: ${error}`);
+        }
+      }
 
       // Check for menu keyword
       if (messageText === 'menu' || messageText === 'main menu') {
@@ -460,6 +497,8 @@ export class TeleShopBot {
         const productId = parts[1];
         const quantity = parseInt(parts[2]) || 1;
         await this.handleAddToCart(chatId, userId, productId, quantity);
+        // Update dashboard stats in real-time
+        await storage.incrementMessageCount();
       } else if (data.startsWith('wishlist_')) {
         const parts = data.split('_');
         const productId = parts[1];
@@ -849,7 +888,7 @@ export class TeleShopBot {
 
   private async handleRatingCommand(chatId: number, userId: string) {
     console.log('Fetching weekly ratings...');
-    const weeklyRatings = await storage.getProductRatings();
+    const weeklyRatings = await storage.getProductRatings(7);
     console.log('Weekly ratings found:', weeklyRatings.length);
     
     if (weeklyRatings.length === 0) {
@@ -2108,6 +2147,7 @@ Include your Order Number: ${orderNumber}`;
       }
 
       // Create order with completed status since payment is confirmed
+      console.log(`[ORDER] Creating new order for user ${userId} - ${orderNumber}`);
       const orderId = await storage.createOrder({
         orderNumber: orderNumber.replace('#', ''), // Store the consistent order number
         customerName: `User ${userId}`,
