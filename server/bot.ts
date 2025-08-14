@@ -370,7 +370,7 @@ export class TeleShopBot {
       
       // Update user statistics for dashboard integration
       try {
-        const existingOrders = await storage.getOrdersByUserId(userId);
+        const existingOrders = await storage.getUserOrders(userId);
         if (existingOrders.length === 0) {
           console.log(`[NEW USER] Welcome ${userName} (${userId}) - updating dashboard stats`);
         }
@@ -385,7 +385,7 @@ export class TeleShopBot {
 
 Use the buttons below to explore our catalog, manage your cart, or get support.`;
       
-      await this.sendMainMenu(chatId, welcomeMessage);
+      await this.sendMainMenu(chatId);
     });
 
     // Handle text messages
@@ -888,7 +888,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
   private async handleRatingCommand(chatId: number, userId: string) {
     console.log('Fetching weekly ratings...');
-    const weeklyRatings = await storage.getProductRatings(7);
+    const weeklyRatings = await storage.getProductRatings("7");
     console.log('Weekly ratings found:', weeklyRatings.length);
     
     if (weeklyRatings.length === 0) {

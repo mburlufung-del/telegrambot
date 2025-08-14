@@ -330,6 +330,10 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(orders).orderBy(desc(orders.createdAt));
   }
 
+  async getOrdersByUserId(telegramUserId: string): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.telegramUserId, telegramUserId)).orderBy(desc(orders.createdAt));
+  }
+
   async getUserOrders(telegramUserId: string): Promise<Order[]> {
     return await db.select().from(orders)
       .where(eq(orders.telegramUserId, telegramUserId))
