@@ -607,11 +607,11 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     const categoriesWithProducts = [];
     for (const category of allCategories) {
       const products = await storage.getProductsByCategory(category.id);
-      const activeProducts = products.filter(p => p.isActive);
-      if (activeProducts.length > 0) {
+      // getProductsByCategory already filters for isActive=true, so all products are active
+      if (products.length > 0) {
         categoriesWithProducts.push({
           ...category,
-          productCount: activeProducts.length
+          productCount: products.length
         });
       }
     }
@@ -1097,7 +1097,8 @@ Need help? Our support team is here for you!
   private async handleCategoryProducts(chatId: number, userId: string, categoryId: string) {
     const category = await storage.getCategories().then(cats => cats.find(c => c.id === categoryId));
     const products = await storage.getProductsByCategory(categoryId);
-    const activeProducts = products.filter(p => p.isActive);
+    // getProductsByCategory already filters for active products, no need to filter again
+    const activeProducts = products;
 
     if (!category) {
       await this.sendMainMenu(chatId);

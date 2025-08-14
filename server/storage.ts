@@ -149,7 +149,7 @@ export class DatabaseStorage implements IStorage {
   async getProductsByCategory(categoryId: string): Promise<Product[]> {
     return await db.select().from(products)
       .where(and(eq(products.categoryId, categoryId), eq(products.isActive, true)))
-      .orderBy(desc(products.createdAt));
+      .orderBy(products.name);
   }
 
   async getFeaturedProducts(): Promise<Product[]> {
@@ -173,7 +173,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
-    const result = await db.insert(products).values(product).returning();
+    // PRODUCTION HOSTING: Ensure cart functionality for all new products
+    const productWithDefaults = {
+      ...product,
+      // Override stock default to ensure cart buttons show
+      stock: product.stock || 10,
+      // Ensure active for immediate bot visibility  
+      isActive: product.isActive !== undefined ? product.isActive : true,
+      // Ensure minimum order quantity
+      minOrderQuantity: product.minOrderQuantity || 1
+    };
+    
+    const result = await db.insert(products).values(productWithDefaults).returning();
     return result[0];
   }
 

@@ -29,19 +29,24 @@ Preferred communication style: Simple, everyday language.
 - **Schema Management**: Drizzle Kit for migrations
 - **Data Models**: Products, customer inquiries, bot settings, bot statistics, orders, delivery methods.
 
-### Bot Integration
+### Bot Integration - Production Ready
 - **Platform**: Telegram Bot API
 - **Core Features**: Welcome messages, product catalogs, customer inquiry handling, multi-step checkout, real-time cart management, order confirmation, and a product rating system.
+- **Product Discovery**: Automatic detection of new products via standard database queries (human logic based)
+- **Cart Integration**: Universal cart functionality for all products with stock > 0
+- **Stock Management**: Auto-defaults to 10 units for new products to ensure immediate cart availability
 - **Configuration**: Dynamic bot settings managed via admin dashboard.
 - **Statistics**: Real-time user interaction tracking.
 - **Enhanced User Experience**: Auto-vanish functionality, persistent welcome interface, inline keyboard navigation, and user-specific order history.
 - **Admin Control**: Comprehensive bot information management (general info, messages, operator settings, payment settings, custom commands) and a robust broadcast system with image upload capabilities.
 - **Delivery Management**: Dynamic and configurable delivery methods integrated into the checkout flow.
+- **Production Logic**: Simple boolean logic (isActive=true AND stock>0 = cart buttons show)
 
 ### Development Environment
 - **Build Tool**: Vite
 - **Deployment**: Multi-platform support (Docker, Railway, Vercel, VPS).
 - **Bot Auto-Management**: Always-online infrastructure with auto-initialization, health monitoring, and fault tolerance.
+- **Production Hosting**: Permanent product integration with human-understandable logic, no AI-specific patterns.
 
 ## External Dependencies
 
