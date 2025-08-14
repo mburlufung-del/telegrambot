@@ -96,6 +96,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/products/:id", async (req, res) => {
+    try {
+      const productData = req.body;
+      const product = await storage.updateProduct(req.params.id, productData);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      res.json(product);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid product data" });
+    }
+  });
+
   app.delete("/api/products/:id", async (req, res) => {
     try {
       const deleted = await storage.deleteProduct(req.params.id);
