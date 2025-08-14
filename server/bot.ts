@@ -225,6 +225,31 @@ export class TeleShopBot {
     }
   }
 
+  private async handleCustomCommands(messageText: string): Promise<string | null> {
+    try {
+      const botSettings = await storage.getBotSettings();
+      
+      // Check all three custom command slots
+      for (let i = 1; i <= 3; i++) {
+        const commandSetting = botSettings.find(s => s.key === `custom_command_${i}`);
+        const responseSetting = botSettings.find(s => s.key === `custom_response_${i}`);
+        
+        if (commandSetting?.value && responseSetting?.value) {
+          const commandKeyword = commandSetting.value.toLowerCase().trim();
+          
+          if (messageText === commandKeyword) {
+            return responseSetting.value;
+          }
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error checking custom commands:', error);
+      return null;
+    }
+  }
+
   private async clearUserChatHistory(chatId: number) {
     if (!this.bot) return;
 
@@ -324,11 +349,19 @@ export class TeleShopBot {
       // Check for menu keyword
       if (messageText === 'menu' || messageText === 'main menu') {
         await this.sendMainMenu(chatId);
-      } else {
-        // Send acknowledgment without showing menu for other messages
-        const ackMessage = 'Message received! Use /start to see the main menu or type "menu" anytime.';
-        await this.sendTrackedMessage(chatId, ackMessage);
+        return;
       }
+
+      // Check for custom commands
+      const customResponse = await this.handleCustomCommands(messageText);
+      if (customResponse) {
+        await this.sendTrackedMessage(chatId, customResponse, { parse_mode: 'Markdown' });
+        return;
+      }
+
+      // Send acknowledgment without showing menu for other messages
+      const ackMessage = 'Message received! Use /start to see the main menu or type "menu" anytime.';
+      await this.sendTrackedMessage(chatId, ackMessage);
     });
 
     // Handle callback queries for the command buttons
