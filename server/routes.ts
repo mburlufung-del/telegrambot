@@ -781,10 +781,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bot restart route
   app.post("/api/bot/restart", async (req, res) => {
     try {
+      console.log("Restarting bot...");
       await teleShopBot.restart();
+      console.log("Bot restarted successfully");
       res.json({ message: "Bot restarted successfully" });
     } catch (error) {
-      res.status(500).json({ message: "Failed to restart bot" });
+      console.error("Failed to restart bot:", error);
+      res.status(500).json({ 
+        message: "Failed to restart bot", 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Test custom commands endpoint
+  app.post("/api/bot/test-custom-command", async (req, res) => {
+    try {
+      const { message } = req.body;
+      if (!message) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+      
+      const result = await teleShopBot.testCustomCommand(message);
+      res.json({ message, result });
+    } catch (error) {
+      console.error("Custom command test failed:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

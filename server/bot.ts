@@ -53,8 +53,26 @@ export class TeleShopBot {
   }
 
   async restart() {
-    console.log('Restarting bot...');
-    return await this.initialize();
+    try {
+      console.log('Restarting bot...');
+      // Stop current bot
+      if (this.bot) {
+        await this.bot.stopPolling();
+        this.bot = null;
+      }
+      
+      // Clear timers
+      this.autoVanishTimers.clear();
+      this.userMessages.clear();
+      
+      // Reinitialize
+      await this.initialize();
+      console.log('Bot restart completed successfully');
+      return true;
+    } catch (error) {
+      console.error('Bot restart failed:', error);
+      throw error;
+    }
   }
 
   // Broadcast message to users
@@ -227,27 +245,39 @@ export class TeleShopBot {
 
   private async handleCustomCommands(messageText: string): Promise<string | null> {
     try {
+      console.log(`[handleCustomCommands] Processing message: "${messageText}"`);
       const botSettings = await storage.getBotSettings();
+      console.log(`[handleCustomCommands] Loaded ${botSettings.length} bot settings`);
       
       // Check all three custom command slots
       for (let i = 1; i <= 3; i++) {
         const commandSetting = botSettings.find(s => s.key === `custom_command_${i}`);
         const responseSetting = botSettings.find(s => s.key === `custom_response_${i}`);
         
+        console.log(`[handleCustomCommands] Slot ${i}: command="${commandSetting?.value}", response="${responseSetting?.value}"`);
+        
         if (commandSetting?.value && responseSetting?.value) {
           const commandKeyword = commandSetting.value.toLowerCase().trim();
+          console.log(`[handleCustomCommands] Comparing "${messageText}" with "${commandKeyword}"`);
           
           if (messageText === commandKeyword) {
+            console.log(`[handleCustomCommands] MATCH! Returning response: "${responseSetting.value}"`);
             return responseSetting.value;
           }
         }
       }
       
+      console.log(`[handleCustomCommands] No match found for message: "${messageText}"`);
       return null;
     } catch (error) {
       console.error('Error checking custom commands:', error);
       return null;
     }
+  }
+
+  // Test method for custom commands
+  async testCustomCommand(message: string): Promise<string | null> {
+    return await this.handleCustomCommands(message.toLowerCase());
   }
 
   private async clearUserChatHistory(chatId: number) {
