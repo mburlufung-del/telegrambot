@@ -607,7 +607,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     const categoriesWithProducts = [];
     for (const category of allCategories) {
       const products = await storage.getProductsByCategory(category.id);
-      const activeProducts = products.filter(p => p.isActive && p.stock > 0);
+      const activeProducts = products.filter(p => p.isActive);
       if (activeProducts.length > 0) {
         categoriesWithProducts.push({
           ...category,
@@ -1239,6 +1239,12 @@ Need help? Our support team is here for you!
       actionButtons.push([
         { text: '🛒 Add to Cart', callback_data: `addcart_${productId}_1` },
         { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}_1` }
+      ]);
+    } else {
+      // Out of stock - still show wishlist and notification options
+      actionButtons.push([
+        { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}_1` },
+        { text: '🔔 Notify When Available', callback_data: `notify_${productId}` }
       ]);
     }
 
