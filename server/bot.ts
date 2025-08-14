@@ -843,13 +843,11 @@ export class TeleShopBot {
     const botSettings = await storage.getBotSettings();
     const operatorContactSetting = botSettings.find(s => s.key === 'operator_username');
     const operatorEmailSetting = botSettings.find(s => s.key === 'support_email');
-    const operatorPhoneSetting = botSettings.find(s => s.key === 'operator_phone');
     const responseTimeSetting = botSettings.find(s => s.key === 'response_time');
     const businessHoursSetting = botSettings.find(s => s.key === 'support_hours');
     
     const operatorContact = operatorContactSetting?.value || '@murzion';
     const operatorEmail = operatorEmailSetting?.value || 'support@teleshop.com';
-    const operatorPhone = operatorPhoneSetting?.value || '+1 (555) 123-4567';
     const responseTime = responseTimeSetting?.value || '2-4 hours';
     const businessHours = businessHoursSetting?.value || 'Monday - Friday: 9:00 AM - 6:00 PM\n• Saturday: 10:00 AM - 4:00 PM\n• Sunday: Closed';
     
@@ -860,7 +858,6 @@ Need help? Our support team is here for you!
 📞 **Support Contact:**
 • Telegram: ${operatorContact}
 • Email: ${operatorEmail}
-• Phone: ${operatorPhone}
 
 🕒 **Business Hours:**
 • ${businessHours}
