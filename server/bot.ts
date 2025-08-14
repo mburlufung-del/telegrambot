@@ -839,26 +839,38 @@ export class TeleShopBot {
   }
 
   private async handleOperatorCommand(chatId: number, userId: string) {
+    // Dynamically load operator settings from database
+    const botSettings = await storage.getBotSettings();
+    const operatorContactSetting = botSettings.find(s => s.key === 'operator_contact');
+    const operatorEmailSetting = botSettings.find(s => s.key === 'operator_email');
+    const operatorPhoneSetting = botSettings.find(s => s.key === 'operator_phone');
+    const responseTimeSetting = botSettings.find(s => s.key === 'response_time');
+    const businessHoursSetting = botSettings.find(s => s.key === 'business_hours');
+    
+    const operatorContact = operatorContactSetting?.value || '@murzion';
+    const operatorEmail = operatorEmailSetting?.value || 'support@teleshop.com';
+    const operatorPhone = operatorPhoneSetting?.value || '+1 (555) 123-4567';
+    const responseTime = responseTimeSetting?.value || '2-4 hours';
+    const businessHours = businessHoursSetting?.value || 'Monday - Friday: 9:00 AM - 6:00 PM\n• Saturday: 10:00 AM - 4:00 PM\n• Sunday: Closed';
+    
     const message = `👤 *Contact Operator*
 
 Need help? Our support team is here for you!
 
 📞 **Support Contact:**
-• Telegram: @murzion
-• Email: support@teleshop.com
-• Phone: +1 (555) 123-4567
+• Telegram: ${operatorContact}
+• Email: ${operatorEmail}
+• Phone: ${operatorPhone}
 
 🕒 **Business Hours:**
-• Monday - Friday: 9:00 AM - 6:00 PM
-• Saturday: 10:00 AM - 4:00 PM
-• Sunday: Closed
+• ${businessHours}
 
 💬 **For Quick Help:**
 • Order issues: Reply with your order number
 • Product questions: Ask about specific items
 • Technical support: Describe your problem
 
-⚡ **Average Response Time:** 2-4 hours`;
+⚡ **Average Response Time:** ${responseTime}`;
     
     const keyboard = {
       inline_keyboard: [
@@ -1591,12 +1603,20 @@ Need help? Our support team is here for you!
 
   // Operator Support Methods
   private async handleSendSupportMessage(chatId: number, userId: string) {
+    // Dynamically load operator settings
+    const botSettings = await storage.getBotSettings();
+    const operatorContactSetting = botSettings.find(s => s.key === 'operator_contact');
+    const responseTimeSetting = botSettings.find(s => s.key === 'response_time');
+    
+    const operatorContact = operatorContactSetting?.value || '@murzion';
+    const responseTime = responseTimeSetting?.value || '2-4 hours';
+    
     const message = `💬 *Send Message to Support*
 
-Please describe your issue or question. Our support team will respond within 2-4 hours.
+Please describe your issue or question. Our support team will respond within ${responseTime}.
 
 📞 **Direct Contact:**
-• Contact @murzion directly on Telegram
+• Contact ${operatorContact} directly on Telegram
 • Your User ID: ${userId}
 
 📝 **What to include:**
@@ -1626,11 +1646,19 @@ Type your message below and send it:`;
   }
 
   private async handleEmailSupport(chatId: number, userId: string) {
+    // Dynamically load operator settings
+    const botSettings = await storage.getBotSettings();
+    const operatorEmailSetting = botSettings.find(s => s.key === 'operator_email');
+    const responseTimeSetting = botSettings.find(s => s.key === 'response_time');
+    
+    const operatorEmail = operatorEmailSetting?.value || 'support@teleshop.com';
+    const responseTime = responseTimeSetting?.value || '2-4 hours';
+    
     const message = `📧 *Email Support*
 
 You can reach our support team directly at:
 
-**Email:** support@teleshop.com
+**Email:** ${operatorEmail}
 
 📋 **Email Template:**
 Copy and paste this template for faster assistance:
@@ -1649,7 +1677,7 @@ Additional Details:
 [Any additional information]
 \`\`\`
 
-⚡ **Response Time:** 2-4 hours during business hours`;
+⚡ **Response Time:** ${responseTime} during business hours`;
 
     await this.sendTrackedMessage(chatId, message, {
       parse_mode: 'Markdown',
