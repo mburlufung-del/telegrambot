@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { teleShopBot } from "./bot";
 import { SimpleObjectStorageService } from "./simpleObjectStorage";
+import fs from "fs";
+import path from "path";
 import { 
   insertProductSchema, 
   insertInquirySchema, 
@@ -1553,61 +1555,60 @@ railway run npm run db:push</pre>
     teleShopBot.handleWebhookUpdate(req, res);
   });
 
+  // Serve download page
+  app.get("/download.html", (req, res) => {
+    const filePath = path.join(process.cwd(), 'download.html');
+    
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      res.status(404).send('Download page not found');
+    }
+  });
+
   // File download endpoints for Railway deployment package
   app.get("/download/package", (req, res) => {
     try {
-      const fs = require('fs');
-      const path = require('path');
       const filePath = path.join(process.cwd(), 'RAILWAY-SOURCE-COMPLETE.zip');
       
       if (fs.existsSync(filePath)) {
-        res.setHeader('Content-Disposition', 'attachment; filename=TeleShop-Bot-Complete.zip');
-        res.setHeader('Content-Type', 'application/zip');
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
+        res.download(filePath, 'TeleShop-Bot-Complete.zip');
       } else {
-        res.status(404).send('File not found');
+        res.status(404).send('Package file not found');
       }
     } catch (error) {
-      res.status(500).send('Error downloading file');
+      console.error('Download error:', error);
+      res.status(500).send('Error downloading package');
     }
   });
 
   app.get("/download/instructions", (req, res) => {
     try {
-      const fs = require('fs');
-      const path = require('path');
       const filePath = path.join(process.cwd(), 'DOWNLOAD-INSTRUCTIONS.md');
       
       if (fs.existsSync(filePath)) {
-        res.setHeader('Content-Disposition', 'attachment; filename=Deployment-Instructions.md');
-        res.setHeader('Content-Type', 'text/markdown');
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
+        res.download(filePath, 'Deployment-Instructions.md');
       } else {
-        res.status(404).send('File not found');
+        res.status(404).send('Instructions file not found');
       }
     } catch (error) {
-      res.status(500).send('Error downloading file');
+      console.error('Download error:', error);
+      res.status(500).send('Error downloading instructions');
     }
   });
 
   app.get("/download/env", (req, res) => {
     try {
-      const fs = require('fs');
-      const path = require('path');
       const filePath = path.join(process.cwd(), 'ENV-TEMPLATE.txt');
       
       if (fs.existsSync(filePath)) {
-        res.setHeader('Content-Disposition', 'attachment; filename=Environment-Variables.txt');
-        res.setHeader('Content-Type', 'text/plain');
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
+        res.download(filePath, 'Environment-Variables.txt');
       } else {
-        res.status(404).send('File not found');
+        res.status(404).send('Environment template not found');
       }
     } catch (error) {
-      res.status(500).send('Error downloading file');
+      console.error('Download error:', error);
+      res.status(500).send('Error downloading environment template');
     }
   });
 
