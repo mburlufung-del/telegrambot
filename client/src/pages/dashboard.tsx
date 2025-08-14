@@ -25,35 +25,113 @@ import type { Product, Inquiry, BotStats } from "@shared/schema";
 export default function Dashboard() {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
 
+  // Use the new synchronized dashboard overview API
+  const { data: overview, isLoading } = useQuery<{
+    stats: {
+      totalUsers: number;
+      totalOrders: number;
+      totalProducts: number;
+      totalMessages: number;
+      totalRevenue: number;
+      activeProducts: number;
+      unreadInquiries: number;
+    };
+    recentProducts: Product[];
+    recentInquiries: Inquiry[];
+    recentOrders: any[];
+    recentActivity: {
+      newOrders: number;
+      newInquiries: number;
+      newProducts: number;
+    };
+    botStatus: {
+      status: string;
+      ready: boolean;
+      lastRestart: string;
+      uptime: number;
+    };
+    botConfig: {
+      name: string;
+      username: string;
+      operator: string;
+      customCommands: Array<{ command: string; response: string }>;
+    };
+    paymentMethods: number;
+    deliveryMethods: number;
+    systemHealth: {
+      database: boolean;
+      bot: boolean;
+      lastSyncAt: string;
+    };
+  }>({
+    queryKey: ["/api/dashboard/overview"],
+    refetchInterval: 10000, // Refresh every 10 seconds
+  });
+
+  // Fallback to existing queries if overview fails
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    enabled: !overview, // Only fetch if overview is not available
   });
 
   const { data: inquiries = [] } = useQuery<Inquiry[]>({
     queryKey: ["/api/inquiries"],
+    enabled: !overview,
   });
 
-  const { data: stats } = useQuery<BotStats>({
-    queryKey: ["/api/bot/stats"],
-  });
+  // Use overview data when available, fallback to individual queries
+  const recentProducts = overview?.recentProducts || products.slice(0, 3);
+  const recentInquiries = overview?.recentInquiries || inquiries.slice(0, 3);
+  const stats = overview?.stats;
+  const botStatus = overview?.botStatus;
+  const unreadCount = overview?.stats?.unreadInquiries || 0;
 
-  const { data: unreadData } = useQuery<{ count: number }>({
-    queryKey: ["/api/inquiries/unread-count"],
-  });
-
-  const { data: botStatus } = useQuery<{ status: string; ready: boolean }>({
-    queryKey: ["/api/bot/status"],
-    refetchInterval: 5000, // Check every 5 seconds
-  });
-
-  const recentProducts = products.slice(0, 3);
-  const recentInquiries = inquiries.slice(0, 3);
-  const unreadCount = unreadData?.count || 0;
+  if (isLoading && !overview) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-24 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 h-96 bg-gray-200 rounded"></div>
+            <div className="h-96 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
+      {/* Sync Status */}
+      {overview?.systemHealth && (
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium text-green-800">
+                Dashboard Synchronized
+              </span>
+            </div>
+            <span className="text-xs text-green-600">
+              Last sync: {new Date(overview.systemHealth.lastSyncAt).toLocaleTimeString()}
+            </span>
+          </div>
+          {overview.botConfig && (
+            <div className="mt-2 text-xs text-green-600">
+              Bot: {overview.botConfig.name} • Operator: {overview.botConfig.operator} • 
+              Custom Commands: {overview.botConfig.customCommands.length}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center">
@@ -130,6 +208,20 @@ export default function Dashboard() {
                     {botStatus?.ready ? 'Online' : 'Offline'}
                   </Badge>
                 </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <BarChart3 className="h-6 w-6 text-indigo-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Revenue</p>
+                <p className="text-2xl font-bold text-gray-900">${stats?.totalRevenue?.toFixed(2) || '0.00'}</p>
               </div>
             </div>
           </CardContent>

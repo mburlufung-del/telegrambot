@@ -1223,7 +1223,7 @@ export class DatabaseStorage implements IStorage {
 
   async getUnreadInquiriesCount(): Promise<number> {
     const result = await db.select({ count: sql`count(*)` }).from(inquiries)
-      .where(eq(inquiries.status, "new"));
+      .where(eq(inquiries.isRead, false));
     return parseInt(result[0].count as string) || 0;
   }
 

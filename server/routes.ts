@@ -440,7 +440,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/inquiries/unread-count", async (req, res) => {
     try {
-      const count = await storage.getUnreadInquiriesCount();
+      const inquiries = await storage.getInquiries();
+      const count = inquiries.filter(i => !i.isRead).length;
       res.json({ count });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch unread count" });
@@ -487,6 +488,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch bot stats" });
+    }
+  });
+
+  // Dashboard overview route - synchronized data for admin dashboard
+  app.get("/api/dashboard/overview", async (req, res) => {
+    try {
+      const [
+        products,
+        inquiries,
+        orders,
+        stats,
+        unreadCount,
+        botSettings,
+        paymentMethods,
+        deliveryMethods
+      ] = await Promise.all([
+        storage.getProducts(),
+        storage.getInquiries(),
+        storage.getOrders(),
+        storage.getBotStats(),
+        (async () => {
+          const inquiries = await storage.getInquiries();
+          return inquiries.filter(i => !i.isRead).length;
+        })(),
+        storage.getBotSettings(),
+        storage.getPaymentMethods(),
+        storage.getDeliveryMethods()
+      ]);
+
+      // Get bot status from existing status endpoint logic
+      const botReady = await teleShopBot.isReady();
+      const botStatus = {
+        status: botReady ? 'online' : 'offline',
+        ready: botReady,
+        uptime: process.uptime(),
+        lastRestart: new Date().toISOString()
+      };
+      
+      // Calculate additional metrics
+      const totalRevenue = orders.reduce((sum: number, order: any) => sum + order.total, 0);
+      const activeProducts = products.filter((p: any) => p.stock > 0).length;
+      const recentOrders = orders
+        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5);
+      
+      // Recent activity (last 24 hours)
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const recentActivity = {
+        newOrders: orders.filter((o: any) => new Date(o.createdAt) > yesterday).length,
+        newInquiries: inquiries.filter((i: any) => new Date(i.createdAt) > yesterday).length,
+        newProducts: products.filter((p: any) => new Date(p.createdAt) > yesterday).length
+      };
+
+      // Bot configuration summary
+      const botConfig = {
+        name: botSettings.find((s: any) => s.key === 'bot_name')?.value || 'TeleShop Bot',
+        username: botSettings.find((s: any) => s.key === 'bot_username')?.value || '@bot',
+        operator: botSettings.find((s: any) => s.key === 'operator_username')?.value || '@admin',
+        customCommands: [1, 2, 3].map(i => ({
+          command: botSettings.find((s: any) => s.key === `custom_command_${i}`)?.value || '',
+          response: botSettings.find((s: any) => s.key === `custom_response_${i}`)?.value || ''
+        })).filter(cmd => cmd.command && cmd.response)
+      };
+
+      const overview = {
+        // Core statistics
+        stats: {
+          totalUsers: stats?.totalUsers || 0,
+          totalOrders: orders.length,
+          totalProducts: products.length,
+          totalMessages: stats?.totalMessages || 0,
+          totalRevenue,
+          activeProducts,
+          unreadInquiries: unreadCount || 0
+        },
+        
+        // Recent data
+        recentProducts: products.slice(0, 3),
+        recentInquiries: inquiries.slice(0, 5),
+        recentOrders,
+        recentActivity,
+        
+        // Configuration
+        botStatus: {
+          status: botStatus.status,
+          ready: botStatus.ready,
+          lastRestart: botStatus.lastRestart || null,
+          uptime: botStatus.uptime || 0
+        },
+        botConfig,
+        
+        // Settings
+        paymentMethods: paymentMethods.length,
+        deliveryMethods: deliveryMethods.length,
+        
+        // System health
+        systemHealth: {
+          database: true, // We're getting data, so DB is working
+          bot: botStatus.ready,
+          lastSyncAt: new Date().toISOString()
+        }
+      };
+
+      res.json(overview);
+    } catch (error) {
+      console.error("Failed to fetch dashboard overview:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard overview" });
     }
   });
 
