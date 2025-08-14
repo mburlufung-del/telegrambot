@@ -1158,7 +1158,7 @@ export class DatabaseStorage implements IStorage {
   async getWishlistItems(telegramUserId: string): Promise<Wishlist[]> {
     return await db.select().from(wishlist)
       .where(eq(wishlist.telegramUserId, telegramUserId))
-      .orderBy(desc(wishlist.createdAt));
+      .orderBy(desc(wishlist.addedAt));
   }
 
   // Orders
