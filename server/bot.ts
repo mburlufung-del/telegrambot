@@ -329,6 +329,10 @@ export class TeleShopBot {
         await this.handleClearCart(chatId, userId);
       } else if (data === 'send_support_message') {
         await this.handleSendSupportMessage(chatId, userId);
+      } else if (data === 'email_support') {
+        await this.handleEmailSupport(chatId, userId);
+      } else if (data === 'faq') {
+        await this.handleFAQ(chatId, userId);
       } else if (data?.startsWith('select_qty_')) {
         const parts = data.split('_');
         const productId = parts[2];
@@ -1246,8 +1250,13 @@ Need help? Our support team is here for you!
     }
   }
 
-  // Handle checkout process
+  // Handle checkout process (multi-step checkout)
   private async handleCheckout(chatId: number, userId: string) {
+    await this.handleCheckoutStart(chatId, userId);
+  }
+
+  // Start the multi-step checkout process  
+  private async handleCheckoutStart(chatId: number, userId: string) {
     try {
       const cartItems = await storage.getCartItems(userId);
       
@@ -1258,52 +1267,56 @@ Need help? Our support team is here for you!
         return;
       }
 
-      // Create order and clear cart
-      let totalAmount = 0;
-      const orderItems = [];
-
+      // Calculate total with pricing tiers
+      let total = 0;
       for (const item of cartItems) {
         const product = await storage.getProduct(item.productId);
         if (product) {
-          // Use pricing tier price if available, otherwise use base price
           const tierPrice = await storage.getProductPriceForQuantity(item.productId, item.quantity);
           const effectivePrice = tierPrice || product.price;
-          const itemTotal = parseFloat(effectivePrice) * item.quantity;
-          totalAmount += itemTotal;
-          orderItems.push({
-            productName: product.name,
-            quantity: item.quantity,
-            price: effectivePrice,
-            total: itemTotal.toFixed(2)
-          });
+          total += parseFloat(effectivePrice) * item.quantity;
         }
       }
 
-      // Create order record
-      const newOrder = await storage.createOrder({
-        telegramUserId: userId,
-        customerName: `User ${userId}`,
-        contactInfo: `Telegram User ID: ${userId}`, // Add required contactInfo field
-        totalAmount: totalAmount.toString(),
-        status: 'completed', // Mark as completed for immediate order history display
-        items: JSON.stringify(orderItems)
-      });
+      // Generate order number for this checkout session
+      const orderNumber = `#${Date.now().toString().slice(-6)}`;
 
-      // Clear cart after successful order
-      await storage.clearCart(userId);
+      // Get active delivery methods from database
+      const deliveryMethods = await storage.getActiveDeliveryMethods();
 
-      // Generate order number from creation timestamp
-      const orderNumber = new Date(newOrder.createdAt).getTime().toString().slice(-6);
-      
-      const message = `✅ *Order Placed Successfully!*\n\nOrder #${orderNumber}\nOrder Total: $${totalAmount.toFixed(2)}\nStatus: Completed\n\nThank you for your purchase! Your order is ready for delivery.`;
-      
+      if (deliveryMethods.length === 0) {
+        const message = '❌ No delivery methods available. Please contact support.';
+        await this.sendAutoVanishMessage(chatId, message);
+        return;
+      }
+
+      let message = `📦 *Choose Delivery Method*\n\n**Order Number:** ${orderNumber}\n**Cart Total:** $${total.toFixed(2)}\n\nSelect your preferred delivery option:`;
+
       const keyboard = {
-        inline_keyboard: [
-          [{ text: '📦 View Orders', callback_data: 'orders' }],
-          [{ text: '📋 Continue Shopping', callback_data: 'listings' }],
-          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
-        ]
+        inline_keyboard: [] as any[]
       };
+
+      // Add delivery methods from database
+      for (const method of deliveryMethods) {
+        const cost = parseFloat(method.price);
+        const finalTotal = (total + cost).toFixed(2);
+        
+        message += `\n\n📦 **${method.name}**`;
+        if (method.description) {
+          message += ` - ${method.description}`;
+        }
+        message += `\n⏱️ Time: ${method.estimatedDays || 'As scheduled'}`;
+        message += `\n💰 Cost: ${cost === 0 ? 'Free' : `$${cost}`}`;
+        message += `\n💵 **Total with delivery: $${finalTotal}**`;
+        
+        keyboard.inline_keyboard.push([{
+          text: `📦 ${method.name} - $${finalTotal}`,
+          callback_data: `delivery_${method.id}_${orderNumber.replace('#', '')}`
+        }]);
+      }
+
+      // Add back button
+      keyboard.inline_keyboard.push([{ text: '🔙 Back to Cart', callback_data: 'cart' }]);
 
       await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
@@ -1311,7 +1324,7 @@ Need help? Our support team is here for you!
       });
 
     } catch (error) {
-      console.error('Error during checkout:', error);
+      console.error('Error during checkout start:', error);
       const message = '❌ Checkout failed. Please try again or contact support.';
       await this.sendAutoVanishMessage(chatId, message);
       setTimeout(() => this.sendMainMenu(chatId), 2000);
@@ -1648,64 +1661,7 @@ You can continue shopping while we prepare your response.`;
     }
   }
 
-  // Enhanced Checkout Flow Methods
-  private async handleCheckoutStart(chatId: number, userId: string) {
-    const cartItems = await storage.getCartItems(userId);
-    
-    if (cartItems.length === 0) {
-      await this.sendAutoVanishMessage(chatId, '🛒 Your cart is empty. Add items first!', {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: '📋 Browse Products', callback_data: 'listings' }],
-            [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
-          ]
-        }
-      });
-      return;
-    }
 
-    // Generate order number at checkout start
-    const orderNumber = `#${Date.now().toString().slice(-6)}`;
-    
-    // Get active delivery methods from database
-    const deliveryMethods = await storage.getActiveDeliveryMethods();
-    
-    if (deliveryMethods.length === 0) {
-      await this.sendAutoVanishMessage(chatId, '❌ No delivery methods available. Please contact support.', {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: '💬 Contact Support', callback_data: 'send_support_message' }],
-            [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
-          ]
-        }
-      });
-      return;
-    }
-
-    let message = `🚚 *Choose Delivery Method*
-
-**Order Number:** ${orderNumber}
-**Customer ID:** ${userId}
-
-Select your preferred delivery option:`;
-
-    // Build keyboard with delivery methods
-    const keyboard: any = { inline_keyboard: [] };
-    for (const method of deliveryMethods) {
-      const priceText = parseFloat(method.price) > 0 ? ` - $${method.price}` : ' - Free';
-      const timeText = method.estimatedDays ? ` (${method.estimatedDays})` : '';
-      keyboard.inline_keyboard.push([{ 
-        text: `${method.name}${timeText}${priceText}`, 
-        callback_data: `delivery_method_${method.id}_${orderNumber.replace('#', '')}` 
-      }]);
-    }
-    keyboard.inline_keyboard.push([{ text: '🔙 Back to Cart', callback_data: 'view_cart' }]);
-
-    await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
-      reply_markup: keyboard
-    });
-  }
 
   private async handleDeliverySelection(chatId: number, userId: string, methodId: string, orderNumber: string) {
     const deliveryMethods = await storage.getActiveDeliveryMethods();
