@@ -353,11 +353,14 @@ export class TeleShopBot {
       }
 
       // Check for custom commands
+      console.log(`Checking custom commands for message: "${messageText}"`);
       const customResponse = await this.handleCustomCommands(messageText);
       if (customResponse) {
+        console.log(`Custom command matched! Response: ${customResponse}`);
         await this.sendTrackedMessage(chatId, customResponse, { parse_mode: 'Markdown' });
         return;
       }
+      console.log('No custom command matched');
 
       // Send acknowledgment without showing menu for other messages
       const ackMessage = 'Message received! Use /start to see the main menu or type "menu" anytime.';
