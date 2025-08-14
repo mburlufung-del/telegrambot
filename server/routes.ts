@@ -726,7 +726,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const deliveryMethodData = req.body;
-      const method = await storage.updateDeliveryMethod(id, deliveryMethodData);
+      
+      // Clean the data to remove any timestamp fields that might cause issues
+      const cleanData = { ...deliveryMethodData };
+      delete cleanData.id;
+      delete cleanData.createdAt;
+      delete cleanData.updatedAt;
+      
+      // Ensure price is a string
+      if (cleanData.price && typeof cleanData.price === 'number') {
+        cleanData.price = cleanData.price.toString();
+      }
+      
+      const method = await storage.updateDeliveryMethod(id, cleanData);
       
       if (!method) {
         return res.status(404).json({ message: "Delivery method not found" });
