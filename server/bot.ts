@@ -1917,9 +1917,14 @@ Include your Order Number: ${orderNumber}`;
       // Clear cart
       await storage.clearCart(userId);
       
+      // Generate consistent order number based on order creation timestamp (matches order history display)
+      const finalOrderNumber = orderId.createdAt ? 
+        new Date(orderId.createdAt).getTime().toString().slice(-6) : 
+        orderId.id.slice(-6).toUpperCase();
+      
       const message = `🎉 **Order Confirmed!**
 
-**Order Number:** ${orderNumber}
+**Order Number:** #${finalOrderNumber}
 **Customer ID:** ${userId}
 **Total:** $${total.toFixed(2)}
 **Status:** Completed
@@ -1932,10 +1937,9 @@ Include your Order Number: ${orderNumber}`;
 
 📞 **Support Contact:**
 • Telegram: @murzion
-• Include your order number: ${orderNumber}
+• Include your order number: #${finalOrderNumber}
 
 **Estimated Processing:** 1-2 business days
-**Order ID:** ${orderId.id}
 
 Thank you for shopping with us! 🛍️`;
 
