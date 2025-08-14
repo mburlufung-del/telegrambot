@@ -369,31 +369,39 @@ export class TeleShopBot {
 
     // Handle text messages
     this.bot.on('message', async (msg) => {
-      if (msg.text?.startsWith('/')) return; // Skip commands
+      console.log(`[MESSAGE] Received message from chat ${msg.chat.id}: "${msg.text}"`);
+      
+      if (msg.text?.startsWith('/')) {
+        console.log(`[MESSAGE] Skipping command: ${msg.text}`);
+        return; // Skip commands
+      }
 
       const chatId = msg.chat.id;
       const messageText = msg.text?.toLowerCase() || '';
       
+      console.log(`[MESSAGE] Processing text: "${messageText}"`);
       await storage.incrementMessageCount();
 
       // Check for menu keyword
       if (messageText === 'menu' || messageText === 'main menu') {
+        console.log(`[MESSAGE] Menu keyword detected`);
         await this.sendMainMenu(chatId);
         return;
       }
 
       // Check for custom commands
-      console.log(`Checking custom commands for message: "${messageText}"`);
+      console.log(`[MESSAGE] Checking custom commands for message: "${messageText}"`);
       const customResponse = await this.handleCustomCommands(messageText);
       if (customResponse) {
-        console.log(`Custom command matched! Response: ${customResponse}`);
+        console.log(`[MESSAGE] Custom command matched! Response: ${customResponse}`);
         await this.sendTrackedMessage(chatId, customResponse, { parse_mode: 'Markdown' });
         return;
       }
-      console.log('No custom command matched');
+      console.log('[MESSAGE] No custom command matched');
 
       // Send acknowledgment without showing menu for other messages
       const ackMessage = 'Message received! Use /start to see the main menu or type "menu" anytime.';
+      console.log(`[MESSAGE] Sending acknowledgment`);
       await this.sendTrackedMessage(chatId, ackMessage);
     });
 
