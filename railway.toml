@@ -1,20 +1,20 @@
 [build]
-builder = "nixpacks"
+builder = "NIXPACKS"
+buildCommand = "npm install && npm run build"
 
 [deploy]
 startCommand = "npm start"
-healthcheckPath = "/api/bot/status"
+healthcheckPath = "/api/health"
 healthcheckTimeout = 300
-restartPolicyType = "on_failure"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
 
-[env]
-NODE_ENV = { default = "production" }
-PORT = { default = "5000" }
+[environments.production]
+variables = { NODE_ENV = "production" }
 
-# Required Environment Variables (set in Railway dashboard):
-# TELEGRAM_BOT_TOKEN = "7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs"
-# WEBHOOK_URL = "https://your-app.railway.app/webhook"
-# DATABASE_URL = "${{Postgres.DATABASE_URL}}"
+[[services]]
+name = "teleshop-bot"
+source = "."
 
-# Optional for enhanced security:
-# WEBHOOK_SECRET = "generate_random_secret"
+[services.teleshop-bot]
+tcpProxyApplicationPort = 5000

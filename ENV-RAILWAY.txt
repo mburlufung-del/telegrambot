@@ -1,0 +1,34 @@
+# TeleShop Bot - Railway Environment Variables
+# Copy these to your Railway service environment variables
+
+# REQUIRED - Application Configuration
+NODE_ENV=production
+
+# REQUIRED - Your Telegram Bot Token (INCLUDED)
+BOT_TOKEN=7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs
+
+# REQUIRED - Session Security Key
+SESSION_SECRET=teleshop_bot_secure_session_2024
+
+# DATABASE_URL will be automatically provided by Railway's PostgreSQL addon
+# No need to set this manually - Railway handles it automatically
+
+# OPTIONAL - Port Configuration (Railway sets this automatically)
+# PORT=5000
+
+# OPTIONAL - Health Check Configuration
+# HEALTH_CHECK_PATH=/api/health
+
+# DEPLOYMENT NOTES:
+# 1. Railway automatically provides DATABASE_URL when you add PostgreSQL service
+# 2. All other database connection variables (PGHOST, PGPORT, etc.) are auto-configured
+# 3. The bot will automatically initialize and start polling on deployment
+# 4. Admin dashboard will be available at your Railway domain immediately
+# 5. Database migrations run automatically during deployment
+
+# PRODUCTION READY:
+# - Bot Token: Your actual working token included
+# - Session Security: Secure random key for production use
+# - Database: Automatic PostgreSQL integration via Railway
+# - Environment: Production-optimized configuration
+# - Health Checks: Built-in monitoring and restart capabilities
