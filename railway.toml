@@ -14,7 +14,6 @@ variables = { NODE_ENV = "production", BOT_TOKEN = "7331717510:AAGbWPSCRgCgi3TO4
 
 [[services]]
 name = "teleshop-bot"
-source = "."
 
 [services.teleshop-bot]
 tcpProxyApplicationPort = 5000
