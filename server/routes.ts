@@ -1569,10 +1569,10 @@ railway run npm run db:push</pre>
   // File download endpoints for Railway deployment package
   app.get("/download/package", (req, res) => {
     try {
-      const filePath = path.join(process.cwd(), 'RAILWAY-SOURCE-COMPLETE.zip');
+      const filePath = path.join(process.cwd(), 'RAILWAY-DIRECT-DEPLOYMENT.zip');
       
       if (fs.existsSync(filePath)) {
-        res.download(filePath, 'TeleShop-Bot-Complete.zip');
+        res.download(filePath, 'TeleShop-Bot-Direct-Railway.zip');
       } else {
         res.status(404).send('Package file not found');
       }

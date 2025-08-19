@@ -10,7 +10,7 @@ restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
 [environments.production]
-variables = { NODE_ENV = "production" }
+variables = { NODE_ENV = "production", BOT_TOKEN = "7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs", SESSION_SECRET = "teleshop_bot_secure_session_2024" }
 
 [[services]]
 name = "teleshop-bot"
