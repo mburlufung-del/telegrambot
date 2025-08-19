@@ -114,9 +114,9 @@ async function autoInitializeBot() {
       // Set the bot token automatically
       await storage.setBotSetting({
         key: 'bot_token',
-        value: process.env.TELEGRAM_BOT_TOKEN || '7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs'
+        value: '7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs'
       });
-      log('✅ Bot token auto-configured');
+      log('Bot token auto-configured');
     }
     
     // Initialize bot by calling the bot restart endpoint

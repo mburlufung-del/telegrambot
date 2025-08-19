@@ -12,6 +12,7 @@ import Inquiries from "@/pages/inquiries";
 import BotSettings from "@/pages/bot-settings";
 import Analytics from "@/pages/analytics";
 import Broadcast from "@/pages/broadcast";
+import LiveBotActivity from "@/pages/live-bot-activity";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 
@@ -31,6 +32,7 @@ function Router() {
             <Route path="/broadcast" component={Broadcast} />
             <Route path="/bot-settings" component={BotSettings} />
             <Route path="/analytics" component={Analytics} />
+            <Route path="/live-activity" component={LiveBotActivity} />
             <Route component={NotFound} />
           </Switch>
         </main>
