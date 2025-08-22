@@ -1,10 +1,13 @@
 # TeleShop Bot Admin Dashboard
 
 ## Overview
-TeleShop Bot is a comprehensive Telegram e-commerce bot system designed to streamline online shopping through Telegram and provide robust administrative control via a web-based admin dashboard. It aims to offer a scalable e-commerce solution with automated customer service, product catalog management, and real-time statistics. The system empowers administrators to manage products, handle inquiries, configure bot settings, and monitor performance, providing a complete ecosystem for Telegram-based e-commerce.
+TeleShop Bot is a comprehensive Telegram e-commerce bot system with EXCLUSIVE client access through Telegram bot only (no web interface for customers). The system provides robust administrative control via a web-based admin dashboard. It offers a scalable e-commerce solution with automated customer service, product catalog management, and real-time statistics. Administrators manage products, handle inquiries, configure bot settings, and monitor performance through the web dashboard, while all customer interactions happen exclusively through the Telegram bot interface.
 
 ## User Preferences
-Preferred communication style: Simple, everyday language.
+- Preferred communication style: Simple, everyday language
+- Client access: EXCLUSIVE Telegram bot access only (no web interface for customers)
+- Admin access: Web dashboard for management and configuration
+- Integration: All admin changes instantly reflected in Telegram bot for customers
 
 ## System Architecture
 
