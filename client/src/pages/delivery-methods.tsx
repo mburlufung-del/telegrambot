@@ -204,44 +204,47 @@ export default function DeliveryMethods() {
       </div>
       
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl bg-white">
+        <DialogContent className="max-w-lg bg-white max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className="text-lg">
                 {editingMethod ? 'Edit Delivery Method' : 'Add New Delivery Method'}
               </DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white">
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Method Name</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Express Delivery" 
-                            {...field} 
-                            data-testid="input-delivery-name"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 bg-white">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Method Name</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Express Delivery" 
+                          {...field} 
+                          className="h-9"
+                          data-testid="input-delivery-name"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Price ($)</FormLabel>
+                        <FormLabel className="text-sm">Price ($)</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
                             step="0.01" 
                             placeholder="0.00" 
                             {...field} 
+                            className="h-9"
                             data-testid="input-delivery-price"
                           />
                         </FormControl>
@@ -249,40 +252,19 @@ export default function DeliveryMethods() {
                       </FormItem>
                     )}
                   />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="estimatedDays"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Estimated Delivery Time</FormLabel>
+                        <FormLabel className="text-sm">Delivery Time</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="3-5 business days" 
+                            placeholder="3-5 days" 
                             {...field} 
                             value={field.value || ''}
+                            className="h-9"
                             data-testid="input-delivery-time"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="sortOrder"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Sort Order</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="0" 
-                            {...field} 
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                            data-testid="input-delivery-sort"
                           />
                         </FormControl>
                         <FormMessage />
@@ -291,18 +273,19 @@ export default function DeliveryMethods() {
                   />
                 </div>
 
+
                 <FormField
                   control={form.control}
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel className="text-sm">Description</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Fast and reliable delivery service..."
-                          rows={3}
+                          placeholder="Brief description..." 
                           {...field} 
                           value={field.value || ''}
+                          className="h-20 text-sm"
                           data-testid="textarea-delivery-description"
                         />
                       </FormControl>
@@ -316,14 +299,36 @@ export default function DeliveryMethods() {
                   name="instructions"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Special Instructions</FormLabel>
+                      <FormLabel className="text-sm">Special Instructions</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Please provide a contact number for delivery..."
-                          rows={3}
+                          placeholder="Special instructions..." 
                           {...field} 
                           value={field.value || ''}
+                          className="h-16 text-sm"
                           data-testid="textarea-delivery-instructions"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="sortOrder"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Sort Order</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="0" 
+                          {...field} 
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          value={field.value || 0}
+                          className="h-9"
+                          data-testid="input-delivery-sort"
                         />
                       </FormControl>
                       <FormMessage />
@@ -335,11 +340,11 @@ export default function DeliveryMethods() {
                   control={form.control}
                   name="isActive"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-gray-50">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Active Status</FormLabel>
-                        <div className="text-sm text-gray-600">
-                          Enable this delivery method for customers
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 bg-gray-50">
+                      <div className="space-y-0">
+                        <FormLabel className="text-sm">Active Status</FormLabel>
+                        <div className="text-xs text-gray-600">
+                          Enable for customers
                         </div>
                       </div>
                       <FormControl>
@@ -353,7 +358,7 @@ export default function DeliveryMethods() {
                   )}
                 />
 
-                <div className="flex justify-end space-x-2 pt-4">
+                <div className="flex justify-end space-x-2 pt-2">
                   <Button 
                     type="button" 
                     variant="outline" 
