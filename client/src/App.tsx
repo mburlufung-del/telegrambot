@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import Dashboard from './pages/dashboard'
 import FreshDashboard from './pages/fresh-dashboard'
 import Products from './pages/products'
-import Categories from './pages/categories'
+import Categories from './pages/categories-simple'
 import Orders from './pages/orders'
 import Inquiries from './pages/inquiries'
 import BotSettings from './pages/bot-settings'
@@ -107,7 +107,9 @@ function App() {
           <Route path="/" component={FreshDashboard} />
           <Route path="/old-dashboard" component={Dashboard} />
           <Route path="/products" component={Products} />
-          <Route path="/categories" component={Categories} />
+          <Route path="/categories">
+            <Categories />
+          </Route>
           <Route path="/orders" component={Orders} />
           <Route path="/inquiries" component={Inquiries} />
           <Route path="/analytics" component={Analytics} />
