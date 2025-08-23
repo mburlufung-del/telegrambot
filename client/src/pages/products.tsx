@@ -36,8 +36,10 @@ export default function Products() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  const { data: products = [], isLoading } = useQuery<Product[]>({
+  const { data: products = [], isLoading, refetch: refetchProducts } = useQuery<Product[]>({
     queryKey: ['/api/products'],
+    staleTime: 0,
+    refetchOnMount: true,
     refetchInterval: false, // Only refetch when manually invalidated
   })
 
@@ -67,6 +69,7 @@ export default function Products() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] })
+      refetchProducts() // Force immediate refetch
       resetForm()
       toast({
         title: "Success",
@@ -212,6 +215,7 @@ export default function Products() {
       
       // Refresh products list
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      refetchProducts(); // Force immediate refetch
       resetForm();
       
     } catch (error) {
