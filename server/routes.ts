@@ -795,8 +795,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const imageUrl = `/api/images/${imageId}`;
 
         // Store the actual image data in memory
-        global.imageStore = global.imageStore || new Map();
-        global.imageStore.set(imageId, {
+        (global as any).imageStore = (global as any).imageStore || new Map();
+        (global as any).imageStore.set(imageId, {
           data: imageBuffer,
           contentType: contentType,
           timestamp: Date.now()
@@ -825,7 +825,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/images/:imageId", (req, res) => {
     try {
       const imageId = req.params.imageId;
-      const imageStore = global.imageStore || new Map();
+      const imageStore = (global as any).imageStore || new Map();
       const imageData = imageStore.get(imageId);
 
       if (imageData && imageData.data) {
