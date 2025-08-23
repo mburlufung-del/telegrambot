@@ -28,6 +28,14 @@ export default function DeliveryMethods() {
     staleTime: 0,
   })
 
+  // Debug logging
+  console.log('🔍 DeliveryMethods Dashboard:', {
+    deliveryMethodsCount: deliveryMethods?.length || 0,
+    isLoading,
+    hasError: !!error,
+    data: deliveryMethods
+  })
+
 
 
   const form = useForm<InsertDeliveryMethod>({
