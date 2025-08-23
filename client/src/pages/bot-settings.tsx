@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Bot, Settings, MessageSquare, User, CreditCard, RefreshCw, Save, AlertCircle } from 'lucide-react'
+import { Bot, Settings, MessageSquare, User, CreditCard, RefreshCw, Save, AlertCircle, CheckCircle, XCircle, Link as LinkIcon } from 'lucide-react'
 import { apiRequest } from '@/lib/queryClient'
 import { useToast } from '@/hooks/use-toast'
+import type { PaymentMethod } from '@shared/schema'
 
 interface BotSetting {
   id: string
@@ -48,6 +49,21 @@ export default function BotSettings() {
   const { data: botStatus } = useQuery<BotStatus>({
     queryKey: ['/api/bot/status'],
     refetchInterval: 2 * 60 * 1000, // 2 minutes
+  })
+
+  // Fetch payment methods
+  const { data: paymentMethods = [] } = useQuery<PaymentMethod[]>({
+    queryKey: ['payment-methods-dashboard'],
+    queryFn: async () => {
+      const response = await fetch('/api/payment-methods')
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      return response.json()
+    },
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    staleTime: 30000, // 30 seconds
   })
 
   const updateSettingMutation = useMutation({
@@ -479,20 +495,87 @@ export default function BotSettings() {
         <div className="grid grid-cols-1 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Payment Information</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Configured Payment Methods
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <SettingInput
-                settingKey="payment_methods"
-                label="Available Payment Methods"
-                placeholder="Credit Card, PayPal, Bank Transfer..."
-                type="textarea"
-              />
+              {paymentMethods.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <CreditCard className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <h3 className="font-medium mb-2">No Payment Methods Configured</h3>
+                  <p className="text-sm">Add payment methods in the Payment Methods admin page to display them here.</p>
+                  <Button 
+                    onClick={() => window.location.href = '/?page=payment-methods'} 
+                    className="mt-4"
+                    size="sm"
+                  >
+                    <LinkIcon className="w-4 h-4 mr-2" />
+                    Manage Payment Methods
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm">Active Methods ({paymentMethods.filter(m => m.isActive).length})</h4>
+                    <Button 
+                      onClick={() => window.location.href = '/?page=payment-methods'} 
+                      variant="outline"
+                      size="sm"
+                    >
+                      <LinkIcon className="w-4 h-4 mr-2" />
+                      Manage
+                    </Button>
+                  </div>
+                  {paymentMethods.map((method) => (
+                    <div key={method.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        {method.isActive ? (
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                        ) : (
+                          <XCircle className="w-5 h-5 text-gray-400" />
+                        )}
+                        <div>
+                          <div className="font-medium">{method.name}</div>
+                          <div className="text-sm text-gray-500">{method.description}</div>
+                        </div>
+                      </div>
+                      <div className={`px-2 py-1 rounded text-xs font-medium ${
+                        method.isActive 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {method.isActive ? 'Active' : 'Inactive'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <SettingInput
                 settingKey="tax_rate"
                 label="Tax Rate (%)"
                 placeholder="0"
                 type="number"
+              />
+              <SettingInput
+                settingKey="currency"
+                label="Currency"
+                placeholder="USD"
+              />
+              <SettingInput
+                settingKey="payment_terms"
+                label="Payment Terms"
+                placeholder="Payment due within 30 days"
+                type="textarea"
               />
             </CardContent>
           </Card>
