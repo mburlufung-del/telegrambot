@@ -36,9 +36,15 @@ export default function Categories() {
 
   const createCategoryMutation = useMutation({
     mutationFn: async (categoryData: { name: string; description?: string }) => {
+      console.log("Sending category data:", categoryData);
+      const payload = {
+        name: categoryData.name,
+        description: categoryData.description || null
+      };
+      console.log("Final payload:", payload);
       return await apiRequest('/api/categories', {
         method: 'POST',
-        body: JSON.stringify(categoryData)
+        body: JSON.stringify(payload)
       })
     },
     onSuccess: () => {

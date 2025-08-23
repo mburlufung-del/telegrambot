@@ -267,11 +267,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/categories", async (req, res) => {
     try {
+      console.log("Received category data:", req.body);
       const categoryData = insertCategorySchema.parse(req.body);
+      console.log("Parsed category data:", categoryData);
       const category = await storage.createCategory(categoryData);
       res.status(201).json(category);
     } catch (error) {
-      res.status(400).json({ message: "Invalid category data" });
+      console.error("Category creation error:", error);
+      if (error instanceof Error) {
+        console.error("Error details:", error.message);
+      }
+      res.status(400).json({ message: "Invalid category data", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
