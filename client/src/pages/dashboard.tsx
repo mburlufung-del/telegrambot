@@ -66,10 +66,11 @@ export default function Dashboard() {
     refetchInterval: false, // Only refetch manually
   })
 
-  const { data: categories = [] } = useQuery<Category[]>({
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
     refetchInterval: false, // Only refetch manually
     staleTime: 0, // Always fetch fresh categories
+    retry: 2,
   })
 
   const refreshDashboard = async () => {
@@ -304,7 +305,18 @@ export default function Dashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {categories.length === 0 ? (
+          {categoriesLoading ? (
+            <div className="text-center py-8 text-gray-500">
+              <p className="text-sm">Loading categories...</p>
+            </div>
+          ) : categoriesError ? (
+            <div className="text-center py-8 text-red-500">
+              <p className="text-sm">Error loading categories: {String(categoriesError)}</p>
+              <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/categories'] })} size="sm" className="mt-2">
+                Retry
+              </Button>
+            </div>
+          ) : categories.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Folder className="w-12 h-12 mx-auto mb-3 text-gray-300" />
               <p className="text-sm">No categories created yet</p>
@@ -342,6 +354,13 @@ export default function Dashboard() {
               })}
             </div>
           )}
+          
+          {/* Debug info */}
+          <div className="mt-4 pt-4 border-t text-xs text-gray-500">
+            <p>Categories loaded: {categories.length}</p>
+            <p>Loading: {categoriesLoading ? 'Yes' : 'No'}</p>
+            <p>Error: {categoriesError ? String(categoriesError) : 'None'}</p>
+          </div>
         </CardContent>
       </Card>
 
