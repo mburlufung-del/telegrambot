@@ -129,6 +129,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear all products route - must come before :id route
+  app.delete("/api/products/clear-all", async (req, res) => {
+    try {
+      const products = await storage.getProducts();
+      for (const product of products) {
+        await storage.deleteProduct(product.id);
+      }
+      res.json({ message: `Cleared ${products.length} products successfully` });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to clear products" });
+    }
+  });
+
   app.delete("/api/products/:id", async (req, res) => {
     try {
       const deleted = await storage.deleteProduct(req.params.id);

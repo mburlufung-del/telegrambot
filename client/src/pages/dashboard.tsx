@@ -66,9 +66,9 @@ export default function Dashboard() {
     refetchInterval: false, // Only refetch manually
   })
 
-  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError, refetch: refetchCategories } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
-    refetchInterval: 1000, // Refetch every second for debugging
+    refetchInterval: 5000, // Refetch every 5 seconds 
     staleTime: 0,
     retry: 2,
   })
@@ -357,13 +357,19 @@ export default function Dashboard() {
           )}
           
           {/* Debug info - Show more details */}
-          <div className="mt-4 pt-4 border-t text-xs text-gray-500 bg-gray-50 p-3 rounded">
-            <p><strong>Debug Information:</strong></p>
+          <div className="mt-4 pt-4 border-t text-xs text-gray-500 bg-yellow-50 p-3 rounded">
+            <p><strong>Categories Debug:</strong></p>
             <p>Categories loaded: {categories.length}</p>
             <p>Loading: {categoriesLoading ? 'Yes' : 'No'}</p>
             <p>Error: {categoriesError ? String(categoriesError) : 'None'}</p>
-            <p>First category: {categories[0] ? categories[0].name : 'N/A'}</p>
-            <p>Query key: ['/api/categories']</p>
+            <p>Categories: {categories.map(c => c.name).join(', ') || 'None'}</p>
+            <Button 
+              onClick={() => refetchCategories()}
+              size="sm" 
+              className="mt-2 bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              Force Refresh Categories
+            </Button>
           </div>
         </CardContent>
       </Card>
