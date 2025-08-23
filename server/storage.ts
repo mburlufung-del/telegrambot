@@ -719,6 +719,30 @@ export class DatabaseStorage implements IStorage {
         .where(eq(deliveryMethods.id, method.id));
     }
   }
+  // Pricing tiers operations
+  async getPricingTiers(productId: string): Promise<PricingTier[]> {
+    return await db.select().from(pricingTiers)
+      .where(eq(pricingTiers.productId, productId))
+      .orderBy(pricingTiers.minQuantity);
+  }
+
+  async createPricingTier(tierData: InsertPricingTier): Promise<PricingTier> {
+    const result = await db.insert(pricingTiers).values(tierData).returning();
+    return result[0];
+  }
+
+  async updatePricingTier(tierId: string, data: Partial<InsertPricingTier>): Promise<PricingTier | undefined> {
+    const result = await db.update(pricingTiers)
+      .set(data)
+      .where(eq(pricingTiers.id, tierId))
+      .returning();
+    return result[0];
+  }
+
+  async deletePricingTier(tierId: string): Promise<boolean> {
+    const result = await db.delete(pricingTiers).where(eq(pricingTiers.id, tierId));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
 }
 
 export const storage = new DatabaseStorage();

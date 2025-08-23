@@ -1,5 +1,5 @@
-import { Storage, type File } from "@google-cloud/storage";
-import type { Response } from "express";
+import { Storage, File } from "@google-cloud/storage";
+import { Response } from "express";
 import { randomUUID } from "crypto";
 
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
@@ -92,7 +92,7 @@ export class ObjectStorageService {
     try {
       // Get file metadata
       const [metadata] = await file.getMetadata();
-
+      
       // Set appropriate headers
       res.set({
         "Content-Type": metadata.contentType || "application/octet-stream",

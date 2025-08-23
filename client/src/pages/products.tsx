@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Edit, Trash2, Package, DollarSign, Hash } from 'lucide-react'
+import { Plus, Edit, Trash2, Package, DollarSign, Hash, Upload, X } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { apiRequest } from '@/lib/queryClient'
 import { useToast } from '@/hooks/use-toast'
 import type { Product, Category } from '@shared/schema'
+import { ObjectUploader } from '@/components/ObjectUploader'
 
 export default function Products() {
   const [isAddingProduct, setIsAddingProduct] = useState(false)
@@ -25,6 +26,12 @@ export default function Products() {
     imageUrl: '',
     isActive: true
   })
+  const [pricingTiers, setPricingTiers] = useState<Array<{
+    minQuantity: number;
+    maxQuantity?: number;
+    price: number;
+  }>>([])
+  const [uploadedImageUrl, setUploadedImageUrl] = useState('')
   
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -121,6 +128,47 @@ export default function Products() {
     }
   })
 
+  // Handle image upload
+  const handleImageUpload = async (file: File): Promise<string> => {
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const result = await response.json();
+      return result.imageUrl;
+    } catch (error) {
+      console.error('Upload failed:', error);
+      throw error;
+    }
+  };
+
+  // Add pricing tier
+  const addPricingTier = () => {
+    setPricingTiers([...pricingTiers, { minQuantity: 1, price: 0 }]);
+  };
+
+  // Remove pricing tier
+  const removePricingTier = (index: number) => {
+    setPricingTiers(pricingTiers.filter((_, i) => i !== index));
+  };
+
+  // Update pricing tier
+  const updatePricingTier = (index: number, field: 'minQuantity' | 'maxQuantity' | 'price', value: number | undefined) => {
+    const updated = [...pricingTiers];
+    updated[index] = { ...updated[index], [field]: value };
+    setPricingTiers(updated);
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -133,11 +181,13 @@ export default function Products() {
       imageUrl: '',
       isActive: true
     })
+    setPricingTiers([])
+    setUploadedImageUrl('')
     setIsAddingProduct(false)
     setEditingProduct(null)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     const productData = {
@@ -148,14 +198,51 @@ export default function Products() {
       unit: formData.unit,
       categoryId: formData.categoryId || null,
       minOrderQuantity: parseInt(formData.minOrderQuantity),
-      imageUrl: formData.imageUrl || null,
+      imageUrl: uploadedImageUrl || formData.imageUrl || null,
       isActive: formData.isActive
     }
 
-    if (editingProduct) {
-      updateProductMutation.mutate({ id: editingProduct.id, data: productData })
-    } else {
-      createProductMutation.mutate(productData)
+    try {
+      let productId: string;
+      
+      if (editingProduct) {
+        const updatedProduct = await apiRequest(`/api/products/${editingProduct.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(productData),
+        });
+        productId = editingProduct.id;
+        toast({ title: "Product updated successfully!" });
+      } else {
+        const newProduct = await apiRequest('/api/products', {
+          method: 'POST',
+          body: JSON.stringify(productData),
+        });
+        productId = newProduct.id;
+        toast({ title: "Product created successfully!" });
+      }
+      
+      // Save pricing tiers if any
+      if (pricingTiers.length > 0) {
+        for (const tier of pricingTiers) {
+          await apiRequest(`/api/products/${productId}/pricing-tiers`, {
+            method: 'POST',
+            body: JSON.stringify(tier),
+          });
+        }
+        toast({ title: "Pricing tiers saved successfully!" });
+      }
+      
+      // Refresh products list
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      resetForm();
+      
+    } catch (error) {
+      console.error('Error saving product:', error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to save product. Please try again.",
+        variant: "destructive"
+      });
     }
   }
 
@@ -318,18 +405,91 @@ export default function Products() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="imageUrl">Product Image URL</Label>
-                  <Input
-                    id="imageUrl"
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                    placeholder="https://example.com/product-image.jpg"
-                  />
+                  <Label>Product Image</Label>
+                  <ObjectUploader
+                    onUpload={handleImageUpload}
+                    onComplete={(imageUrl) => {
+                      setUploadedImageUrl(imageUrl);
+                      setFormData({...formData, imageUrl});
+                    }}
+                    currentImageUrl={uploadedImageUrl || formData.imageUrl}
+                  >
+                    Upload Product Image
+                  </ObjectUploader>
                   <p className="text-xs text-gray-500 mt-1">
-                    Add a product image URL for better presentation in Telegram bot
+                    Upload a product image for better presentation in Telegram bot
                   </p>
                 </div>
+                {/* Quantity Pricing Tiers Section */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <Label className="text-base font-medium">Quantity Pricing Tiers (Optional)</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addPricingTier}
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Tier
+                    </Button>
+                  </div>
+                  
+                  {pricingTiers.length > 0 && (
+                    <div className="space-y-3 p-4 border rounded-lg bg-gray-50">
+                      {pricingTiers.map((tier, index) => (
+                        <div key={index} className="flex items-center space-x-3 bg-white p-3 rounded border">
+                          <div className="flex-1">
+                            <Label className="text-sm">Min Quantity</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={tier.minQuantity}
+                              onChange={(e) => updatePricingTier(index, 'minQuantity', parseInt(e.target.value) || 1)}
+                              placeholder="Min qty"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <Label className="text-sm">Max Quantity (Optional)</Label>
+                            <Input
+                              type="number"
+                              value={tier.maxQuantity || ''}
+                              onChange={(e) => updatePricingTier(index, 'maxQuantity', e.target.value ? parseInt(e.target.value) : undefined)}
+                              placeholder="Max qty"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <Label className="text-sm">Price per Unit</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={tier.price}
+                              onChange={(e) => updatePricingTier(index, 'price', parseFloat(e.target.value) || 0)}
+                              placeholder="0.00"
+                              className="mt-1"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removePricingTier(index)}
+                            className="mt-6"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <p className="text-xs text-gray-500">
+                        Create bulk pricing for different quantity ranges. Lower quantities will use the base price above.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex items-center space-x-2 mt-4">
                   <input
                     id="isActive"
