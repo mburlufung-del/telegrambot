@@ -128,29 +128,7 @@ export default function Products() {
     }
   })
 
-  // Handle image upload
-  const handleImageUpload = async (file: File): Promise<string> => {
-    // Create FormData for file upload
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-      
-      const result = await response.json();
-      return result.imageUrl;
-    } catch (error) {
-      console.error('Upload failed:', error);
-      throw error;
-    }
-  };
+  // Image upload is now handled by ObjectUploader component
 
   // Add pricing tier
   const addPricingTier = () => {
@@ -407,7 +385,6 @@ export default function Products() {
                 <div>
                   <Label>Product Image</Label>
                   <ObjectUploader
-                    onUpload={handleImageUpload}
                     onComplete={(imageUrl) => {
                       setUploadedImageUrl(imageUrl);
                       setFormData({...formData, imageUrl});

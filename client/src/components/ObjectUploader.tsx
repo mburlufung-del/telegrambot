@@ -1,135 +1,130 @@
-import { useState, useRef } from "react";
-import type { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
-import { Upload, X, Image } from "lucide-react";
+import { useState, useRef } from 'react'
+import { Button } from '@/components/ui/button'
+import { Upload, X } from 'lucide-react'
 
 interface ObjectUploaderProps {
-  onUpload: (file: File) => Promise<string>;
-  onComplete?: (imageUrl: string) => void;
-  buttonClassName?: string;
-  children: ReactNode;
-  currentImageUrl?: string;
+  onUpload?: (file: File) => Promise<string>
+  onComplete?: (imageUrl: string) => void
+  currentImageUrl?: string
+  children: React.ReactNode
 }
 
-/**
- * A simple file upload component for images
- * Features:
- * - File selection with preview
- * - Direct upload to object storage
- * - Progress indication
- * - Image preview with removal option
- */
-export function ObjectUploader({
-  onUpload,
-  onComplete,
-  buttonClassName,
-  children,
-  currentImageUrl
+export function ObjectUploader({ 
+  onUpload, 
+  onComplete, 
+  currentImageUrl, 
+  children 
 }: ObjectUploaderProps) {
-  const [isUploading, setIsUploading] = useState(false);
-  const [preview, setPreview] = useState<string | null>(currentImageUrl || null);
-  const [uploadedUrl, setUploadedUrl] = useState<string | null>(currentImageUrl || null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string>(currentImageUrl || '')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileSelect = () => {
-    fileInputRef.current?.click();
-  };
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
-      return;
-    }
-
-    // Validate file size (10MB)
-    if (file.size > 10485760) {
-      alert('File size must be less than 10MB');
-      return;
-    }
-
-    // Create preview
-    const previewUrl = URL.createObjectURL(file);
-    setPreview(previewUrl);
-
-    // Upload file
-    setIsUploading(true);
     try {
-      const uploadedImageUrl = await onUpload(file);
-      setUploadedUrl(uploadedImageUrl);
-      onComplete?.(uploadedImageUrl);
-    } catch (error) {
-      console.error('Upload failed:', error);
-      alert('Upload failed. Please try again.');
-      setPreview(null);
-    } finally {
-      setIsUploading(false);
-    }
-  };
+      setIsUploading(true)
+      
+      // Create preview URL
+      const preview = URL.createObjectURL(file)
+      setPreviewUrl(preview)
 
-  const handleRemove = () => {
-    setPreview(null);
-    setUploadedUrl(null);
-    onComplete?.('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      // Upload the file
+      let imageUrl: string
+      if (onUpload) {
+        imageUrl = await onUpload(file)
+      } else {
+        // Default upload handling
+        imageUrl = await handleImageUpload(file)
+      }
+
+      // Clean up preview URL and set final URL
+      URL.revokeObjectURL(preview)
+      setPreviewUrl(imageUrl)
+      
+      // Call completion callback
+      if (onComplete) {
+        onComplete(imageUrl)
+      }
+    } catch (error) {
+      console.error('Upload failed:', error)
+      // Reset to previous state on error
+      setPreviewUrl(currentImageUrl || '')
+    } finally {
+      setIsUploading(false)
     }
-  };
+  }
+
+  const handleImageUpload = async (file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append('image', file)
+
+    const response = await fetch('/api/upload/image', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!response.ok) {
+      throw new Error('Upload failed')
+    }
+
+    const result = await response.json()
+    return result.imageUrl
+  }
+
+  const handleButtonClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleRemoveImage = () => {
+    setPreviewUrl('')
+    if (onComplete) {
+      onComplete('')
+    }
+  }
 
   return (
     <div className="space-y-3">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleButtonClick}
+        disabled={isUploading}
+        className="w-full"
+      >
+        <Upload className="w-4 h-4 mr-2" />
+        {isUploading ? 'Uploading...' : children}
+      </Button>
+
       <input
-        type="file"
         ref={fileInputRef}
-        onChange={handleFileChange}
+        type="file"
         accept="image/*"
+        onChange={handleFileSelect}
         className="hidden"
       />
-      
-      {!preview ? (
-        <Button 
-          type="button"
-          onClick={handleFileSelect} 
-          className={buttonClassName}
-          variant="outline"
-          disabled={isUploading}
-        >
-          {isUploading ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-              Uploading...
-            </>
-          ) : (
-            <>
-              <Upload className="w-4 h-4 mr-2" />
-              {children}
-            </>
-          )}
-        </Button>
-      ) : (
-        <div className="relative">
-          <div className="border rounded-lg p-4 bg-gray-50">
-            <img 
-              src={preview} 
-              alt="Product preview" 
-              className="max-w-full max-h-48 object-contain rounded mx-auto"
-            />
-            <button
+
+      {previewUrl && (
+        <div className="relative border rounded-lg p-2 bg-gray-50">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm text-gray-600">Image Preview:</span>
+            <Button
               type="button"
-              onClick={handleRemove}
-              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+              variant="ghost"
+              size="sm"
+              onClick={handleRemoveImage}
             >
               <X className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
-          <p className="text-sm text-gray-600 mt-2 text-center">
-            {uploadedUrl ? 'Image uploaded successfully' : isUploading ? 'Uploading...' : 'Ready to upload'}
-          </p>
+          <img
+            src={previewUrl}
+            alt="Preview"
+            className="max-w-full h-32 object-cover rounded border"
+          />
         </div>
       )}
     </div>
-  );
+  )
 }

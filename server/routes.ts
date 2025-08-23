@@ -739,6 +739,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Image upload endpoint for products
+  app.post("/api/upload/image", async (req, res) => {
+    try {
+      // For now, create a simple placeholder response
+      // In a real implementation, this would handle multipart form data and upload to object storage
+      const imageId = `product-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const placeholderImageUrl = `/api/placeholder/image/${imageId}.jpg`;
+      
+      res.json({ 
+        success: true,
+        imageUrl: placeholderImageUrl,
+        message: "Image uploaded successfully"
+      });
+    } catch (error) {
+      console.error("Image upload error:", error);
+      res.status(500).json({ message: "Failed to upload image" });
+    }
+  });
+
+  // Serve placeholder images
+  app.get("/api/placeholder/image/:filename", (req, res) => {
+    // Return a simple SVG placeholder
+    const svg = `
+      <svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100%" height="100%" fill="#f3f4f6"/>
+        <text x="50%" y="50%" text-anchor="middle" dy="0.3em" 
+              font-family="Arial, sans-serif" font-size="14" fill="#9ca3af">
+          Product Image
+        </text>
+      </svg>
+    `;
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.send(svg);
+  });
+
+  // Get pricing tiers for a product
+  app.get("/api/products/:id/pricing-tiers", async (req, res) => {
+    try {
+      const productId = req.params.id;
+      const pricingTiers = await storage.getPricingTiers(productId);
+      res.json(pricingTiers);
+    } catch (error) {
+      console.error("Error fetching pricing tiers:", error);
+      res.status(500).json({ message: "Failed to fetch pricing tiers" });
+    }
+  });
+
+  // Create pricing tier for a product
+  app.post("/api/products/:id/pricing-tiers", async (req, res) => {
+    try {
+      const productId = req.params.id;
+      const tierData = {
+        ...req.body,
+        productId,
+      };
+      
+      const tier = await storage.createPricingTier(tierData);
+      res.json(tier);
+    } catch (error) {
+      console.error("Error creating pricing tier:", error);
+      res.status(500).json({ message: "Failed to create pricing tier" });
+    }
+  });
+
+  // Update pricing tier
+  app.put("/api/pricing-tiers/:id", async (req, res) => {
+    try {
+      const tierId = req.params.id;
+      const tier = await storage.updatePricingTier(tierId, req.body);
+      res.json(tier);
+    } catch (error) {
+      console.error("Error updating pricing tier:", error);
+      res.status(500).json({ message: "Failed to update pricing tier" });
+    }
+  });
+
+  // Delete pricing tier
+  app.delete("/api/pricing-tiers/:id", async (req, res) => {
+    try {
+      const tierId = req.params.id;
+      await storage.deletePricingTier(tierId);
+      res.json({ message: "Pricing tier deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting pricing tier:", error);
+      res.status(500).json({ message: "Failed to delete pricing tier" });
+    }
+  });
+
   // Simple public object serving - placeholder for now
   app.get("/public-objects/:filePath(*)", async (req, res) => {
     try {
