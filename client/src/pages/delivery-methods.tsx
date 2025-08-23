@@ -36,14 +36,7 @@ export default function DeliveryMethods() {
     retry: 1,
   })
 
-  // Debug logging
-  console.log('🔍 DeliveryMethods Dashboard:', {
-    deliveryMethodsCount: deliveryMethods?.length || 0,
-    isLoading,
-    hasError: !!error,
-    errorMessage: error?.message,
-    data: deliveryMethods
-  })
+
 
 
 
@@ -56,7 +49,6 @@ export default function DeliveryMethods() {
       description: '',
       price: '0',
       estimatedDays: '',
-      instructions: '',
       isActive: true,
       sortOrder: 0,
     },
@@ -64,7 +56,7 @@ export default function DeliveryMethods() {
 
   const createMutation = useMutation({
     mutationFn: async (data: InsertDeliveryMethod) => {
-      console.log("🔍 CREATE FRONTEND: Sending data:", data);
+
       const response = await fetch('/api/delivery-methods', {
         method: 'POST',
         headers: {
@@ -79,7 +71,7 @@ export default function DeliveryMethods() {
       }
       
       const result = await response.json();
-      console.log("🔍 CREATE FRONTEND: Received result:", result);
+
       return result;
     },
     onSuccess: () => {
@@ -92,7 +84,7 @@ export default function DeliveryMethods() {
       })
     },
     onError: (error: any) => {
-      console.error("❌ CREATE FRONTEND: Error:", error);
+
       toast({
         title: "Error",
         description: error.message || "Failed to create delivery method",
@@ -187,7 +179,6 @@ export default function DeliveryMethods() {
       description: method.description || '',
       price: method.price,
       estimatedDays: method.estimatedDays || '',
-      instructions: method.instructions || '',
       isActive: method.isActive,
       sortOrder: method.sortOrder,
     })
@@ -325,25 +316,7 @@ export default function DeliveryMethods() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="instructions"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm">Special Instructions</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Special instructions..." 
-                          {...field} 
-                          value={field.value || ''}
-                          className="h-16 text-sm"
-                          data-testid="textarea-delivery-instructions"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
 
                 <FormField
                   control={form.control}
@@ -501,11 +474,7 @@ export default function DeliveryMethods() {
                         </p>
                       )}
                       
-                      {method.instructions && (
-                        <p className="text-xs text-orange-700 bg-orange-50 px-2 py-1 rounded" data-testid={`text-delivery-instructions-${method.id}`}>
-                          {method.instructions}
-                        </p>
-                      )}
+
                     </div>
                     
                     <div className="flex items-center gap-2 ml-4">

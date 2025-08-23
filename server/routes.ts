@@ -1060,7 +1060,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/delivery-methods", async (req, res) => {
     try {
-      console.log("🔍 CREATE API: Received data:", JSON.stringify(req.body, null, 2));
       const deliveryMethodData = req.body;
       
       // Ensure price is a string
@@ -1068,13 +1067,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         deliveryMethodData.price = deliveryMethodData.price.toString();
       }
       
-      console.log("🔍 CREATE API: Processed data:", JSON.stringify(deliveryMethodData, null, 2));
       const method = await storage.createDeliveryMethod(deliveryMethodData);
-      console.log("🔍 CREATE API: Created method:", JSON.stringify(method, null, 2));
       res.json(method);
     } catch (error) {
-      console.error("❌ Error creating delivery method:", error);
-      res.status(500).json({ message: "Failed to create delivery method", error: error.message });
+      console.error("Error creating delivery method:", error);
+      res.status(500).json({ message: "Failed to create delivery method" });
     }
   });
 
