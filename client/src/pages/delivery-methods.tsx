@@ -414,11 +414,19 @@ export default function DeliveryMethods() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Delivery Methods</CardTitle>
+      <Card className="mt-6">
+        <CardHeader className="bg-gray-50 border-b">
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Truck className="w-5 h-5" />
+              Delivery Methods
+            </div>
+            <span className="text-sm text-gray-500 font-normal">
+              {deliveryMethods.length} method{deliveryMethods.length !== 1 ? 's' : ''} configured
+            </span>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           {isLoading ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
@@ -428,41 +436,43 @@ export default function DeliveryMethods() {
               ))}
             </div>
           ) : deliveryMethods.length === 0 ? (
-            <div className="text-center py-12">
-              <Truck className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No delivery methods</h3>
-              <p className="text-gray-600 mb-4">Get started by adding your first delivery method.</p>
-              <Button onClick={handleNew} className="bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 shadow-lg px-8 py-4 text-lg font-semibold rounded-lg transition-all duration-200 hover:shadow-xl" data-testid="button-add-first-delivery">
-                <Plus className="w-5 h-5 mr-3" />
+            <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+              <Truck className="w-16 h-16 text-gray-400 mx-auto mb-6" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">No delivery methods configured</h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                Start by adding your first delivery method to enable customers to choose how they want their orders delivered.
+              </p>
+              <Button onClick={handleNew} className="bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 shadow-lg px-10 py-4 text-lg font-semibold rounded-lg transition-all duration-200 hover:shadow-xl hover:scale-105" data-testid="button-add-first-delivery">
+                <Plus className="w-6 h-6 mr-3" />
                 Add Your First Delivery Method
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {deliveryMethods
                 .sort((a, b) => a.sortOrder - b.sortOrder)
                 .map((method) => (
                 <div 
                   key={method.id} 
-                  className={`border rounded-lg p-4 ${method.isActive ? 'border-green-200 bg-green-50/30' : 'border-gray-200 bg-gray-50/30'}`}
+                  className={`border-2 rounded-xl p-6 transition-all duration-200 hover:shadow-lg ${method.isActive ? 'border-green-200 bg-green-50/20 hover:bg-green-50/40' : 'border-gray-200 bg-gray-50/20 hover:bg-gray-50/40'}`}
                   data-testid={`card-delivery-${method.id}`}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold" data-testid={`text-delivery-name-${method.id}`}>
+                      <div className="flex flex-wrap items-center gap-4 mb-3">
+                        <h3 className="text-xl font-bold text-gray-900" data-testid={`text-delivery-name-${method.id}`}>
                           {method.name}
                         </h3>
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-gray-600" />
-                          <span className="font-medium" data-testid={`text-delivery-price-${method.id}`}>
+                        <div className="flex items-center gap-2 bg-blue-100 px-3 py-1 rounded-full">
+                          <DollarSign className="w-4 h-4 text-blue-600" />
+                          <span className="font-semibold text-blue-700" data-testid={`text-delivery-price-${method.id}`}>
                             ${parseFloat(method.price).toFixed(2)}
                           </span>
                         </div>
                         {method.estimatedDays && (
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full">
                             <Clock className="w-4 h-4 text-gray-600" />
-                            <span className="text-sm text-gray-600" data-testid={`text-delivery-time-${method.id}`}>
+                            <span className="text-sm font-medium text-gray-700" data-testid={`text-delivery-time-${method.id}`}>
                               {method.estimatedDays}
                             </span>
                           </div>
@@ -470,19 +480,21 @@ export default function DeliveryMethods() {
                       </div>
                       
                       {method.description && (
-                        <p className="text-gray-600 mb-2" data-testid={`text-delivery-description-${method.id}`}>
+                        <p className="text-gray-700 mb-3 text-base leading-relaxed" data-testid={`text-delivery-description-${method.id}`}>
                           {method.description}
                         </p>
                       )}
                       
                       {method.instructions && (
-                        <p className="text-sm text-gray-500" data-testid={`text-delivery-instructions-${method.id}`}>
-                          <strong>Instructions:</strong> {method.instructions}
-                        </p>
+                        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded-r-lg">
+                          <p className="text-sm text-yellow-800" data-testid={`text-delivery-instructions-${method.id}`}>
+                            <strong className="text-yellow-900">Special Instructions:</strong> {method.instructions}
+                          </p>
+                        </div>
                       )}
                     </div>
                     
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex items-center gap-3 ml-6">
                       <Switch
                         checked={method.isActive}
                         onCheckedChange={(checked) => 
