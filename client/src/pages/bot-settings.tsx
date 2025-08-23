@@ -30,7 +30,8 @@ export default function BotSettings() {
 
   const { data: settings = [], isLoading } = useQuery<BotSetting[]>({
     queryKey: ['/api/bot/settings'],
-    refetchInterval: false, // Only refetch manually when updated
+    refetchInterval: 10000, // Refresh every 10 seconds to show updates
+    refetchOnWindowFocus: true, // Refetch when window gets focus
   })
 
   const { data: botStatus } = useQuery<BotStatus>({

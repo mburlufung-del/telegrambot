@@ -48,7 +48,7 @@ export default function Dashboard() {
 
   const { data: botSettings = [] } = useQuery<BotSetting[]>({
     queryKey: ['/api/bot/settings'],
-    refetchInterval: false, // Only refetch manually
+    refetchInterval: 30000, // Refresh every 30 seconds to catch updates
   })
 
   const { data: products = [] } = useQuery<Product[]>({
