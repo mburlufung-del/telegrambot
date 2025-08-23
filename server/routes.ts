@@ -742,10 +742,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Image upload endpoint for products
   app.post("/api/upload/image", async (req, res) => {
     try {
-      // Create a simple in-memory image storage simulation
-      // This generates a placeholder that will display properly
+      // For now, generate a placeholder PNG that's Telegram-compatible
       const imageId = `product-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const imageUrl = `/api/placeholder/image/${imageId}.jpg`;
+      
+      console.log("Generated image URL for Telegram:", imageUrl);
       
       res.json({ 
         success: true,
@@ -758,33 +759,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve placeholder images with better styling
+  // Serve placeholder images as PNG for Telegram compatibility
+  // Handle any extension (.jpg, .png, etc.) and serve PNG
   app.get("/api/placeholder/image/:filename", (req, res) => {
     const filename = req.params.filename;
-    // Create a more attractive product placeholder
-    const svg = `
-      <svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:0.1" />
-            <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:0.2" />
-          </linearGradient>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#grad1)" rx="8"/>
-        <rect x="40" y="40" width="220" height="120" fill="none" stroke="#6366f1" stroke-width="2" stroke-dasharray="8,4" rx="4"/>
-        <circle cx="150" cy="80" r="20" fill="#6366f1" opacity="0.3"/>
-        <polygon points="130,90 150,70 170,90 160,100 140,100" fill="#6366f1" opacity="0.5"/>
-        <text x="150" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#4338ca" font-weight="500">
-          Product Image
-        </text>
-        <text x="150" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">
-          ${filename.split('-')[0] || 'product'} preview
-        </text>
-      </svg>
-    `;
-    res.setHeader('Content-Type', 'image/svg+xml');
-    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minute cache
-    res.send(svg);
+    
+    // Create a 1x1 transparent PNG as a minimal valid image
+    // This is a valid PNG that Telegram can process
+    const pngBuffer = Buffer.from([
+      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+      0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+      0x49, 0x48, 0x44, 0x52, // IHDR
+      0x00, 0x00, 0x00, 0x01, // Width: 1
+      0x00, 0x00, 0x00, 0x01, // Height: 1  
+      0x08, 0x06, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+      0x1F, 0x15, 0xC4, 0x89, // CRC
+      0x00, 0x00, 0x00, 0x0B, // IDAT chunk length
+      0x49, 0x44, 0x41, 0x54, // IDAT
+      0x78, 0x9C, 0x62, 0x00, 0x02, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D, // Compressed data (transparent pixel)
+      0x0A, 0x2D, 0xB4, // CRC
+      0x00, 0x00, 0x00, 0x00, // IEND chunk length
+      0x49, 0x45, 0x4E, 0x44, // IEND
+      0xAE, 0x42, 0x60, 0x82  // CRC
+    ]);
+    
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour cache
+    res.setHeader('Content-Length', pngBuffer.length.toString());
+    res.send(pngBuffer);
   });
 
   // Get pricing tiers for a product

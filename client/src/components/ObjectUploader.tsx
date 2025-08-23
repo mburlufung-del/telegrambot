@@ -127,11 +127,11 @@ export function ObjectUploader({
               <X className="w-4 h-4" />
             </Button>
           </div>
-          <div className="border rounded bg-white p-2">
+          <div className="border rounded bg-white p-2 flex items-center justify-center">
             <img
               src={previewUrl}
               alt="Product preview"
-              className="w-full h-32 object-contain rounded"
+              className="max-w-full max-h-32 object-contain rounded"
               onLoad={() => console.log('Image loaded successfully:', previewUrl)}
               onError={(e) => {
                 console.error('Image failed to load:', previewUrl);
