@@ -324,7 +324,7 @@ export default function Products() {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="price">Price ($)</Label>
+                  <Label htmlFor="price">Base Price ($)</Label>
                   <Input
                     id="price"
                     type="number"
@@ -332,7 +332,11 @@ export default function Products() {
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: e.target.value})}
                     required
+                    placeholder="Enter base price"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Default price when no bulk pricing tiers apply
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="stock">Stock Quantity</Label>
@@ -397,48 +401,67 @@ export default function Products() {
                     Upload a product image for better presentation in Telegram bot
                   </p>
                 </div>
-                {/* Quantity Pricing Tiers Section */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-base font-medium">Quantity Pricing Tiers (Optional)</Label>
+                {/* Bulk Pricing Tiers Section - Prominently positioned */}
+                <div className="col-span-2 space-y-4 p-5 border-2 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <Label className="text-lg font-bold text-blue-900 flex items-center">
+                        <DollarSign className="w-5 h-5 mr-2" />
+                        Bulk Pricing Tiers
+                      </Label>
+                      <p className="text-sm text-blue-700">Create quantity-based pricing for wholesale customers</p>
+                      <p className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded inline-block">
+                        Perfect for B2B sales and bulk orders
+                      </p>
+                    </div>
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
+                      variant="default"
+                      size="default"
                       onClick={addPricingTier}
+                      className="bg-blue-600 hover:bg-blue-700 shadow-lg"
                     >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Add Tier
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Pricing Tier
                     </Button>
                   </div>
                   
-                  {pricingTiers.length > 0 && (
-                    <div className="space-y-3 p-4 border rounded-lg bg-gray-50">
+                  {pricingTiers.length === 0 ? (
+                    <div className="text-center py-8 text-blue-700">
+                      <Package className="w-16 h-16 mx-auto mb-4 opacity-60" />
+                      <p className="text-base font-medium mb-2">No pricing tiers configured</p>
+                      <p className="text-sm mb-3">Add tiers to offer automatic bulk discounts to your customers</p>
+                      <div className="bg-blue-100 p-3 rounded-lg text-xs">
+                        <strong>Example:</strong> 1-10 units at $5.00 each, 11-50 units at $4.50 each, 51+ units at $4.00 each
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
                       {pricingTiers.map((tier, index) => (
-                        <div key={index} className="flex items-center space-x-3 bg-white p-3 rounded border">
+                        <div key={index} className="flex items-center space-x-4 bg-white p-5 rounded-xl border-2 border-blue-200 shadow-sm">
                           <div className="flex-1">
-                            <Label className="text-sm">Min Quantity</Label>
+                            <Label className="text-sm font-semibold text-gray-700">Min Quantity</Label>
                             <Input
                               type="number"
                               min="1"
                               value={tier.minQuantity}
                               onChange={(e) => updatePricingTier(index, 'minQuantity', parseInt(e.target.value) || 1)}
-                              placeholder="Min qty"
-                              className="mt-1"
+                              placeholder="1"
+                              className="mt-2 border-blue-200 focus:border-blue-400"
                             />
                           </div>
                           <div className="flex-1">
-                            <Label className="text-sm">Max Quantity (Optional)</Label>
+                            <Label className="text-sm font-semibold text-gray-700">Max Quantity</Label>
                             <Input
                               type="number"
                               value={tier.maxQuantity || ''}
                               onChange={(e) => updatePricingTier(index, 'maxQuantity', e.target.value ? parseInt(e.target.value) : undefined)}
-                              placeholder="Max qty"
-                              className="mt-1"
+                              placeholder="Unlimited"
+                              className="mt-2 border-blue-200 focus:border-blue-400"
                             />
                           </div>
                           <div className="flex-1">
-                            <Label className="text-sm">Price per Unit</Label>
+                            <Label className="text-sm font-semibold text-gray-700">Price per Unit ($)</Label>
                             <Input
                               type="number"
                               step="0.01"
@@ -446,23 +469,34 @@ export default function Products() {
                               value={tier.price}
                               onChange={(e) => updatePricingTier(index, 'price', parseFloat(e.target.value) || 0)}
                               placeholder="0.00"
-                              className="mt-1"
+                              className="mt-2 border-blue-200 focus:border-blue-400"
                             />
                           </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removePricingTier(index)}
-                            className="mt-6"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
+                          <div className="flex flex-col items-center space-y-2 pt-6">
+                            <div className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                              Tier {index + 1}
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removePricingTier(index)}
+                              className="h-8 w-8 p-0 border-red-300 hover:bg-red-50 hover:border-red-400"
+                            >
+                              <X className="w-4 h-4 text-red-600" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
-                      <p className="text-xs text-gray-500">
-                        Create bulk pricing for different quantity ranges. Lower quantities will use the base price above.
-                      </p>
+                      <div className="flex items-center justify-between text-sm text-blue-700 bg-blue-100 p-4 rounded-lg border border-blue-200">
+                        <span className="flex items-center">
+                          <Hash className="w-4 h-4 mr-2" />
+                          Customers automatically get the best price for their order quantity
+                        </span>
+                        <span className="font-semibold">
+                          {pricingTiers.length} active tier{pricingTiers.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
