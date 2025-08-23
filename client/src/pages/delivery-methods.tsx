@@ -25,7 +25,15 @@ export default function DeliveryMethods() {
 
   const { data: deliveryMethods = [], isLoading, error } = useQuery<DeliveryMethod[]>({
     queryKey: ['/api/delivery-methods'],
+    queryFn: async () => {
+      const response = await fetch('/api/delivery-methods');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    },
     staleTime: 0,
+    retry: 1,
   })
 
   // Debug logging
@@ -33,6 +41,7 @@ export default function DeliveryMethods() {
     deliveryMethodsCount: deliveryMethods?.length || 0,
     isLoading,
     hasError: !!error,
+    errorMessage: error?.message,
     data: deliveryMethods
   })
 
