@@ -2197,24 +2197,24 @@ Include your Order Number: ${orderNumber}`;
       const operatorContactSetting = botSettings.find(s => s.key === 'operator_username');
       const operatorContact = operatorContactSetting?.value || '@murzion';
       
-      const message = `🎉 **Order Confirmed!**
+      const message = `🎉 <b>Order Confirmed!</b>
 
-**Order Number:** ${orderNumber}
-**Customer ID:** ${userId}
-**Total:** $${total.toFixed(2)}
-**Status:** Completed
+<b>Order Number:</b> ${orderNumber}
+<b>Customer ID:</b> ${userId}
+<b>Total:</b> $${total.toFixed(2)}
+<b>Status:</b> Completed
 
-📋 **Next Steps:**
+📋 <b>Next Steps:</b>
 1. Payment verification (if applicable)
 2. Order processing (1-2 business days)
 3. Shipping/Pickup preparation
 4. Delivery tracking info
 
-📞 **Support Contact:**
+📞 <b>Support Contact:</b>
 • Telegram: ${operatorContact}
 • Include your order number: ${orderNumber}
 
-**Estimated Processing:** 1-2 business days
+<b>Estimated Processing:</b> 1-2 business days
 
 Thank you for shopping with us! 🛍️`;
 
@@ -2228,7 +2228,7 @@ Thank you for shopping with us! 🛍️`;
       };
 
       await this.sendTrackedMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
 
