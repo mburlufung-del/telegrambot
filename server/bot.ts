@@ -981,7 +981,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     const operatorContact = operatorContactSetting?.value || '@murzion';
     const operatorEmail = operatorEmailSetting?.value || 'support@teleshop.com';
     const responseTime = responseTimeSetting?.value || '2-4 hours';
-    const businessHours = businessHoursSetting?.value || 'Monday - Friday: 9:00 AM - 6:00 PM\n• Saturday: 10:00 AM - 4:00 PM\n• Sunday: Closed';
+    const businessHours = businessHoursSetting?.value || 'Monday - Friday: 9:00 AM - 6:00 PM\nSaturday: 10:00 AM - 4:00 PM\nSunday: Closed';
     
     // Helper function to escape Markdown special characters but preserve @ for usernames
     const escapeMarkdown = (text: string) => {
@@ -1002,7 +1002,7 @@ Need help? Our support team is here for you!
 • Email: ${escapeMarkdown(operatorEmail)}
 
 🕒 *Business Hours:*
-• ${escapeMarkdown(businessHours)}
+${escapeMarkdown(businessHours)}
 
 💬 *For Quick Help:*
 • Order issues: Reply with your order number
