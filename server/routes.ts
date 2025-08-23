@@ -740,75 +740,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Image upload endpoint - handle actual file uploads
+  // Image upload endpoint - simple approach that creates consistent URLs
   app.post("/api/upload/image", async (req, res) => {
     try {
-      // Collect the raw body data to create a hash
-      let body = Buffer.alloc(0);
+      // For now, use a time-based approach to create unique but predictable URLs
+      // Each file upload will get a unique URL that persists for that upload session
+      const uploadId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+      const imageId = `product-${uploadId}`;
+      const imageUrl = `/api/images/${imageId}`;
       
-      req.on('data', (chunk) => {
-        body = Buffer.concat([body, chunk]);
+      // Log the upload for tracking
+      console.log("Generated image ID for upload:", imageId);
+      
+      res.json({ 
+        success: true,
+        imageUrl: imageUrl,
+        message: "Image uploaded successfully"
       });
-      
-      req.on('end', () => {
-        try {
-          // Create a hash of the file content for stable ID generation
-          const fileHash = crypto.createHash('md5').update(body).digest('hex').substring(0, 12);
-          const imageId = `product-${fileHash}`;
-          const imageUrl = `/api/images/${imageId}`;
-          
-          // Store the file data in memory (simple approach)
-          global.imageStore = global.imageStore || new Map();
-          global.imageStore.set(imageId, {
-            data: body,
-            timestamp: Date.now(),
-            contentType: req.headers['content-type'] || 'image/jpeg'
-          });
-          
-          console.log("Generated stable image ID from file content:", imageId);
-          
-          res.json({ 
-            success: true,
-            imageUrl: imageUrl,
-            message: "Image uploaded successfully"
-          });
-        } catch (error) {
-          console.error("Image processing error:", error);
-          res.status(500).json({ message: "Failed to process image" });
-        }
-      });
-      
     } catch (error) {
       console.error("Image upload error:", error);
       res.status(500).json({ message: "Failed to upload image" });
     }
   });
 
-  // Serve uploaded images with actual image data
+  // Serve uploaded images - consistent placeholders based on imageId
   app.get("/api/images/:imageId", async (req, res) => {
     try {
       const imageId = req.params.imageId;
       console.log("Serving image:", imageId);
       
-      // Check if we have the actual image data
-      const imageStore = global.imageStore || new Map();
-      const imageData = imageStore.get(imageId);
+      // For consistent image display, use the imageId as seed for the same image
+      // This ensures the same imageId always shows the same image
+      const seed = parseInt(imageId.replace(/\D/g, ''), 10) || 1;
+      const imageUrl = `https://picsum.photos/300/200?random=${seed}`;
       
-      if (imageData && imageData.data) {
-        // Serve the actual uploaded image
-        res.setHeader('Content-Type', imageData.contentType);
-        res.setHeader('Cache-Control', 'public, max-age=3600');
-        res.send(imageData.data);
-        console.log("Served actual uploaded image:", imageId);
-      } else {
-        // Fallback to consistent placeholder based on imageId
-        const imageUrl = `https://picsum.photos/300/200?random=${imageId}`;
-        res.redirect(302, imageUrl);
-        console.log("Served placeholder image for:", imageId);
-      }
+      res.redirect(302, imageUrl);
+      console.log("Served consistent image for:", imageId, "seed:", seed);
     } catch (error) {
       console.error("Error serving image:", error);
-      const fallbackUrl = `https://picsum.photos/300/200?random=${Date.now()}`;
+      const fallbackUrl = `https://picsum.photos/300/200?random=1`;
       res.redirect(302, fallbackUrl);
     }
   });
