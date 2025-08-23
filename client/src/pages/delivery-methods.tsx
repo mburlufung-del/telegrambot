@@ -202,14 +202,14 @@ export default function DeliveryMethods() {
               Add Delivery Method
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl bg-white">
             <DialogHeader>
               <DialogTitle>
                 {editingMethod ? 'Edit Delivery Method' : 'Add New Delivery Method'}
               </DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white">
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -333,7 +333,7 @@ export default function DeliveryMethods() {
                   control={form.control}
                   name="isActive"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-gray-50">
                       <div className="space-y-0.5">
                         <FormLabel className="text-base">Active Status</FormLabel>
                         <div className="text-sm text-gray-600">
@@ -443,7 +443,7 @@ export default function DeliveryMethods() {
                 .map((method) => (
                 <div 
                   key={method.id} 
-                  className={`border rounded-lg p-4 ${method.isActive ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}`}
+                  className={`border rounded-lg p-4 ${method.isActive ? 'border-green-200 bg-green-50/30' : 'border-gray-200 bg-gray-50/30'}`}
                   data-testid={`card-delivery-${method.id}`}
                 >
                   <div className="flex justify-between items-start">
