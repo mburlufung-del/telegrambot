@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Users, ShoppingCart, DollarSign, MessageSquare, Bot, CheckCircle, Package, Settings, CreditCard, Mail, AlertCircle, RefreshCw } from 'lucide-react'
-import type { Product, BotSettings } from '@shared/schema'
+import { Users, ShoppingCart, DollarSign, MessageSquare, Bot, CheckCircle, Package, Settings, CreditCard, Mail, AlertCircle, RefreshCw, Tag, Folder } from 'lucide-react'
+import type { Product, BotSettings, Category } from '@shared/schema'
 
 interface DashboardStats {
   totalUsers: number
@@ -66,10 +66,16 @@ export default function Dashboard() {
     refetchInterval: false, // Only refetch manually
   })
 
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ['/api/categories'],
+    refetchInterval: false, // Only refetch manually
+  })
+
   const refreshDashboard = async () => {
     console.log('Refreshing dashboard data...')
     await queryClient.invalidateQueries({ queryKey: ['/api/bot/settings'] })
     await queryClient.invalidateQueries({ queryKey: ['/api/products'] })
+    await queryClient.invalidateQueries({ queryKey: ['/api/categories'] })
     await queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] })
     await queryClient.invalidateQueries({ queryKey: ['/api/bot/status'] })
     console.log('Dashboard refresh triggered')
@@ -129,7 +135,7 @@ export default function Dashboard() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -171,6 +177,17 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{activeProducts}</div>
             <p className="text-xs text-gray-600">of {products.length} total</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Categories</CardTitle>
+            <Folder className="h-4 w-4 text-teal-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-teal-600">{categories.length}</div>
+            <p className="text-xs text-gray-600">Product categories</p>
           </CardContent>
         </Card>
       </div>
@@ -276,6 +293,56 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Categories Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Tag className="w-5 h-5" />
+            Product Categories
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {categories.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <Folder className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p className="text-sm">No categories created yet</p>
+              <p className="text-xs text-gray-400 mt-1">Categories help organize your products for customers</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {categories.map((category) => {
+                const categoryProducts = products.filter(p => p.categoryId === category.id);
+                const activeInCategory = categoryProducts.filter(p => p.isActive).length;
+                
+                return (
+                  <div key={category.id} className="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-sm text-gray-900">{category.name}</h3>
+                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        category.isActive 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {category.isActive ? 'Active' : 'Inactive'}
+                      </div>
+                    </div>
+                    
+                    {category.description && (
+                      <p className="text-xs text-gray-600 mb-3 line-clamp-2">{category.description}</p>
+                    )}
+                    
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>{categoryProducts.length} product{categoryProducts.length !== 1 ? 's' : ''}</span>
+                      <span>{activeInCategory} active</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Inventory & Activity Status */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
