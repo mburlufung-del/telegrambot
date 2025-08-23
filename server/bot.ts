@@ -983,23 +983,28 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     const responseTime = responseTimeSetting?.value || '2-4 hours';
     const businessHours = businessHoursSetting?.value || 'Monday - Friday: 9:00 AM - 6:00 PM\n• Saturday: 10:00 AM - 4:00 PM\n• Sunday: Closed';
     
+    // Helper function to escape Markdown special characters
+    const escapeMarkdown = (text: string) => {
+      return text.replace(/[_*[\]()~`>#+-=|{}.!\\]/g, '\\$&');
+    };
+    
     const message = `👤 *Contact Operator*
 
 Need help? Our support team is here for you!
 
-📞 **Support Contact:**
-• Telegram: ${operatorContact}
-• Email: ${operatorEmail}
+📞 *Support Contact:*
+• Telegram: ${escapeMarkdown(operatorContact)}
+• Email: ${escapeMarkdown(operatorEmail)}
 
-🕒 **Business Hours:**
-• ${businessHours}
+🕒 *Business Hours:*
+• ${escapeMarkdown(businessHours)}
 
-💬 **For Quick Help:**
+💬 *For Quick Help:*
 • Order issues: Reply with your order number
 • Product questions: Ask about specific items
 • Technical support: Describe your problem
 
-⚡ **Average Response Time:** ${responseTime}`;
+⚡ *Average Response Time:* ${escapeMarkdown(responseTime)}`;
     
     const keyboard = {
       inline_keyboard: [
