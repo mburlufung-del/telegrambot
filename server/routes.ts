@@ -740,46 +740,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Image upload endpoint - simple approach that creates consistent URLs
-  app.post("/api/upload/image", async (req, res) => {
-    try {
-      // For now, use a time-based approach to create unique but predictable URLs
-      // Each file upload will get a unique URL that persists for that upload session
-      const uploadId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-      const imageId = `product-${uploadId}`;
-      const imageUrl = `/api/images/${imageId}`;
-      
-      // Log the upload for tracking
-      console.log("Generated image ID for upload:", imageId);
-      
-      res.json({ 
-        success: true,
-        imageUrl: imageUrl,
-        message: "Image uploaded successfully"
-      });
-    } catch (error) {
-      console.error("Image upload error:", error);
-      res.status(500).json({ message: "Failed to upload image" });
+  // Image upload endpoint - handle actual file data storage
+  app.post("/api/upload/image", (req, res) => {
+    const chunks: Buffer[] = [];
+    let contentType = 'image/jpeg';
+
+    // Extract content type from headers
+    if (req.headers['content-type']) {
+      const boundary = req.headers['content-type'].includes('multipart/form-data');
+      if (!boundary) {
+        contentType = req.headers['content-type'];
+      }
     }
+
+    req.on('data', (chunk) => {
+      chunks.push(chunk);
+    });
+
+    req.on('end', () => {
+      try {
+        const fullBuffer = Buffer.concat(chunks);
+        let imageBuffer = fullBuffer;
+
+        // If it's multipart form data, extract the image
+        if (req.headers['content-type']?.includes('multipart/form-data')) {
+          const bodyStr = fullBuffer.toString('binary');
+          
+          // Find image data boundaries
+          const lines = bodyStr.split('\r\n');
+          let imageStart = -1;
+          let foundContentType = false;
+          
+          for (let i = 0; i < lines.length; i++) {
+            if (lines[i].includes('Content-Type:')) {
+              contentType = lines[i].split(':')[1].trim();
+              foundContentType = true;
+            }
+            if (foundContentType && lines[i] === '') {
+              imageStart = i + 1;
+              break;
+            }
+          }
+          
+          if (imageStart !== -1) {
+            // Reconstruct binary data from the image portion
+            const imagePart = lines.slice(imageStart, -2).join('\r\n');
+            imageBuffer = Buffer.from(imagePart, 'binary');
+          }
+        }
+
+        // Create hash-based ID for consistency
+        const fileHash = crypto.createHash('md5').update(imageBuffer).digest('hex').substring(0, 12);
+        const imageId = `product-${fileHash}`;
+        const imageUrl = `/api/images/${imageId}`;
+
+        // Store the actual image data in memory
+        global.imageStore = global.imageStore || new Map();
+        global.imageStore.set(imageId, {
+          data: imageBuffer,
+          contentType: contentType,
+          timestamp: Date.now()
+        });
+
+        console.log("Stored image with ID:", imageId, "Size:", imageBuffer.length, "Type:", contentType);
+
+        res.json({
+          success: true,
+          imageUrl: imageUrl,
+          message: "Image uploaded successfully"
+        });
+      } catch (error) {
+        console.error("Image processing error:", error);
+        res.status(500).json({ message: "Failed to process image" });
+      }
+    });
+
+    req.on('error', (error) => {
+      console.error("Upload error:", error);
+      res.status(500).json({ message: "Upload failed" });
+    });
   });
 
-  // Serve uploaded images - consistent placeholders based on imageId
-  app.get("/api/images/:imageId", async (req, res) => {
+  // Serve uploaded images - actual stored image data
+  app.get("/api/images/:imageId", (req, res) => {
     try {
       const imageId = req.params.imageId;
-      console.log("Serving image:", imageId);
-      
-      // For consistent image display, use the imageId as seed for the same image
-      // This ensures the same imageId always shows the same image
-      const seed = parseInt(imageId.replace(/\D/g, ''), 10) || 1;
-      const imageUrl = `https://picsum.photos/300/200?random=${seed}`;
-      
-      res.redirect(302, imageUrl);
-      console.log("Served consistent image for:", imageId, "seed:", seed);
+      const imageStore = global.imageStore || new Map();
+      const imageData = imageStore.get(imageId);
+
+      if (imageData && imageData.data) {
+        // Serve the actual uploaded image
+        res.setHeader('Content-Type', imageData.contentType);
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        res.setHeader('Content-Length', imageData.data.length.toString());
+        res.send(imageData.data);
+        console.log("Served actual uploaded image:", imageId, "Size:", imageData.data.length);
+      } else {
+        // Fallback to consistent placeholder if image not found
+        const seed = parseInt(imageId.replace(/\D/g, ''), 10) || 1;
+        const imageUrl = `https://picsum.photos/300/200?random=${seed}`;
+        res.redirect(302, imageUrl);
+        console.log("Served placeholder for missing image:", imageId);
+      }
     } catch (error) {
       console.error("Error serving image:", error);
-      const fallbackUrl = `https://picsum.photos/300/200?random=1`;
-      res.redirect(302, fallbackUrl);
+      res.status(500).json({ message: "Failed to serve image" });
     }
   });
 
