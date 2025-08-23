@@ -12,6 +12,7 @@ export const products = pgTable("products", {
   stock: integer("stock").notNull().default(0),
   minOrderQuantity: integer("min_order_quantity").notNull().default(1),
   maxOrderQuantity: integer("max_order_quantity"),
+  unit: text("unit").notNull().default("piece"), // unit of measurement
   imageUrl: text("image_url"),
   categoryId: varchar("category_id").references(() => categories.id),
   tags: text("tags"), // JSON array of tags

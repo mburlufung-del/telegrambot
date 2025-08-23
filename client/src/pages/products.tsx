@@ -19,8 +19,10 @@ export default function Products() {
     description: '',
     price: '',
     stock: '',
+    unit: 'piece',
     categoryId: '',
     minOrderQuantity: '1',
+    imageUrl: '',
     isActive: true
   })
   
@@ -125,8 +127,10 @@ export default function Products() {
       description: '',
       price: '',
       stock: '',
+      unit: 'piece',
       categoryId: '',
       minOrderQuantity: '1',
+      imageUrl: '',
       isActive: true
     })
     setIsAddingProduct(false)
@@ -141,8 +145,10 @@ export default function Products() {
       description: formData.description,
       price: parseFloat(formData.price),
       stock: parseInt(formData.stock),
+      unit: formData.unit,
       categoryId: formData.categoryId || null,
       minOrderQuantity: parseInt(formData.minOrderQuantity),
+      imageUrl: formData.imageUrl || null,
       isActive: formData.isActive
     }
 
@@ -160,8 +166,10 @@ export default function Products() {
       description: product.description || '',
       price: product.price.toString(),
       stock: product.stock.toString(),
+      unit: (product as any).unit || 'piece',
       categoryId: product.categoryId || '',
       minOrderQuantity: product.minOrderQuantity?.toString() || '1',
+      imageUrl: product.imageUrl || '',
       isActive: product.isActive
     })
     setIsAddingProduct(true)
@@ -266,10 +274,37 @@ export default function Products() {
                   <Input
                     id="stock"
                     type="number"
+                    min="0"
                     value={formData.stock}
                     onChange={(e) => setFormData({...formData, stock: e.target.value})}
                     required
+                    placeholder="Available quantity"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="unit">Unit of Measurement</Label>
+                  <select
+                    id="unit"
+                    value={formData.unit}
+                    onChange={(e) => setFormData({...formData, unit: e.target.value})}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="piece">Piece</option>
+                    <option value="kg">Kilogram (kg)</option>
+                    <option value="lb">Pound (lb)</option>
+                    <option value="gram">Gram (g)</option>
+                    <option value="liter">Liter (L)</option>
+                    <option value="ml">Milliliter (ml)</option>
+                    <option value="box">Box</option>
+                    <option value="pack">Pack</option>
+                    <option value="bottle">Bottle</option>
+                    <option value="bag">Bag</option>
+                    <option value="dozen">Dozen</option>
+                    <option value="meter">Meter (m)</option>
+                    <option value="yard">Yard</option>
+                    <option value="set">Set</option>
+                    <option value="pair">Pair</option>
+                  </select>
                 </div>
                 <div>
                   <Label htmlFor="minOrderQuantity">Min Order Quantity</Label>
@@ -279,9 +314,23 @@ export default function Products() {
                     min="1"
                     value={formData.minOrderQuantity}
                     onChange={(e) => setFormData({...formData, minOrderQuantity: e.target.value})}
+                    placeholder="Minimum quantity per order"
                   />
                 </div>
-                <div className="flex items-center space-x-2 mt-8">
+                <div>
+                  <Label htmlFor="imageUrl">Product Image URL</Label>
+                  <Input
+                    id="imageUrl"
+                    type="url"
+                    value={formData.imageUrl}
+                    onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
+                    placeholder="https://example.com/product-image.jpg"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Add a product image URL for better presentation in Telegram bot
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2 mt-4">
                   <input
                     id="isActive"
                     type="checkbox"
@@ -299,8 +348,30 @@ export default function Products() {
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                   rows={3}
+                  placeholder="Detailed product description for customers"
                 />
               </div>
+              
+              {formData.imageUrl && (
+                <div>
+                  <Label>Image Preview</Label>
+                  <div className="mt-2 border rounded-lg p-4 bg-gray-50">
+                    <img 
+                      src={formData.imageUrl} 
+                      alt="Product preview" 
+                      className="max-w-full max-h-48 object-contain rounded"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                    <div className="hidden text-sm text-red-600 mt-2">
+                      Failed to load image. Please check the URL.
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="flex gap-2">
                 <Button 
                   type="submit" 
