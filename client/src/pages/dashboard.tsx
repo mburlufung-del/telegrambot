@@ -68,8 +68,9 @@ export default function Dashboard() {
 
   const { data: categories = [], isLoading: categoriesLoading, error: categoriesError, refetch: refetchCategories } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
-    refetchInterval: 5000, // Refetch every 5 seconds 
+    refetchInterval: 2000, // Refetch every 2 seconds 
     staleTime: 0,
+    gcTime: 0, // Don't cache
     retry: 2,
   })
 
@@ -320,8 +321,15 @@ export default function Dashboard() {
           ) : categories.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Folder className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-sm">No categories created yet</p>
-              <p className="text-xs text-gray-400 mt-1">Categories help organize your products for customers</p>
+              <p className="text-sm">No categories loaded</p>
+              <p className="text-xs text-gray-400 mt-1">Loading categories... (API returned data but not displayed yet)</p>
+              <Button 
+                onClick={() => refetchCategories()}
+                size="sm" 
+                className="mt-2 bg-blue-500 hover:bg-blue-600 text-white"
+              >
+                Force Refresh Categories
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

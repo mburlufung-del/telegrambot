@@ -6,7 +6,7 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       retry: 1,
       staleTime: 0, // Always consider data stale for fresh updates
-      gcTime: 1000 * 60 * 5, // Keep in cache for 5 minutes
+      gcTime: 0, // Don't cache data at all
       queryFn: async ({ queryKey }: { queryKey: readonly unknown[] }) => {
         const url = queryKey[0] as string
         console.log(`[QueryClient] Fetching: ${url}`)

@@ -52,15 +52,8 @@ export default function Categories() {
     onSuccess: (data) => {
       console.log('Category created successfully:', data);
       
-      // Clear specific query cache immediately
-      queryClient.removeQueries({ queryKey: ['/api/categories'] });
-      queryClient.removeQueries({ queryKey: ['/api/products'] });
-      
-      // Force immediate refetch
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
-        queryClient.invalidateQueries({ queryKey: ['/api/products'] });
-      }, 100);
+      // Force complete cache clear and refresh
+      queryClient.clear();
       
       setIsAddDialogOpen(false)
       setNewCategoryName('')
@@ -75,6 +68,11 @@ export default function Categories() {
           ? `Category created as "${createdName}" (name was adjusted to avoid duplicates)`
           : "Category created successfully and synced with products",
       })
+      
+      // Refresh page to ensure all data is fresh
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     },
     onError: () => {
       toast({
