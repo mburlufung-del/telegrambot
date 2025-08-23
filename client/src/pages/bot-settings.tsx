@@ -122,8 +122,27 @@ export default function BotSettings() {
     updateSettingMutation.mutate({ key, value })
   }
 
-  const refreshSettings = () => {
-    queryClient.invalidateQueries({ queryKey: ['/api/bot/settings'] })
+  const refreshSettings = async () => {
+    try {
+      // Invalidate all relevant queries to force refresh
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['/api/bot/settings'] }),
+        queryClient.invalidateQueries({ queryKey: ['payment-methods-dashboard'] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/bot/status'] })
+      ])
+      
+      // Provide user feedback
+      toast({
+        title: "Settings Refreshed",
+        description: "All bot settings and payment methods have been refreshed from the server.",
+      })
+    } catch (error) {
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh settings. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   const SettingInput = ({ settingKey, label, placeholder, type = 'text' }: {
