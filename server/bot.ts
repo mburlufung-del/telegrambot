@@ -2099,26 +2099,22 @@ Select your preferred payment option:`;
       return;
     }
 
-    // Helper function to escape Markdown special characters - more comprehensive
-    const escapeMarkdown = (text: string) => {
-      return text.replace(/[_*[\]()~`>#+=|{}.!\\-]/g, '\\$&');
-    };
+    // Use HTML formatting to avoid parsing issues
+    let message = `💳 <b>${paymentMethod.name} Payment</b>
 
-    let message = `💳 *${escapeMarkdown(paymentMethod.name)} Payment*
-
-*Order Number:* ${orderNumber}
-*Total Amount:* $${total.toFixed(2)}`;
+<b>Order Number:</b> ${orderNumber}
+<b>Total Amount:</b> $${total.toFixed(2)}`;
 
     if (paymentMethod.description) {
-      message += `\n\n${escapeMarkdown(paymentMethod.description)}`;
+      message += `\n\n${paymentMethod.description}`;
     }
 
     if (paymentMethod.paymentInfo) {
-      message += `\n\n*Payment Information:*\n${escapeMarkdown(paymentMethod.paymentInfo)}`;
+      message += `\n\n<b>Payment Information:</b>\n${paymentMethod.paymentInfo}`;
     }
 
     if (paymentMethod.instructions) {
-      message += `\n\n*Instructions:*\n${escapeMarkdown(paymentMethod.instructions)}`;
+      message += `\n\n<b>Instructions:</b>\n${paymentMethod.instructions}`;
     }
 
     // Load dynamic operator settings
@@ -2126,7 +2122,7 @@ Select your preferred payment option:`;
     const operatorContactSetting = botSettings.find(s => s.key === 'operator_username');
     const operatorContact = operatorContactSetting?.value || '@murzion';
     
-    message += `\n\n📸 *After Payment:*
+    message += `\n\n📸 <b>After Payment:</b>
 Send screenshot of payment confirmation to ${operatorContact}
 Include your Order Number: ${orderNumber}`;
 
@@ -2139,7 +2135,7 @@ Include your Order Number: ${orderNumber}`;
     };
 
     await this.sendTrackedMessage(chatId, message, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: keyboard
     });
   }
