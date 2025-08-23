@@ -993,23 +993,23 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       return text.replace(/[_*[\]()~`>#+-=|{}.!\\]/g, '\\$&');
     };
     
-    const message = `👤 *Contact Operator*
+    const message = `👤 <b>Contact Operator</b>
 
 Need help? Our support team is here for you!
 
-📞 *Support Contact:*
+📞 <b>Support Contact:</b>
 • Telegram: ${operatorContact}
-• Email: ${escapeMarkdown(operatorEmail)}
+• Email: ${operatorEmail}
 
-🕒 *Business Hours:*
-${escapeMarkdown(businessHours)}
+🕒 <b>Business Hours:</b>
+${businessHours}
 
-💬 *For Quick Help:*
+💬 <b>For Quick Help:</b>
 • Order issues: Reply with your order number
 • Product questions: Ask about specific items
 • Technical support: Describe your problem
 
-⚡ *Average Response Time:* ${escapeMarkdown(responseTime)}`;
+⚡ <b>Average Response Time:</b> ${responseTime}`;
     
     const keyboard = {
       inline_keyboard: [
@@ -1019,7 +1019,7 @@ ${escapeMarkdown(businessHours)}
     };
 
     await this.sendTrackedMessage(chatId, message, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: keyboard
     });
   }
@@ -2099,9 +2099,9 @@ Select your preferred payment option:`;
       return;
     }
 
-    // Helper function to escape Markdown special characters
+    // Helper function to escape Markdown special characters - more comprehensive
     const escapeMarkdown = (text: string) => {
-      return text.replace(/[_*[\]()~`>#+-=|{}.!\\]/g, '\\$&');
+      return text.replace(/[_*[\]()~`>#+=|{}.!\\-]/g, '\\$&');
     };
 
     let message = `💳 *${escapeMarkdown(paymentMethod.name)} Payment*
