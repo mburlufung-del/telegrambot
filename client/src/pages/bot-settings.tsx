@@ -447,44 +447,89 @@ export default function BotSettings() {
       )}
 
       {activeTab === 'operator' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Support Team</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Support Team Configuration
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <SettingInput
+                  settingKey="operator_name"
+                  label="Operator Name"
+                  placeholder="Support Team"
+                />
+                <SettingInput
+                  settingKey="operator_username"
+                  label="Telegram Username"
+                  placeholder="@support"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <SettingInput
+                  settingKey="support_email"
+                  label="Support Email"
+                  placeholder="support@example.com"
+                  type="email"
+                />
+                <SettingInput
+                  settingKey="response_time"
+                  label="Expected Response Time"
+                  placeholder="2-4 hours"
+                />
+              </div>
+
               <SettingInput
-                settingKey="operator_name"
-                label="Operator Name"
-                placeholder="Support Team"
+                settingKey="support_hours"
+                label="Business Hours"
+                placeholder="Monday - Friday: 9:00 AM - 6:00 PM&#10;Saturday: 10:00 AM - 4:00 PM&#10;Sunday: Closed"
+                type="textarea"
               />
-              <SettingInput
-                settingKey="operator_username"
-                label="Operator Username"
-                placeholder="@support"
-              />
-              <SettingInput
-                settingKey="support_email"
-                label="Support Email"
-                placeholder="support@example.com"
-              />
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <AlertCircle className="w-5 h-5 text-blue-600 mr-3 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-blue-900">Customer Support Integration</h4>
+                    <p className="text-blue-700 text-sm mt-1">
+                      These settings are automatically displayed to customers when they contact support through the Telegram bot. 
+                      Make sure the username starts with @ (e.g., @your_username) for proper Telegram linking.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Response Settings</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                Support Message Templates
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <SettingInput
-                settingKey="response_time"
-                label="Expected Response Time"
-                placeholder="Within 24 hours"
+                settingKey="auto_reply_message"
+                label="Auto-Reply Message"
+                placeholder="Thank you for contacting us! We'll respond within 2-4 hours."
+                type="textarea"
               />
               <SettingInput
-                settingKey="support_hours"
-                label="Support Hours"
-                placeholder="Mon-Fri 9AM-6PM EST"
+                settingKey="inquiry_confirmation"
+                label="Inquiry Confirmation"
+                placeholder="Your inquiry has been received. Reference ID: {id}"
+                type="textarea"
+              />
+              <SettingInput
+                settingKey="offline_message"
+                label="Offline Hours Message"
+                placeholder="We're currently offline. Please send your message and we'll respond during business hours."
+                type="textarea"
               />
             </CardContent>
           </Card>
