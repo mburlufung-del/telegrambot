@@ -25,18 +25,10 @@ export default function DeliveryMethods() {
 
   const { data: deliveryMethods = [], isLoading, error } = useQuery<DeliveryMethod[]>({
     queryKey: ['/api/delivery-methods'],
-    refetchInterval: 5000, // Refresh every 5 seconds for debugging
-    refetchOnWindowFocus: true,
-    staleTime: 0, // No cache for debugging
+    staleTime: 0,
   })
 
-  // Debug logging
-  console.log('🚀 DeliveryMethods component render:', {
-    deliveryMethods,
-    isLoading,
-    error,
-    length: deliveryMethods?.length
-  })
+
 
   const form = useForm<InsertDeliveryMethod>({
     resolver: zodResolver(insertDeliveryMethodSchema.extend({

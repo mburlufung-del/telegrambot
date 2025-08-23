@@ -680,11 +680,7 @@ export class DatabaseStorage implements IStorage {
 
   // Delivery Methods
   async getDeliveryMethods(): Promise<DeliveryMethod[]> {
-    console.log("🔍 STORAGE: Getting delivery methods from database...");
-    const methods = await db.select().from(deliveryMethods).orderBy(asc(deliveryMethods.sortOrder));
-    console.log("📦 STORAGE: Raw database result:", methods);
-    console.log("📋 STORAGE: Found", methods.length, "delivery methods");
-    return methods;
+    return await db.select().from(deliveryMethods).orderBy(asc(deliveryMethods.sortOrder));
   }
 
   async getActiveDeliveryMethods(): Promise<DeliveryMethod[]> {
