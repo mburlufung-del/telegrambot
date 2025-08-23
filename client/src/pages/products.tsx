@@ -40,7 +40,17 @@ export default function Products() {
     queryKey: ['/api/products'],
     staleTime: 0,
     refetchOnMount: true,
-    refetchInterval: false, // Only refetch when manually invalidated
+    refetchInterval: 5000, // Refetch every 5 seconds to see new products
+    queryFn: async () => {
+      console.log('Products page: Fetching products...');
+      const response = await fetch('/api/products');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Products page: Got', data.length, 'products');
+      return data;
+    }
   })
 
   const { data: categories = [], refetch: refetchCategories, isLoading: categoriesLoading } = useQuery<Category[]>({
@@ -253,6 +263,8 @@ export default function Products() {
   if (isLoading) {
     return <div className="p-6">Loading products...</div>
   }
+
+
 
   return (
     <div className="space-y-6">
@@ -630,7 +642,7 @@ export default function Products() {
         ))}
       </div>
 
-      {products.length === 0 && (
+      {products.length === 0 && !isLoading && (
         <Card>
           <CardContent className="text-center py-10">
             <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -645,6 +657,24 @@ export default function Products() {
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {/* Products summary */}
+      {products.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-blue-900">
+                {products.length} Product{products.length !== 1 ? 's' : ''} in Catalog
+              </h3>
+              <p className="text-blue-700 text-sm mt-1">
+                Active products: {products.filter(p => p.isActive).length} | 
+                Total stock: {products.reduce((sum, p) => sum + p.stock, 0)} units
+              </p>
+            </div>
+            <Package className="w-8 h-8 text-blue-600" />
+          </div>
+        </div>
       )}
     </div>
   )
