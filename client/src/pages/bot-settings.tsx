@@ -116,53 +116,61 @@ export default function BotSettings() {
     placeholder?: string
     type?: 'text' | 'textarea' | 'number'
   }) => {
-    const currentValue = getSetting(settingKey)
-    const [value, setValue] = useState(currentValue)
-    const [hasChanged, setHasChanged] = useState(false)
-    const [isInitialized, setIsInitialized] = useState(false)
+    const serverValue = getSetting(settingKey)
+    const [value, setValue] = useState('')
+    const [hasInitialized, setHasInitialized] = useState(false)
 
-    // Update local value when server data changes
+    // Initialize value from server only once
     React.useEffect(() => {
-      if (currentValue !== undefined && (!isInitialized || currentValue !== value)) {
-        setValue(currentValue)
-        setIsInitialized(true)
-        setHasChanged(false)
+      if (!hasInitialized && serverValue) {
+        setValue(serverValue)
+        setHasInitialized(true)
       }
-    }, [currentValue, isInitialized, value])
+    }, [serverValue, hasInitialized])
 
-    const handleChange = (newValue: string) => {
-      setValue(newValue)
-      setHasChanged(newValue !== currentValue)
-    }
+    const hasChanged = value !== serverValue
+    const isLoading = updateSettingMutation.isPending
 
     const handleSave = () => {
       updateSetting(settingKey, value)
-      setHasChanged(false)
+    }
+
+    const handleReset = () => {
+      setValue(serverValue)
     }
 
     if (type === 'textarea') {
       return (
         <div className="space-y-2">
           <Label>{label}</Label>
-          <div className="flex gap-2">
-            <Textarea
-              value={value}
-              onChange={(e) => handleChange(e.target.value)}
-              placeholder={placeholder}
-              rows={4}
-              className="flex-1"
-            />
-            {hasChanged && (
+          <Textarea
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
+            rows={4}
+            className="w-full"
+          />
+          {hasChanged && (
+            <div className="flex gap-2">
               <Button
                 onClick={handleSave}
-                disabled={updateSettingMutation.isPending}
+                disabled={isLoading}
                 size="sm"
-                className="shrink-0"
+                className="flex items-center gap-2"
               >
                 <Save className="w-4 h-4" />
+                {isLoading ? 'Saving...' : 'Save Changes'}
               </Button>
-            )}
-          </div>
+              <Button
+                onClick={handleReset}
+                disabled={isLoading}
+                variant="outline"
+                size="sm"
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
         </div>
       )
     }
@@ -170,25 +178,34 @@ export default function BotSettings() {
     return (
       <div className="space-y-2">
         <Label>{label}</Label>
-        <div className="flex gap-2">
-          <Input
-            type={type}
-            value={value}
-            onChange={(e) => handleChange(e.target.value)}
-            placeholder={placeholder}
-            className="flex-1"
-          />
-          {hasChanged && (
+        <Input
+          type={type}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
+          className="w-full"
+        />
+        {hasChanged && (
+          <div className="flex gap-2">
             <Button
               onClick={handleSave}
-              disabled={updateSettingMutation.isPending}
+              disabled={isLoading}
               size="sm"
-              className="shrink-0"
+              className="flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
+              {isLoading ? 'Saving...' : 'Save Changes'}
             </Button>
-          )}
-        </div>
+            <Button
+              onClick={handleReset}
+              disabled={isLoading}
+              variant="outline"
+              size="sm"
+            >
+              Cancel
+            </Button>
+          </div>
+        )}
       </div>
     )
   }
