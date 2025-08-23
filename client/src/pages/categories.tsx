@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { FolderOpen, Plus, Edit, Trash2, Package } from 'lucide-react'
 import { apiRequest } from '@/lib/queryClient'
@@ -42,6 +42,10 @@ export default function Categories() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/categories'] })
       setIsAddDialogOpen(false)
+      // Reset form fields
+      setTimeout(() => {
+        setIsAddDialogOpen(false)
+      }, 100)
       toast({
         title: "Success",
         description: "Category created successfully",
@@ -121,6 +125,12 @@ export default function Categories() {
     const [name, setName] = useState(category?.name || '')
     const [description, setDescription] = useState(category?.description || '')
 
+    // Reset form when category changes (for edit mode)
+    useEffect(() => {
+      setName(category?.name || '')
+      setDescription(category?.description || '')
+    }, [category])
+
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault()
       if (name.trim()) {
@@ -167,7 +177,7 @@ export default function Categories() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-background text-foreground min-h-screen p-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Categories</h1>
@@ -183,6 +193,9 @@ export default function Categories() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New Category</DialogTitle>
+              <DialogDescription>
+                Add a new category to organize your products. Categories help customers find items easily.
+              </DialogDescription>
             </DialogHeader>
             <CategoryForm
               onSubmit={(data) => createCategoryMutation.mutate(data)}
@@ -270,6 +283,9 @@ export default function Categories() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Category</DialogTitle>
+            <DialogDescription>
+              Update the category name and description to better organize your products.
+            </DialogDescription>
           </DialogHeader>
           {editingCategory && (
             <CategoryForm
