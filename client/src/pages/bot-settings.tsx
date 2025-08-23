@@ -398,68 +398,6 @@ export default function BotSettings() {
                 placeholder="Welcome to our shop! Browse our products and place orders easily."
                 type="textarea"
               />
-              <SettingInput
-                settingKey="help_message"
-                label="Help Message"
-                placeholder="Available commands and how to use the bot..."
-                type="textarea"
-              />
-              <SettingInput
-                settingKey="order_confirmation"
-                label="Order Confirmation Message"
-                placeholder="Thank you for your order! We'll process it shortly."
-                type="textarea"
-              />
-              <SettingInput
-                settingKey="contact_message"
-                label="Contact Information"
-                placeholder="Contact our support team..."
-                type="textarea"
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Custom Commands</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <SettingInput
-                  settingKey="custom_command_1"
-                  label="Custom Command 1"
-                  placeholder="info"
-                />
-                <SettingInput
-                  settingKey="custom_response_1"
-                  label="Response 1"
-                  placeholder="Response to command 1"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <SettingInput
-                  settingKey="custom_command_2"
-                  label="Custom Command 2"
-                  placeholder="support"
-                />
-                <SettingInput
-                  settingKey="custom_response_2"
-                  label="Response 2"
-                  placeholder="Response to command 2"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <SettingInput
-                  settingKey="custom_command_3"
-                  label="Custom Command 3"
-                  placeholder="faq"
-                />
-                <SettingInput
-                  settingKey="custom_response_3"
-                  label="Response 3"
-                  placeholder="Response to command 3"
-                />
-              </div>
             </CardContent>
           </Card>
         </div>
