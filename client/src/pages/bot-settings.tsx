@@ -30,9 +30,19 @@ export default function BotSettings() {
 
   const { data: settings = [], isLoading } = useQuery<BotSetting[]>({
     queryKey: ['/api/bot/settings'],
-    refetchInterval: false, // Disable auto-refresh to prevent form reset
-    refetchOnWindowFocus: false, // Disable focus refresh
-    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    queryFn: async () => {
+      console.log('🔧 Fetching bot settings for admin form...')
+      const response = await fetch('/api/bot/settings')
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      const data = await response.json()
+      console.log('🔧 Bot settings loaded for form:', data.length, 'items')
+      return data
+    },
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    staleTime: 0, // Always fetch fresh data
   })
 
   const { data: botStatus } = useQuery<BotStatus>({
