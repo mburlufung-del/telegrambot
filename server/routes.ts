@@ -744,7 +744,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // For now, generate a placeholder PNG that's Telegram-compatible
       const imageId = `product-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const imageUrl = `/api/placeholder/image/${imageId}.jpg`;
+      // Use direct external image URL that Telegram can access reliably
+      const imageUrl = `https://picsum.photos/300/200?random=${imageId}`;
       
       console.log("Generated image URL for Telegram:", imageUrl);
       
@@ -759,34 +760,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve placeholder images as PNG for Telegram compatibility
-  // Handle any extension (.jpg, .png, etc.) and serve PNG
+  // Serve placeholder images - use direct external URLs for Telegram compatibility
   app.get("/api/placeholder/image/:filename", (req, res) => {
-    const filename = req.params.filename;
+    // For maximum compatibility, redirect directly to a known working image
+    // Use picsum.photos which provides reliable placeholder images that work with Telegram
+    const imageUrl = `https://picsum.photos/300/200?random=${Date.now()}`;
     
-    // Create a 1x1 transparent PNG as a minimal valid image
-    // This is a valid PNG that Telegram can process
-    const pngBuffer = Buffer.from([
-      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-      0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-      0x49, 0x48, 0x44, 0x52, // IHDR
-      0x00, 0x00, 0x00, 0x01, // Width: 1
-      0x00, 0x00, 0x00, 0x01, // Height: 1  
-      0x08, 0x06, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-      0x1F, 0x15, 0xC4, 0x89, // CRC
-      0x00, 0x00, 0x00, 0x0B, // IDAT chunk length
-      0x49, 0x44, 0x41, 0x54, // IDAT
-      0x78, 0x9C, 0x62, 0x00, 0x02, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D, // Compressed data (transparent pixel)
-      0x0A, 0x2D, 0xB4, // CRC
-      0x00, 0x00, 0x00, 0x00, // IEND chunk length
-      0x49, 0x45, 0x4E, 0x44, // IEND
-      0xAE, 0x42, 0x60, 0x82  // CRC
-    ]);
-    
-    res.setHeader('Content-Type', 'image/png');
-    res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour cache
-    res.setHeader('Content-Length', pngBuffer.length.toString());
-    res.send(pngBuffer);
+    res.redirect(302, imageUrl);
   });
 
   // Get pricing tiers for a product
