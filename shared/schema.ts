@@ -146,8 +146,10 @@ export const insertProductSchema = createInsertSchema(products).omit({
   updatedAt: true,
 }).transform((data: any) => ({
   ...data,
-  // Convert empty strings to null for optional decimal fields
-  compareAtPrice: data.compareAtPrice === "" ? null : data.compareAtPrice,
+  // Convert number fields to strings for decimal database columns
+  price: String(data.price),
+  compareAtPrice: data.compareAtPrice === "" || data.compareAtPrice == null ? null : String(data.compareAtPrice),
+  // Convert empty strings to null for optional fields
   maxOrderQuantity: data.maxOrderQuantity === "" || data.maxOrderQuantity === 0 ? null : data.maxOrderQuantity,
   imageUrl: data.imageUrl === "" ? null : data.imageUrl,
   categoryId: data.categoryId === "" ? null : data.categoryId,
