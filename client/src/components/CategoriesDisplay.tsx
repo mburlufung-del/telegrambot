@@ -67,10 +67,22 @@ export function CategoriesDisplay({ products }: CategoriesDisplayProps) {
     );
   }
 
-  console.log('CategoriesDisplay render - categories length:', categories.length);
-  console.log('CategoriesDisplay render - categories:', categories);
+  console.log('=== CategoriesDisplay RENDER ===');
+  console.log('Categories length:', categories.length);
+  console.log('Is loading:', isLoading);
+  console.log('Error:', error);
+  console.log('Categories data:', categories);
 
-  if (categories.length === 0 && !isLoading) {
+  // Always show something, even during loading
+  if (isLoading) {
+    console.log('CategoriesDisplay: Still loading, showing spinner...');
+  } else if (categories.length === 0) {
+    console.log('CategoriesDisplay: No categories found after loading');
+  } else {
+    console.log('CategoriesDisplay: Rendering', categories.length, 'categories');
+  }
+
+  if (categories.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
         <Folder className="w-12 h-12 mx-auto mb-3 text-gray-300" />

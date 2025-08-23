@@ -11,11 +11,15 @@ function DirectCategoriesTest() {
   const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
+    console.log('DirectCategoriesTest: Starting fetch...')
     const fetchCategories = async () => {
       try {
+        console.log('DirectCategoriesTest: Making API call...')
         const response = await fetch('/api/categories')
+        console.log('DirectCategoriesTest: Response status:', response.status)
         const data = await response.json()
         console.log('DirectCategoriesTest: Got categories:', data.length)
+        console.log('DirectCategoriesTest: Categories:', data.map((c: any) => c.name).join(', '))
         setCategories(data)
       } catch (error) {
         console.error('DirectCategoriesTest error:', error)
@@ -23,22 +27,42 @@ function DirectCategoriesTest() {
       setLoading(false)
     }
     fetchCategories()
+    
+    // Also set interval for testing
+    const interval = setInterval(fetchCategories, 5000)
+    return () => clearInterval(interval)
   }, [])
 
   if (loading) return <div className="text-sm">Loading categories...</div>
 
+  console.log('DirectCategoriesTest render - categories:', categories.length, 'loading:', loading)
+
   return (
     <div className="space-y-2">
-      <p className="text-sm text-green-600">✓ Found {categories.length} categories</p>
-      <div className="grid grid-cols-2 gap-2">
-        {categories.slice(0, 8).map((cat: any) => (
-          <div key={cat.id} className="text-xs p-2 bg-blue-100 rounded">
-            {cat.name}
+      <p className="text-sm font-bold text-blue-600">
+        DirectCategoriesTest Status: {loading ? 'Loading...' : `✓ Found ${categories.length} categories`}
+      </p>
+      
+      {!loading && categories.length > 0 && (
+        <>
+          <div className="grid grid-cols-3 gap-2">
+            {categories.slice(0, 12).map((cat: any, index: number) => (
+              <div key={cat.id || index} className="text-xs p-2 bg-blue-100 rounded border">
+                <strong>{cat.name}</strong>
+                {cat.isActive && <span className="text-green-600"> ✓</span>}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      {categories.length > 8 && (
-        <p className="text-xs text-gray-600">...and {categories.length - 8} more</p>
+          {categories.length > 12 && (
+            <p className="text-xs text-gray-600 font-medium">...and {categories.length - 12} more categories</p>
+          )}
+        </>
+      )}
+      
+      {!loading && categories.length === 0 && (
+        <div className="text-red-600 text-sm font-medium">
+          No categories found! Check API /api/categories
+        </div>
       )}
     </div>
   )
