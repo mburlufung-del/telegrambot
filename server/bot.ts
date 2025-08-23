@@ -2089,21 +2089,26 @@ Select your preferred payment option:`;
       return;
     }
 
-    let message = `💳 **${paymentMethod.name} Payment**
+    // Helper function to escape Markdown special characters
+    const escapeMarkdown = (text: string) => {
+      return text.replace(/[_*[\]()~`>#+-=|{}.!\\]/g, '\\$&');
+    };
 
-**Order Number:** ${orderNumber}
-**Total Amount:** $${total.toFixed(2)}`;
+    let message = `💳 *${escapeMarkdown(paymentMethod.name)} Payment*
+
+*Order Number:* ${orderNumber}
+*Total Amount:* $${total.toFixed(2)}`;
 
     if (paymentMethod.description) {
-      message += `\n\n${paymentMethod.description}`;
+      message += `\n\n${escapeMarkdown(paymentMethod.description)}`;
     }
 
     if (paymentMethod.paymentInfo) {
-      message += `\n\n**Payment Information:**\n${paymentMethod.paymentInfo}`;
+      message += `\n\n*Payment Information:*\n${escapeMarkdown(paymentMethod.paymentInfo)}`;
     }
 
     if (paymentMethod.instructions) {
-      message += `\n\n**Instructions:**\n${paymentMethod.instructions}`;
+      message += `\n\n*Instructions:*\n${escapeMarkdown(paymentMethod.instructions)}`;
     }
 
     // Load dynamic operator settings
@@ -2111,7 +2116,7 @@ Select your preferred payment option:`;
     const operatorContactSetting = botSettings.find(s => s.key === 'operator_username');
     const operatorContact = operatorContactSetting?.value || '@murzion';
     
-    message += `\n\n📸 **After Payment:**
+    message += `\n\n📸 *After Payment:*
 Send screenshot of payment confirmation to ${operatorContact}
 Include your Order Number: ${orderNumber}`;
 
