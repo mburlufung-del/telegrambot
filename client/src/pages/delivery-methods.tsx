@@ -64,10 +64,23 @@ export default function DeliveryMethods() {
 
   const createMutation = useMutation({
     mutationFn: async (data: InsertDeliveryMethod) => {
-      return await apiRequest('/api/delivery-methods', {
+      console.log("🔍 CREATE FRONTEND: Sending data:", data);
+      const response = await fetch('/api/delivery-methods', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data)
-      })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log("🔍 CREATE FRONTEND: Received result:", result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/delivery-methods'] })
@@ -79,6 +92,7 @@ export default function DeliveryMethods() {
       })
     },
     onError: (error: any) => {
+      console.error("❌ CREATE FRONTEND: Error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to create delivery method",
