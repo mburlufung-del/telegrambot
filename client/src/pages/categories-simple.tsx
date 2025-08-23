@@ -102,7 +102,7 @@ export default function Categories() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Categories</h1>
@@ -115,31 +115,33 @@ export default function Categories() {
               Add Category
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <DialogHeader>
-              <DialogTitle>Create New Category</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-gray-900 dark:text-gray-100">Create New Category</DialogTitle>
+              <DialogDescription className="text-gray-600 dark:text-gray-300">
                 Add a new category to organize your products. Categories help customers find items easily.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreateCategory} className="space-y-4">
+            <form onSubmit={handleCreateCategory} className="space-y-4 text-gray-900 dark:text-gray-100">
               <div>
-                <Label htmlFor="category-name">Category Name *</Label>
+                <Label htmlFor="category-name" className="text-gray-700 dark:text-gray-200">Category Name *</Label>
                 <Input
                   id="category-name"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   placeholder="Enter category name..."
+                  className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="category-description">Description</Label>
+                <Label htmlFor="category-description" className="text-gray-700 dark:text-gray-200">Description</Label>
                 <Textarea
                   id="category-description"
                   value={newCategoryDescription}
                   onChange={(e) => setNewCategoryDescription(e.target.value)}
                   placeholder="Enter category description..."
+                  className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
                   rows={3}
                 />
               </div>
