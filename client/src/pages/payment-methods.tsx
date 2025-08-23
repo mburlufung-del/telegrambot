@@ -38,10 +38,25 @@ export default function PaymentMethods() {
   });
 
   // Fetch payment methods
-  const { data: paymentMethods = [], isLoading } = useQuery<PaymentMethod[]>({
-    queryKey: ['/api/payment-methods'],
+  const { data: paymentMethods = [], isLoading, error } = useQuery<PaymentMethod[]>({
+    queryKey: ['payment-methods-admin'],
+    queryFn: async () => {
+      console.log('🔧 Fetching payment methods for admin page...');
+      const response = await fetch('/api/payment-methods');
+      
+      if (!response.ok) {
+        console.error('❌ Payment methods fetch failed:', response.status, response.statusText);
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('✅ Payment methods loaded:', data.length, 'methods');
+      console.log('📋 Methods:', data.map(m => `${m.name} (${m.id})`));
+      return data;
+    },
     staleTime: 0,
-    refetchOnMount: true
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   // Create payment method mutation
@@ -53,7 +68,8 @@ export default function PaymentMethods() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/payment-methods'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-methods-admin'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-methods-dashboard'] });
       resetForm();
       toast({
         title: "Success",
@@ -78,7 +94,8 @@ export default function PaymentMethods() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/payment-methods'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-methods-admin'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-methods-dashboard'] });
       resetForm();
       toast({
         title: "Success",
@@ -208,7 +225,36 @@ export default function PaymentMethods() {
   };
 
   if (isLoading) {
-    return <div className="p-6">Loading payment methods...</div>;
+    return (
+      <div className="p-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
+          <div className="space-y-4">
+            <div className="h-32 bg-gray-200 rounded"></div>
+            <div className="h-32 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <h3 className="text-red-800 font-medium">Error loading payment methods</h3>
+          <p className="text-red-600 text-sm mt-1">{String(error)}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="mt-3"
+            size="sm"
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
