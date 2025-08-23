@@ -35,9 +35,11 @@ export function CategoriesDisplay({ products }: CategoriesDisplayProps) {
       console.log('📝 Categories:', data.map((c: Category) => c.name).join(', '));
       return data;
     },
-    refetchInterval: 2000,
+    refetchInterval: 1000, // Refresh every second
     staleTime: 0,
     gcTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   // Auto-refresh on mount and when products change
@@ -65,19 +67,31 @@ export function CategoriesDisplay({ products }: CategoriesDisplayProps) {
     );
   }
 
-  if (categories.length === 0) {
+  console.log('CategoriesDisplay render - categories length:', categories.length);
+  console.log('CategoriesDisplay render - categories:', categories);
+
+  if (categories.length === 0 && !isLoading) {
     return (
       <div className="text-center py-8 text-gray-500">
         <Folder className="w-12 h-12 mx-auto mb-3 text-gray-300" />
         <p className="text-sm font-medium">No categories found</p>
         <p className="text-xs text-gray-400 mt-1">Create your first category to start organizing products</p>
-        <Button 
-          onClick={() => window.location.href = '/categories'}
-          size="sm" 
-          className="mt-3 bg-blue-500 hover:bg-blue-600 text-white"
-        >
-          Create Category
-        </Button>
+        <div className="mt-3 space-x-2">
+          <Button 
+            onClick={() => window.location.href = '/categories'}
+            size="sm" 
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            Create Category
+          </Button>
+          <Button 
+            onClick={() => refetch()}
+            size="sm" 
+            variant="outline"
+          >
+            Refresh
+          </Button>
+        </div>
       </div>
     );
   }
@@ -138,20 +152,43 @@ export function CategoriesDisplay({ products }: CategoriesDisplayProps) {
         </Button>
       </div>
 
-      {/* Debug panel */}
-      <div className="mt-4 pt-4 border-t text-xs text-gray-500 bg-yellow-50 p-3 rounded">
-        <p><strong>Categories Debug:</strong></p>
-        <p>Categories loaded: {categories.length}</p>
-        <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
-        <p>Error: {error ? String(error) : 'None'}</p>
-        <p>Categories: {categories.map(c => c.name).join(', ') || 'None'}</p>
-        <Button 
-          onClick={() => refetch()}
-          size="sm" 
-          className="mt-2 bg-blue-500 hover:bg-blue-600 text-white"
-        >
-          Force Refresh Categories
-        </Button>
+      {/* Debug panel - Always show */}
+      <div className="mt-4 pt-4 border-t text-xs text-gray-500 bg-blue-50 p-4 rounded border">
+        <div className="grid grid-cols-2 gap-4 mb-3">
+          <div>
+            <p><strong>Categories Status:</strong></p>
+            <p className="text-green-600">✓ Component loaded: Yes</p>
+            <p>Categories count: <span className="font-bold text-lg">{categories.length}</span></p>
+            <p>Loading: <span className={isLoading ? 'text-orange-600' : 'text-green-600'}>{isLoading ? 'Yes' : 'No'}</span></p>
+            <p>Error: <span className={error ? 'text-red-600' : 'text-green-600'}>{error ? String(error) : 'None'}</span></p>
+          </div>
+          <div>
+            <p><strong>Actions:</strong></p>
+            <Button 
+              onClick={() => refetch()}
+              size="sm" 
+              className="mt-1 mr-2 bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              Force Refresh
+            </Button>
+            <Button 
+              onClick={() => window.location.href = '/categories'}
+              size="sm" 
+              variant="outline"
+              className="mt-1"
+            >
+              Manage Categories
+            </Button>
+          </div>
+        </div>
+        {categories.length > 0 && (
+          <div>
+            <p><strong>Category Names:</strong></p>
+            <p className="text-gray-700 bg-white p-2 rounded border mt-1">
+              {categories.map(c => c.name).join(', ')}
+            </p>
+          </div>
+        )}
       </div>
     </>
   );
