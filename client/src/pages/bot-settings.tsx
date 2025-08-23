@@ -30,8 +30,9 @@ export default function BotSettings() {
 
   const { data: settings = [], isLoading } = useQuery<BotSetting[]>({
     queryKey: ['/api/bot/settings'],
-    refetchInterval: 10000, // Refresh every 10 seconds to show updates
-    refetchOnWindowFocus: true, // Refetch when window gets focus
+    refetchInterval: false, // Disable auto-refresh to prevent form reset
+    refetchOnWindowFocus: false, // Disable focus refresh
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
   })
 
   const { data: botStatus } = useQuery<BotStatus>({
@@ -46,9 +47,14 @@ export default function BotSettings() {
         body: JSON.stringify({ key, value })
       })
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/bot/settings'] })
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] })
+    onSuccess: (data) => {
+      // Update the cache immediately with the new data instead of invalidating
+      queryClient.setQueryData(['/api/bot/settings'], (oldData: BotSetting[] | undefined) => {
+        if (!oldData) return oldData
+        return oldData.map(setting => 
+          setting.key === data.key ? data : setting
+        )
+      })
       toast({
         title: "Success",
         description: "Bot setting updated successfully",
@@ -94,6 +100,10 @@ export default function BotSettings() {
     updateSettingMutation.mutate({ key, value })
   }
 
+  const refreshSettings = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/bot/settings'] })
+  }
+
   const SettingInput = ({ settingKey, label, placeholder, type = 'text' }: {
     settingKey: string
     label: string
@@ -103,12 +113,15 @@ export default function BotSettings() {
     const currentValue = getSetting(settingKey)
     const [value, setValue] = useState(currentValue)
     const [hasChanged, setHasChanged] = useState(false)
+    const [isInitialized, setIsInitialized] = useState(false)
 
-    // Update local value when the setting changes from server
+    // Only update local value on initial load, not on every server update
     React.useEffect(() => {
-      setValue(currentValue)
-      setHasChanged(false)
-    }, [currentValue])
+      if (!isInitialized && currentValue) {
+        setValue(currentValue)
+        setIsInitialized(true)
+      }
+    }, [currentValue, isInitialized])
 
     const handleChange = (newValue: string) => {
       setValue(newValue)
@@ -185,6 +198,16 @@ export default function BotSettings() {
           <p className="text-gray-600 mt-2">Configure your Telegram bot settings. Changes sync instantly.</p>
         </div>
         <div className="flex gap-2 items-center">
+          <Button 
+            onClick={refreshSettings} 
+            variant="outline" 
+            size="sm"
+            className="flex items-center gap-2"
+            disabled={isLoading}
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh Settings
+          </Button>
           {botStatus && (
             <div className={`flex items-center px-3 py-2 rounded-lg text-sm ${
               botStatus.status === 'online' 
