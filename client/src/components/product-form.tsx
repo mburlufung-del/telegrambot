@@ -59,9 +59,11 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: categories = [] } = useQuery<Category[]>({
+  const { data: categories = [], refetch: refetchCategories } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
     staleTime: 0, // Always fetch fresh categories to show newly added ones
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const form = useForm<ProductFormData>({

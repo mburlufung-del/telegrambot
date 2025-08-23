@@ -32,9 +32,10 @@ export default function Products() {
     refetchInterval: false, // Only refetch when manually invalidated
   })
 
-  const { data: categories = [] } = useQuery<Category[]>({
+  const { data: categories = [], refetch: refetchCategories } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
     staleTime: 0, // Always fetch fresh categories to show newly added ones
+    refetchOnMount: true,
   })
 
   const createProductMutation = useMutation({
