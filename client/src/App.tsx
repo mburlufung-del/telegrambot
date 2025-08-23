@@ -1,6 +1,7 @@
 import { Switch, Route, Link, useLocation } from 'wouter'
 import { useQuery } from '@tanstack/react-query'
 import Dashboard from './pages/dashboard'
+import FreshDashboard from './pages/fresh-dashboard'
 import Products from './pages/products'
 import Categories from './pages/categories'
 import Orders from './pages/orders'
@@ -103,7 +104,8 @@ function App() {
         </div>
         
         <Switch>
-          <Route path="/" component={Dashboard} />
+          <Route path="/" component={FreshDashboard} />
+          <Route path="/old-dashboard" component={Dashboard} />
           <Route path="/products" component={Products} />
           <Route path="/categories" component={Categories} />
           <Route path="/orders" component={Orders} />

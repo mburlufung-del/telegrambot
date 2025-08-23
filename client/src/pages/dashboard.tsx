@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Users, ShoppingCart, DollarSign, MessageSquare, Bot, CheckCircle, Package, Settings, CreditCard, Mail, AlertCircle, RefreshCw } from 'lucide-react'
+import type { Product, BotSettings } from '@shared/schema'
 
 interface DashboardStats {
   totalUsers: number
@@ -18,20 +19,9 @@ interface BotStatus {
   mode: 'polling' | 'webhook'
 }
 
-interface BotSetting {
-  id: string
-  key: string
-  value: string
-  updatedAt: string
-}
+// Remove local interface - will use BotSettings from shared schema
 
-interface Product {
-  id: string
-  name: string
-  price: number
-  stock: number
-  isActive: boolean
-}
+// Remove local interface - will use Product from shared schema
 
 export default function Dashboard() {
   const queryClient = useQueryClient()
@@ -46,10 +36,29 @@ export default function Dashboard() {
     refetchInterval: 2 * 60 * 1000, // 2 minutes
   })
 
-  const { data: botSettings = [], isLoading: settingsLoading } = useQuery<BotSetting[]>({
+  const { data: botSettings = [], isLoading: settingsLoading, error: settingsError } = useQuery<BotSettings[]>({
     queryKey: ['/api/bot/settings'],
-    refetchInterval: 10 * 1000, // Refresh every 10 seconds for testing
-    staleTime: 1 * 1000, // Consider data fresh for 1 second
+    refetchInterval: false,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+    retry: 1,
+    queryFn: async () => {
+      console.log('Fetching bot settings from API...')
+      try {
+        const response = await fetch('/api/bot/settings')
+        console.log('API Response status:', response.status)
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+        const data = await response.json()
+        console.log('Fetched bot settings data:', data)
+        return data
+      } catch (error) {
+        console.error('Error fetching bot settings:', error)
+        throw error
+      }
+    }
   })
 
   const { data: products = [] } = useQuery<Product[]>({
@@ -57,11 +66,13 @@ export default function Dashboard() {
     refetchInterval: false, // Only refetch manually
   })
 
-  const refreshDashboard = () => {
-    queryClient.invalidateQueries({ queryKey: ['/api/bot/settings'] })
-    queryClient.invalidateQueries({ queryKey: ['/api/products'] })
-    queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] })
-    queryClient.invalidateQueries({ queryKey: ['/api/bot/status'] })
+  const refreshDashboard = async () => {
+    console.log('Refreshing dashboard data...')
+    await queryClient.invalidateQueries({ queryKey: ['/api/bot/settings'] })
+    await queryClient.invalidateQueries({ queryKey: ['/api/products'] })
+    await queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] })
+    await queryClient.invalidateQueries({ queryKey: ['/api/bot/status'] })
+    console.log('Dashboard refresh triggered')
   }
 
   if (statsLoading) {
@@ -72,6 +83,12 @@ export default function Dashboard() {
   
   const getSetting = (key: string) => {
     if (settingsLoading) return 'Loading...'
+    if (settingsError) {
+      console.error('Settings error:', settingsError)
+      return 'Error loading'
+    }
+    console.log('All bot settings:', botSettings)
+    console.log('Settings length:', botSettings?.length)
     const setting = botSettings.find(s => s.key === key)
     console.log(`Getting setting ${key}:`, setting)
     return setting?.value || 'Not set'
