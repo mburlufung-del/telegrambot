@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { CategoriesDisplay } from '@/components/CategoriesDisplay'
 import { Users, ShoppingCart, DollarSign, MessageSquare, Bot, CheckCircle, Package, Settings, CreditCard, Mail, AlertCircle, RefreshCw, Tag, Folder } from 'lucide-react'
 import type { Product, BotSettings, Category } from '@shared/schema'
 
@@ -66,24 +67,7 @@ export default function Dashboard() {
     refetchInterval: false, // Only refetch manually
   })
 
-  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError, refetch: refetchCategories } = useQuery<Category[]>({
-    queryKey: ['/api/categories'],
-    refetchInterval: 2000, // Refetch every 2 seconds 
-    staleTime: 0,
-    gcTime: 0, // Don't cache
-    retry: 2,
-    queryFn: async () => {
-      console.log('Dashboard fetching categories...');
-      const response = await fetch('/api/categories');
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      const data = await response.json();
-      console.log('Dashboard categories received:', data.length, 'categories');
-      console.log('Categories:', data.map(c => c.name).join(', '));
-      return data;
-    }
-  })
+  // Categories are now handled by the CategoriesDisplay component
 
   const refreshDashboard = async () => {
     console.log('Refreshing dashboard data...')
@@ -318,103 +302,7 @@ export default function Dashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {categoriesLoading ? (
-            <div className="text-center py-8 text-gray-500">
-              <p className="text-sm">Loading categories...</p>
-            </div>
-          ) : categoriesError ? (
-            <div className="text-center py-8 text-red-500">
-              <p className="text-sm">Error loading categories: {String(categoriesError)}</p>
-              <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/categories'] })} size="sm" className="mt-2">
-                Retry
-              </Button>
-            </div>
-          ) : categories.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Folder className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-sm font-medium">No categories found</p>
-              <p className="text-xs text-gray-400 mt-1">Create your first category to start organizing products</p>
-              <Button 
-                onClick={() => window.location.href = '/categories'}
-                size="sm" 
-                className="mt-3 bg-blue-500 hover:bg-blue-600 text-white"
-              >
-                Create Category
-              </Button>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                {categories.map((category) => {
-                  const categoryProducts = products.filter(p => p.categoryId === category.id);
-                  const activeInCategory = categoryProducts.filter(p => p.isActive).length;
-                  
-                  return (
-                    <div key={category.id} className="border rounded-lg p-4 bg-gradient-to-br from-blue-50 to-indigo-100 hover:from-blue-100 hover:to-indigo-200 transition-all duration-200 shadow-sm hover:shadow-md">
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="font-bold text-base text-gray-900 truncate">{category.name}</h3>
-                        <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          category.isActive 
-                            ? 'bg-green-100 text-green-700 border border-green-200' 
-                            : 'bg-gray-100 text-gray-600 border border-gray-200'
-                        }`}>
-                          {category.isActive ? '✓ Active' : '○ Inactive'}
-                        </div>
-                      </div>
-                      
-                      {category.description ? (
-                        <p className="text-sm text-gray-700 mb-3 line-clamp-2">{category.description}</p>
-                      ) : (
-                        <p className="text-sm text-gray-500 mb-3 italic">No description</p>
-                      )}
-                      
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600 font-medium">
-                          📦 {categoryProducts.length} product{categoryProducts.length !== 1 ? 's' : ''}
-                        </span>
-                        <span className="text-green-600 font-medium">
-                          ✅ {activeInCategory} active
-                        </span>
-                      </div>
-                      
-                      {category.createdAt && (
-                        <div className="text-xs text-gray-400 mt-2">
-                          Created: {new Date(category.createdAt).toLocaleDateString()}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              
-              <div className="text-center">
-                <Button 
-                  onClick={() => window.location.href = '/categories'}
-                  variant="outline"
-                  size="sm"
-                  className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
-                >
-                  + Add More Categories
-                </Button>
-              </div>
-            </>
-          )}
-          
-          {/* Debug info - Show more details */}
-          <div className="mt-4 pt-4 border-t text-xs text-gray-500 bg-yellow-50 p-3 rounded">
-            <p><strong>Categories Debug:</strong></p>
-            <p>Categories loaded: {categories.length}</p>
-            <p>Loading: {categoriesLoading ? 'Yes' : 'No'}</p>
-            <p>Error: {categoriesError ? String(categoriesError) : 'None'}</p>
-            <p>Categories: {categories.map(c => c.name).join(', ') || 'None'}</p>
-            <Button 
-              onClick={() => refetchCategories()}
-              size="sm" 
-              className="mt-2 bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              Force Refresh Categories
-            </Button>
-          </div>
+          <CategoriesDisplay products={products} />
         </CardContent>
       </Card>
 
