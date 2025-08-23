@@ -241,9 +241,14 @@ export default function Products() {
                       )}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Categories: {categories.length} found | Loading: {categoriesLoading ? 'Yes' : 'No'}
-                  </p>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-blue-600 font-medium">
+                      {categories.length} categories available
+                    </p>
+                    {categoriesLoading && (
+                      <div className="text-xs text-orange-600 animate-pulse">Loading...</div>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="price">Price ($)</Label>

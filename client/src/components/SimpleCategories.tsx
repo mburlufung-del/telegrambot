@@ -59,25 +59,34 @@ export function SimpleCategories() {
   }
 
   return (
-    <div className="p-4 border rounded-lg bg-green-50">
-      <h3 className="font-bold text-green-800 mb-3">Categories Found: {categories.length}</h3>
+    <div className="p-6 border rounded-lg bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-200">
+      <h3 className="font-bold text-indigo-900 mb-4 text-lg">Product Categories ({categories.length})</h3>
       
       {categories.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {categories.map((category: any) => (
             <div 
               key={category.id} 
-              className="p-2 bg-white border rounded shadow-sm"
+              className="p-4 bg-gradient-to-r from-white to-blue-50 border border-blue-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
             >
-              <div className="font-semibold text-sm">{category.name}</div>
-              <div className="text-xs text-gray-500">
-                {category.isActive ? '✓ Active' : '○ Inactive'}
+              <div className="font-semibold text-gray-900 mb-2">{category.name}</div>
+              <div className="flex items-center justify-between">
+                <div className={`text-xs px-2 py-1 rounded-full font-medium ${
+                  category.isActive 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {category.isActive ? '✓ Active' : '○ Inactive'}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {new Date(category.createdAt).toLocaleDateString()}
+                </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-gray-600">No categories found</p>
+        <p className="text-gray-600 text-center py-8">No categories found</p>
       )}
     </div>
   );
