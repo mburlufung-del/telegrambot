@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from './ui/button';
 import { Folder, Tag } from 'lucide-react';
@@ -13,7 +13,7 @@ interface Category {
 
 interface Product {
   id: string;
-  categoryId: string;
+  categoryId: string | null;
   isActive: boolean;
 }
 

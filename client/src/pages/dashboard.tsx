@@ -302,7 +302,7 @@ export default function Dashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <CategoriesDisplay products={products} />
+          <CategoriesDisplay products={products || []} />
         </CardContent>
       </Card>
 
