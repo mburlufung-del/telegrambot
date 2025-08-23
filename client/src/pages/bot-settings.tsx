@@ -48,13 +48,9 @@ export default function BotSettings() {
       })
     },
     onSuccess: (data) => {
-      // Update the cache immediately with the new data instead of invalidating
-      queryClient.setQueryData(['/api/bot/settings'], (oldData: BotSetting[] | undefined) => {
-        if (!oldData) return oldData
-        return oldData.map(setting => 
-          setting.key === data.key ? data : setting
-        )
-      })
+      // Force refresh to get the latest data from server
+      queryClient.invalidateQueries({ queryKey: ['/api/bot/settings'] })
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] })
       toast({
         title: "Success",
         description: "Bot setting updated successfully",
@@ -115,13 +111,14 @@ export default function BotSettings() {
     const [hasChanged, setHasChanged] = useState(false)
     const [isInitialized, setIsInitialized] = useState(false)
 
-    // Only update local value on initial load, not on every server update
+    // Update local value when server data changes
     React.useEffect(() => {
-      if (!isInitialized && currentValue) {
+      if (currentValue !== undefined && (!isInitialized || currentValue !== value)) {
         setValue(currentValue)
         setIsInitialized(true)
+        setHasChanged(false)
       }
-    }, [currentValue, isInitialized])
+    }, [currentValue, isInitialized, value])
 
     const handleChange = (newValue: string) => {
       setValue(newValue)
