@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,6 +47,7 @@ export default function BotSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bot/settings'] })
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] })
       toast({
         title: "Success",
         description: "Bot setting updated successfully",
@@ -97,12 +99,19 @@ export default function BotSettings() {
     placeholder?: string
     type?: 'text' | 'textarea' | 'number'
   }) => {
-    const [value, setValue] = useState(getSetting(settingKey))
+    const currentValue = getSetting(settingKey)
+    const [value, setValue] = useState(currentValue)
     const [hasChanged, setHasChanged] = useState(false)
+
+    // Update local value when the setting changes from server
+    React.useEffect(() => {
+      setValue(currentValue)
+      setHasChanged(false)
+    }, [currentValue])
 
     const handleChange = (newValue: string) => {
       setValue(newValue)
-      setHasChanged(newValue !== getSetting(settingKey))
+      setHasChanged(newValue !== currentValue)
     }
 
     const handleSave = () => {

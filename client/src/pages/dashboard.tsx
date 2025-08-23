@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, ShoppingCart, DollarSign, MessageSquare, Bot, CheckCircle, Package, Settings, CreditCard, Mail, AlertCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Users, ShoppingCart, DollarSign, MessageSquare, Bot, CheckCircle, Package, Settings, CreditCard, Mail, AlertCircle, RefreshCw } from 'lucide-react'
 
 interface DashboardStats {
   totalUsers: number
@@ -33,6 +34,8 @@ interface Product {
 }
 
 export default function Dashboard() {
+  const queryClient = useQueryClient()
+
   const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
     queryKey: ['/api/dashboard/stats'],
     refetchInterval: 5 * 60 * 1000, // 5 minutes
@@ -52,6 +55,13 @@ export default function Dashboard() {
     queryKey: ['/api/products'],
     refetchInterval: false, // Only refetch manually
   })
+
+  const refreshDashboard = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/bot/settings'] })
+    queryClient.invalidateQueries({ queryKey: ['/api/products'] })
+    queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] })
+    queryClient.invalidateQueries({ queryKey: ['/api/bot/status'] })
+  }
 
   if (statsLoading) {
     return <div className="p-6">Loading dashboard...</div>
@@ -74,17 +84,28 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold">Dashboard Overview</h1>
           <p className="text-gray-600 mt-2">Admin control center for your Telegram shop bot</p>
         </div>
-        {botStatus && (
-          <div className={`flex items-center px-3 py-2 rounded-lg ${
-            botStatus.status === 'online' 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-red-100 text-red-800'
-          }`}>
-            <Bot className="w-4 h-4 mr-2" />
-            Bot {botStatus.status} ({botStatus.mode})
-            {botStatus.status === 'online' && <CheckCircle className="w-4 h-4 ml-1" />}
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={refreshDashboard} 
+            variant="outline" 
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh Data
+          </Button>
+          {botStatus && (
+            <div className={`flex items-center px-3 py-2 rounded-lg ${
+              botStatus.status === 'online' 
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-red-100 text-red-800'
+            }`}>
+              <Bot className="w-4 h-4 mr-2" />
+              Bot {botStatus.status} ({botStatus.mode})
+              {botStatus.status === 'online' && <CheckCircle className="w-4 h-4 ml-1" />}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Key Metrics */}
