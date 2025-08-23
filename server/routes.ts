@@ -270,6 +270,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Received category data:", req.body);
       const categoryData = insertCategorySchema.parse(req.body);
       console.log("Parsed category data:", categoryData);
+      
+      // Check for duplicate names and suggest alternatives
+      const existingCategories = await storage.getCategories();
+      const existingNames = existingCategories.map(cat => cat.name.toLowerCase());
+      
+      if (existingNames.includes(categoryData.name.toLowerCase())) {
+        // Auto-generate a unique name by adding a number suffix
+        let counter = 2;
+        let uniqueName = categoryData.name;
+        while (existingNames.includes(uniqueName.toLowerCase())) {
+          uniqueName = `${categoryData.name} ${counter}`;
+          counter++;
+        }
+        categoryData.name = uniqueName;
+      }
+      
       const category = await storage.createCategory(categoryData);
       res.status(201).json(category);
     } catch (error) {
@@ -277,7 +293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof Error) {
         console.error("Error details:", error.message);
       }
-      res.status(400).json({ message: "Invalid category data", error: error instanceof Error ? error.message : "Unknown error" });
+      res.status(400).json({ message: "Failed to create category", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 

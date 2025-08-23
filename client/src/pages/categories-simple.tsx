@@ -47,15 +47,21 @@ export default function Categories() {
         body: JSON.stringify(payload)
       })
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/categories'] })
       queryClient.invalidateQueries({ queryKey: ['/api/products'] })
       setIsAddDialogOpen(false)
       setNewCategoryName('')
       setNewCategoryDescription('')
+      
+      const createdName = data?.name || 'Category';
+      const wasRenamed = createdName !== newCategoryName && newCategoryName.trim() !== '';
+      
       toast({
         title: "Success",
-        description: "Category created successfully and synced with products",
+        description: wasRenamed 
+          ? `Category created as "${createdName}" (name was adjusted to avoid duplicates)`
+          : "Category created successfully and synced with products",
       })
     },
     onError: () => {
