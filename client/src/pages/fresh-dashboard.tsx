@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Bot, MessageSquare, RefreshCw } from 'lucide-react'
-import type { BotSettings } from '@shared/schema'
+import { Bot, MessageSquare, RefreshCw, CreditCard } from 'lucide-react'
+import type { BotSettings, PaymentMethod } from '@shared/schema'
 
 export default function FreshDashboard() {
   const { data: botSettings = [], isLoading, error } = useQuery<BotSettings[]>({
@@ -24,6 +24,18 @@ export default function FreshDashboard() {
     },
     retry: false,
     refetchOnMount: true,
+  })
+
+  const { data: paymentMethods = [] } = useQuery<PaymentMethod[]>({
+    queryKey: ['payment-methods-dashboard'],
+    queryFn: async () => {
+      const response = await fetch('/api/payment-methods')
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      return response.json()
+    },
+    refetchInterval: 5000, // Refresh every 5 seconds to show new additions
   })
 
   const getSetting = (key: string): string => {
@@ -83,6 +95,65 @@ export default function FreshDashboard() {
               <p className="text-sm text-gray-700 whitespace-pre-wrap">
                 {getSetting('welcome_message')}
               </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5" />
+              Active Payment Methods
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {paymentMethods.length === 0 ? (
+              <div className="text-sm text-gray-500 text-center py-4">
+                No payment methods configured
+              </div>
+            ) : (
+              paymentMethods
+                .filter(pm => pm.isActive)
+                .map((method, index) => (
+                  <div key={method.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <span className="font-medium capitalize">{method.name}</span>
+                      {method.description && (
+                        <p className="text-xs text-gray-600 mt-1">{method.description}</p>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      #{index + 1}
+                    </div>
+                  </div>
+                ))
+            )}
+            <div className="pt-2 border-t">
+              <div className="text-xs text-gray-500">
+                Total: {paymentMethods.filter(pm => pm.isActive).length} active methods
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>System Status</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Bot Status:</span>
+              <span className="font-medium text-green-600">Online</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Payment Methods:</span>
+              <span className="font-medium">{paymentMethods.filter(pm => pm.isActive).length} Active</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Configuration:</span>
+              <span className="font-medium">{botSettings.length} Settings</span>
             </div>
           </CardContent>
         </Card>
