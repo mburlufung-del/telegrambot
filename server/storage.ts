@@ -357,8 +357,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
-    // Generate unique order number
-    const orderNumber = Math.floor(100000 + Math.random() * 900000).toString();
+    // Use provided order number if available, otherwise generate unique order number
+    const orderNumber = order.orderNumber || Math.floor(100000 + Math.random() * 900000).toString();
     const orderWithNumber = {
       ...order,
       orderNumber,
