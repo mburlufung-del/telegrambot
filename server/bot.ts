@@ -983,8 +983,13 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     const responseTime = responseTimeSetting?.value || '2-4 hours';
     const businessHours = businessHoursSetting?.value || 'Monday - Friday: 9:00 AM - 6:00 PM\n• Saturday: 10:00 AM - 4:00 PM\n• Sunday: Closed';
     
-    // Helper function to escape Markdown special characters
+    // Helper function to escape Markdown special characters but preserve @ for usernames
     const escapeMarkdown = (text: string) => {
+      return text.replace(/[_*[\]()~`>#+-=|{}.!\\]/g, '\\$&');
+    };
+    
+    // Don't escape @ symbol for Telegram usernames - they need to be clickable
+    const escapeMarkdownPreserveAt = (text: string) => {
       return text.replace(/[_*[\]()~`>#+-=|{}.!\\]/g, '\\$&');
     };
     
@@ -993,7 +998,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 Need help? Our support team is here for you!
 
 📞 *Support Contact:*
-• Telegram: ${escapeMarkdown(operatorContact)}
+• Telegram: ${operatorContact}
 • Email: ${escapeMarkdown(operatorEmail)}
 
 🕒 *Business Hours:*
