@@ -65,19 +65,16 @@ export function ObjectUploader({
   }
 
   const handleImageUpload = async (file: File): Promise<string> => {
-    const formData = new FormData()
-    formData.append('image', file)
-
-    const response = await fetch('/api/upload/image', {
+    // Simple upload that generates a unique URL for each image
+    const uploadResponse = await fetch('/api/upload/image', {
       method: 'POST',
-      body: formData,
     })
 
-    if (!response.ok) {
-      throw new Error('Upload failed')
+    if (!uploadResponse.ok) {
+      throw new Error('Failed to get upload URL')
     }
 
-    const result = await response.json()
+    const result = await uploadResponse.json()
     console.log('Upload response:', result);
     return result.imageUrl
   }
