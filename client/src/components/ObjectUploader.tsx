@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Upload, X } from 'lucide-react'
 
@@ -17,6 +17,13 @@ export function ObjectUploader({
 }: ObjectUploaderProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string>(currentImageUrl || '')
+  
+  // Update preview URL when currentImageUrl changes
+  useEffect(() => {
+    if (currentImageUrl && currentImageUrl !== previewUrl) {
+      setPreviewUrl(currentImageUrl)
+    }
+  }, [currentImageUrl])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,6 +48,7 @@ export function ObjectUploader({
 
       // Clean up preview URL and set final URL
       URL.revokeObjectURL(preview)
+      console.log('Setting final preview URL:', imageUrl);
       setPreviewUrl(imageUrl)
       
       // Call completion callback
@@ -119,19 +127,19 @@ export function ObjectUploader({
               <X className="w-4 h-4" />
             </Button>
           </div>
-          <img
-            src={previewUrl}
-            alt="Product preview"
-            className="max-w-full h-32 object-cover rounded border"
-            onError={(e) => {
-              console.error('Image failed to load:', previewUrl);
-              // Try to reload with timestamp to bypass cache
-              const img = e.target as HTMLImageElement;
-              if (!img.src.includes('?t=')) {
-                img.src = previewUrl + '?t=' + Date.now();
-              }
-            }}
-          />
+          <div className="border rounded bg-white p-2">
+            <img
+              src={previewUrl}
+              alt="Product preview"
+              className="w-full h-32 object-contain rounded"
+              onLoad={() => console.log('Image loaded successfully:', previewUrl)}
+              onError={(e) => {
+                console.error('Image failed to load:', previewUrl);
+                console.error('Error event:', e);
+              }}
+            />
+          </div>
+          <p className="text-xs text-gray-500 mt-1">Preview: {previewUrl}</p>
         </div>
       )}
     </div>
