@@ -10,6 +10,7 @@ import BotSettings from './pages/bot-settings'
 import Analytics from './pages/analytics'
 import Broadcast from './pages/broadcast'
 import LiveBotActivity from './pages/live-bot-activity'
+import PaymentMethods from './pages/payment-methods'
 import NotFound from './pages/not-found'
 import { Button } from './components/ui/button'
 
@@ -30,7 +31,8 @@ import {
   Settings, 
   BarChart3,
   Radio,
-  Activity
+  Activity,
+  CreditCard
 } from 'lucide-react'
 
 function Sidebar() {
@@ -42,6 +44,7 @@ function Sidebar() {
     { path: '/categories', icon: FolderOpen, label: 'Categories' },
     { path: '/orders', icon: ShoppingCart, label: 'Orders' },
     { path: '/inquiries', icon: MessageSquare, label: 'Inquiries' },
+    { path: '/payment-methods', icon: CreditCard, label: 'Payment Methods' },
     { path: '/analytics', icon: BarChart3, label: 'Analytics' },
     { path: '/broadcast', icon: Radio, label: 'Broadcast' },
     { path: '/live-activity', icon: Activity, label: 'Live Activity' },
@@ -112,6 +115,7 @@ function App() {
           </Route>
           <Route path="/orders" component={Orders} />
           <Route path="/inquiries" component={Inquiries} />
+          <Route path="/payment-methods" component={PaymentMethods} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/broadcast" component={Broadcast} />
           <Route path="/live-activity" component={LiveBotActivity} />
