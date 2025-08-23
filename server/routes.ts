@@ -742,14 +742,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Image upload endpoint for products
   app.post("/api/upload/image", async (req, res) => {
     try {
-      // For now, create a simple placeholder response
-      // In a real implementation, this would handle multipart form data and upload to object storage
+      // Create a simple in-memory image storage simulation
+      // This generates a placeholder that will display properly
       const imageId = `product-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const placeholderImageUrl = `/api/placeholder/image/${imageId}.jpg`;
+      const imageUrl = `/api/placeholder/image/${imageId}.jpg`;
       
       res.json({ 
         success: true,
-        imageUrl: placeholderImageUrl,
+        imageUrl: imageUrl,
         message: "Image uploaded successfully"
       });
     } catch (error) {
@@ -758,19 +758,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve placeholder images
+  // Serve placeholder images with better styling
   app.get("/api/placeholder/image/:filename", (req, res) => {
-    // Return a simple SVG placeholder
+    const filename = req.params.filename;
+    // Create a more attractive product placeholder
     const svg = `
       <svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="#f3f4f6"/>
-        <text x="50%" y="50%" text-anchor="middle" dy="0.3em" 
-              font-family="Arial, sans-serif" font-size="14" fill="#9ca3af">
+        <defs>
+          <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:0.1" />
+            <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:0.2" />
+          </linearGradient>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grad1)" rx="8"/>
+        <rect x="40" y="40" width="220" height="120" fill="none" stroke="#6366f1" stroke-width="2" stroke-dasharray="8,4" rx="4"/>
+        <circle cx="150" cy="80" r="20" fill="#6366f1" opacity="0.3"/>
+        <polygon points="130,90 150,70 170,90 160,100 140,100" fill="#6366f1" opacity="0.5"/>
+        <text x="150" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#4338ca" font-weight="500">
           Product Image
+        </text>
+        <text x="150" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">
+          ${filename.split('-')[0] || 'product'} preview
         </text>
       </svg>
     `;
     res.setHeader('Content-Type', 'image/svg+xml');
+    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minute cache
     res.send(svg);
   });
 

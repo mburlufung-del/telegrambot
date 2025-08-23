@@ -70,6 +70,7 @@ export function ObjectUploader({
     }
 
     const result = await response.json()
+    console.log('Upload response:', result);
     return result.imageUrl
   }
 
