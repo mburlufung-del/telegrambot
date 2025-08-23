@@ -505,34 +505,7 @@ export default function BotSettings() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
-                Support Message Templates
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <SettingInput
-                settingKey="auto_reply_message"
-                label="Auto-Reply Message"
-                placeholder="Thank you for contacting us! We'll respond within 2-4 hours."
-                type="textarea"
-              />
-              <SettingInput
-                settingKey="inquiry_confirmation"
-                label="Inquiry Confirmation"
-                placeholder="Your inquiry has been received. Reference ID: {id}"
-                type="textarea"
-              />
-              <SettingInput
-                settingKey="offline_message"
-                label="Offline Hours Message"
-                placeholder="We're currently offline. Please send your message and we'll respond during business hours."
-                type="textarea"
-              />
-            </CardContent>
-          </Card>
+
         </div>
       )}
 
