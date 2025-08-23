@@ -32,11 +32,21 @@ export default function Products() {
     refetchInterval: false, // Only refetch when manually invalidated
   })
 
-  const { data: categories = [], refetch: refetchCategories } = useQuery<Category[]>({
+  const { data: categories = [], refetch: refetchCategories, isLoading: categoriesLoading } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
-    staleTime: 0, // Always fetch fresh categories to show newly added ones
+    staleTime: 0,
     refetchOnMount: true,
-    refetchInterval: 2000, // Auto-refresh every 2 seconds for debugging
+    refetchInterval: 3000,
+    queryFn: async () => {
+      console.log('Products page: Fetching categories...');
+      const response = await fetch('/api/categories');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Products page: Got', data.length, 'categories');
+      return data;
+    }
   })
 
   const createProductMutation = useMutation({
@@ -209,16 +219,31 @@ export default function Products() {
                     onValueChange={(value) => setFormData({...formData, categoryId: value})}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
+                      <SelectValue placeholder={
+                        categoriesLoading 
+                          ? "Loading categories..." 
+                          : categories.length === 0 
+                            ? "No categories available" 
+                            : "Select a category"
+                      } />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
+                      {categories.length > 0 ? (
+                        categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name} {category.isActive ? '✓' : '○'}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-categories" disabled>
+                          {categoriesLoading ? 'Loading...' : 'No categories found'}
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Categories: {categories.length} found | Loading: {categoriesLoading ? 'Yes' : 'No'}
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="price">Price ($)</Label>

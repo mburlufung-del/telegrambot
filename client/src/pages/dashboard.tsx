@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { CategoriesDisplay } from '@/components/CategoriesDisplay'
+import { SimpleCategories } from '@/components/SimpleCategories'
 import { Users, ShoppingCart, DollarSign, MessageSquare, Bot, CheckCircle, Package, Settings, CreditCard, Mail, AlertCircle, RefreshCw, Tag, Folder } from 'lucide-react'
 
 // Direct categories test component
@@ -366,13 +366,7 @@ export default function Dashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <CategoriesDisplay products={products || []} />
-          
-          {/* Fallback direct display */}
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-            <p className="text-sm font-semibold text-gray-700 mb-2">Direct Categories Test:</p>
-            <DirectCategoriesTest />
-          </div>
+          <SimpleCategories />
         </CardContent>
       </Card>
 
