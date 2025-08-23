@@ -68,9 +68,19 @@ export default function Dashboard() {
 
   const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
-    refetchInterval: false, // Only refetch manually
-    staleTime: 0, // Always fetch fresh categories
+    refetchInterval: false,
+    staleTime: 0,
     retry: 2,
+    queryFn: async () => {
+      console.log('Dashboard: Fetching categories...');
+      const response = await fetch('/api/categories');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Dashboard: Categories fetched:', data.length, 'items');
+      return data;
+    }
   })
 
   const refreshDashboard = async () => {
@@ -78,6 +88,7 @@ export default function Dashboard() {
     await queryClient.invalidateQueries({ queryKey: ['/api/bot/settings'] })
     await queryClient.invalidateQueries({ queryKey: ['/api/products'] })
     await queryClient.invalidateQueries({ queryKey: ['/api/categories'] })
+    await queryClient.refetchQueries({ queryKey: ['/api/categories'] })
     await queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] })
     await queryClient.invalidateQueries({ queryKey: ['/api/bot/status'] })
     console.log('Dashboard refresh triggered')
@@ -355,11 +366,14 @@ export default function Dashboard() {
             </div>
           )}
           
-          {/* Debug info */}
-          <div className="mt-4 pt-4 border-t text-xs text-gray-500">
+          {/* Debug info - Show more details */}
+          <div className="mt-4 pt-4 border-t text-xs text-gray-500 bg-gray-50 p-3 rounded">
+            <p><strong>Debug Information:</strong></p>
             <p>Categories loaded: {categories.length}</p>
             <p>Loading: {categoriesLoading ? 'Yes' : 'No'}</p>
             <p>Error: {categoriesError ? String(categoriesError) : 'None'}</p>
+            <p>First category: {categories[0] ? categories[0].name : 'N/A'}</p>
+            <p>Query key: ['/api/categories']</p>
           </div>
         </CardContent>
       </Card>
