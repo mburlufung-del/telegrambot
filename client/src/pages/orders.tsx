@@ -16,7 +16,7 @@ interface Order {
 export default function Orders() {
   const { data: orders = [], isLoading } = useQuery<Order[]>({
     queryKey: ['/api/orders'],
-    refetchInterval: 30000,
+    refetchInterval: false, // Only refetch when manually invalidated
   })
 
   const getStatusColor = (status: string) => {

@@ -28,7 +28,7 @@ export default function Products() {
 
   const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ['/api/products'],
-    refetchInterval: 30000,
+    refetchInterval: false, // Only refetch when manually invalidated
   })
 
   const createProductMutation = useMutation({

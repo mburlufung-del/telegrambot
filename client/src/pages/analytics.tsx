@@ -27,22 +27,22 @@ interface Inquiry {
 export default function Analytics() {
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ['/api/products'],
-    refetchInterval: 30000,
+    refetchInterval: false, // Only refetch when manually invalidated
   })
 
   const { data: orders = [] } = useQuery<Order[]>({
     queryKey: ['/api/orders'],
-    refetchInterval: 30000,
+    refetchInterval: false, // Only refetch when manually invalidated
   })
 
   const { data: inquiries = [] } = useQuery<Inquiry[]>({
     queryKey: ['/api/inquiries'],
-    refetchInterval: 30000,
+    refetchInterval: false, // Only refetch when manually invalidated
   })
 
   const { data: stats } = useQuery({
     queryKey: ['/api/dashboard/stats'],
-    refetchInterval: 30000,
+    refetchInterval: 5 * 60 * 1000, // 5 minutes for stats
   })
 
   // Calculate analytics

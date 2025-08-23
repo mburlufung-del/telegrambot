@@ -35,22 +35,22 @@ interface Product {
 export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
     queryKey: ['/api/dashboard/stats'],
-    refetchInterval: 10000,
+    refetchInterval: 5 * 60 * 1000, // 5 minutes
   })
 
   const { data: botStatus } = useQuery<BotStatus>({
     queryKey: ['/api/bot/status'],
-    refetchInterval: 60000,
+    refetchInterval: 2 * 60 * 1000, // 2 minutes
   })
 
   const { data: botSettings = [] } = useQuery<BotSetting[]>({
     queryKey: ['/api/bot/settings'],
-    refetchInterval: 30000,
+    refetchInterval: false, // Only refetch manually
   })
 
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ['/api/products'],
-    refetchInterval: 30000,
+    refetchInterval: false, // Only refetch manually
   })
 
   if (statsLoading) {

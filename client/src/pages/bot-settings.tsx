@@ -29,12 +29,12 @@ export default function BotSettings() {
 
   const { data: settings = [], isLoading } = useQuery<BotSetting[]>({
     queryKey: ['/api/bot/settings'],
-    refetchInterval: 30000,
+    refetchInterval: false, // Only refetch manually when updated
   })
 
   const { data: botStatus } = useQuery<BotStatus>({
     queryKey: ['/api/bot/status'],
-    refetchInterval: 10000,
+    refetchInterval: 2 * 60 * 1000, // 2 minutes
   })
 
   const updateSettingMutation = useMutation({
