@@ -140,16 +140,20 @@ export const insertPricingTierSchema = createInsertSchema(pricingTiers).omit({
   createdAt: true,
 });
 
-export const insertProductSchema = createInsertSchema(products).omit({
+export const insertProductSchema = createInsertSchema(products, {
+  price: z.string().or(z.number()).transform(val => String(val)),
+  compareAtPrice: z.string().or(z.number()).transform(val => val ? String(val) : undefined).optional().nullable(),
+  stock: z.number().or(z.string()).transform(val => Number(val)),
+  minOrderQuantity: z.number().or(z.string()).transform(val => Number(val)),
+  maxOrderQuantity: z.number().or(z.string()).transform(val => val ? Number(val) : undefined).optional().nullable(),
+}).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 }).transform((data: any) => ({
   ...data,
-  // Convert number fields to strings for decimal database columns
-  price: String(data.price),
-  compareAtPrice: data.compareAtPrice === "" || data.compareAtPrice == null ? null : String(data.compareAtPrice),
   // Convert empty strings to null for optional fields
+  compareAtPrice: data.compareAtPrice === "" || data.compareAtPrice == null ? null : data.compareAtPrice,
   maxOrderQuantity: data.maxOrderQuantity === "" || data.maxOrderQuantity === 0 ? null : data.maxOrderQuantity,
   imageUrl: data.imageUrl === "" ? null : data.imageUrl,
   categoryId: data.categoryId === "" ? null : data.categoryId,

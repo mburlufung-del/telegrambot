@@ -120,8 +120,16 @@ export function ObjectUploader({
           </div>
           <img
             src={previewUrl}
-            alt="Preview"
+            alt="Product preview"
             className="max-w-full h-32 object-cover rounded border"
+            onError={(e) => {
+              console.error('Image failed to load:', previewUrl);
+              // Try to reload with timestamp to bypass cache
+              const img = e.target as HTMLImageElement;
+              if (!img.src.includes('?t=')) {
+                img.src = previewUrl + '?t=' + Date.now();
+              }
+            }}
           />
         </div>
       )}
