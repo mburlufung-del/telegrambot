@@ -23,11 +23,19 @@ export default function DeliveryMethods() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  const { data: deliveryMethods = [], isLoading } = useQuery<DeliveryMethod[]>({
+  const { data: deliveryMethods = [], isLoading, error } = useQuery<DeliveryMethod[]>({
     queryKey: ['/api/delivery-methods'],
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
-    staleTime: 30000, // 30 seconds
+    refetchInterval: 5000, // Refresh every 5 seconds for debugging
+    refetchOnWindowFocus: true,
+    staleTime: 0, // No cache for debugging
+  })
+
+  // Debug logging
+  console.log('🚀 DeliveryMethods component render:', {
+    deliveryMethods,
+    isLoading,
+    error,
+    length: deliveryMethods?.length
   })
 
   const form = useForm<InsertDeliveryMethod>({
