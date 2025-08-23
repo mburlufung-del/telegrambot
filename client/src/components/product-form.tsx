@@ -61,6 +61,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
+    staleTime: 0, // Always fetch fresh categories to show newly added ones
   });
 
   const form = useForm<ProductFormData>({

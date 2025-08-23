@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Plus, Edit, Trash2, Package, DollarSign, Hash } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { apiRequest } from '@/lib/queryClient'
 import { useToast } from '@/hooks/use-toast'
-import type { Product } from '@shared/schema'
+import type { Product, Category } from '@shared/schema'
 
 export default function Products() {
   const [isAddingProduct, setIsAddingProduct] = useState(false)
@@ -29,6 +30,11 @@ export default function Products() {
   const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ['/api/products'],
     refetchInterval: false, // Only refetch when manually invalidated
+  })
+
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ['/api/categories'],
+    staleTime: 0, // Always fetch fresh categories to show newly added ones
   })
 
   const createProductMutation = useMutation({
@@ -196,11 +202,21 @@ export default function Products() {
                 </div>
                 <div>
                   <Label htmlFor="categoryId">Category</Label>
-                  <Input
-                    id="categoryId"
+                  <Select
                     value={formData.categoryId}
-                    onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
-                  />
+                    onValueChange={(value) => setFormData({...formData, categoryId: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="price">Price ($)</Label>

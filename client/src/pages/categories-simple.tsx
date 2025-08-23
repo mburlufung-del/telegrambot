@@ -49,12 +49,13 @@ export default function Categories() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/categories'] })
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] })
       setIsAddDialogOpen(false)
       setNewCategoryName('')
       setNewCategoryDescription('')
       toast({
         title: "Success",
-        description: "Category created successfully",
+        description: "Category created successfully and synced with products",
       })
     },
     onError: () => {
