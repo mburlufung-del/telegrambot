@@ -75,6 +75,25 @@ export class TeleShopBot {
     }
   }
 
+  // Get actual bot information from Telegram API
+  async getBotInfo() {
+    if (!this.bot) {
+      throw new Error('Bot not initialized');
+    }
+    try {
+      const me = await this.bot.getMe();
+      return {
+        id: me.id,
+        username: me.username,
+        first_name: me.first_name,
+        is_bot: me.is_bot
+      };
+    } catch (error) {
+      console.error('Failed to get bot info from Telegram:', error);
+      throw error;
+    }
+  }
+
   // Broadcast message to users
   async broadcastMessage({
     message,

@@ -1130,12 +1130,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Restarting bot...");
       await teleShopBot.restart();
+      
+      // After restart, fetch and update actual bot information
+      await updateBotInfoFromTelegram();
+      
       console.log("Bot restarted successfully");
       res.json({ message: "Bot restarted successfully" });
     } catch (error) {
       console.error("Failed to restart bot:", error);
       res.status(500).json({ 
         message: "Failed to restart bot", 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Get real bot information from Telegram API
+  app.get("/api/bot/info", async (req, res) => {
+    try {
+      const botInfo = await teleShopBot.getBotInfo();
+      res.json(botInfo);
+    } catch (error) {
+      console.error("Failed to get bot info:", error);
+      res.status(500).json({ 
+        message: "Failed to get bot information", 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Update bot information with real data from Telegram
+  app.post("/api/bot/sync-info", async (req, res) => {
+    try {
+      await updateBotInfoFromTelegram();
+      res.json({ message: "Bot information synchronized successfully" });
+    } catch (error) {
+      console.error("Failed to sync bot info:", error);
+      res.status(500).json({ 
+        message: "Failed to sync bot information", 
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
@@ -1839,6 +1871,21 @@ railway run npm run db:push</pre>
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Helper function to sync bot information from Telegram API
+async function updateBotInfoFromTelegram() {
+  try {
+    const botInfo = await teleShopBot.getBotInfo();
+    if (botInfo) {
+      // Update stored bot settings with real information
+      await storage.setBotSetting({ key: 'bot_name', value: botInfo.first_name || botInfo.username || 'Unknown Bot' });
+      await storage.setBotSetting({ key: 'bot_username', value: `@${botInfo.username}` || '@unknown' });
+      console.log(`Updated bot info: ${botInfo.first_name} (@${botInfo.username})`);
+    }
+  } catch (error) {
+    console.error('Failed to update bot info from Telegram:', error);
+  }
 }
 
 // Object storage helper functions moved to simpleObjectStorage.ts
