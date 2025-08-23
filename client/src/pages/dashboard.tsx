@@ -48,8 +48,8 @@ export default function Dashboard() {
 
   const { data: botSettings = [], isLoading: settingsLoading } = useQuery<BotSetting[]>({
     queryKey: ['/api/bot/settings'],
-    refetchInterval: 30 * 1000, // Refresh every 30 seconds
-    staleTime: 10 * 1000, // Consider data fresh for 10 seconds
+    refetchInterval: 10 * 1000, // Refresh every 10 seconds for testing
+    staleTime: 1 * 1000, // Consider data fresh for 1 second
   })
 
   const { data: products = [] } = useQuery<Product[]>({
@@ -73,6 +73,7 @@ export default function Dashboard() {
   const getSetting = (key: string) => {
     if (settingsLoading) return 'Loading...'
     const setting = botSettings.find(s => s.key === key)
+    console.log(`Getting setting ${key}:`, setting)
     return setting?.value || 'Not set'
   }
 
