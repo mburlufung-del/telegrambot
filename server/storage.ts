@@ -680,7 +680,11 @@ export class DatabaseStorage implements IStorage {
 
   // Delivery Methods
   async getDeliveryMethods(): Promise<DeliveryMethod[]> {
-    return await db.select().from(deliveryMethods).orderBy(asc(deliveryMethods.sortOrder));
+    console.log("🔍 STORAGE: Getting delivery methods from database...");
+    const methods = await db.select().from(deliveryMethods).orderBy(asc(deliveryMethods.sortOrder));
+    console.log("📦 STORAGE: Raw database result:", methods);
+    console.log("📋 STORAGE: Found", methods.length, "delivery methods");
+    return methods;
   }
 
   async getActiveDeliveryMethods(): Promise<DeliveryMethod[]> {
@@ -718,30 +722,6 @@ export class DatabaseStorage implements IStorage {
         .set({ sortOrder: method.sortOrder })
         .where(eq(deliveryMethods.id, method.id));
     }
-  }
-  // Pricing tiers operations
-  async getPricingTiers(productId: string): Promise<PricingTier[]> {
-    return await db.select().from(pricingTiers)
-      .where(eq(pricingTiers.productId, productId))
-      .orderBy(pricingTiers.minQuantity);
-  }
-
-  async createPricingTier(tierData: InsertPricingTier): Promise<PricingTier> {
-    const result = await db.insert(pricingTiers).values(tierData).returning();
-    return result[0];
-  }
-
-  async updatePricingTier(tierId: string, data: Partial<InsertPricingTier>): Promise<PricingTier | undefined> {
-    const result = await db.update(pricingTiers)
-      .set(data)
-      .where(eq(pricingTiers.id, tierId))
-      .returning();
-    return result[0];
-  }
-
-  async deletePricingTier(tierId: string): Promise<boolean> {
-    const result = await db.delete(pricingTiers).where(eq(pricingTiers.id, tierId));
-    return result.rowCount !== null && result.rowCount > 0;
   }
 }
 

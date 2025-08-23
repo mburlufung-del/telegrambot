@@ -1040,7 +1040,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delivery Methods routes
   app.get("/api/delivery-methods", async (req, res) => {
     try {
+      console.log("🔍 API: Getting delivery methods...");
       const methods = await storage.getDeliveryMethods();
+      console.log("📦 API: Found delivery methods:", methods.length, "methods");
+      console.log("📋 API: Methods data:", JSON.stringify(methods, null, 2));
       res.json(methods);
     } catch (error) {
       console.error("Error getting delivery methods:", error);
