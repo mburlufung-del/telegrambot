@@ -188,21 +188,23 @@ export default function DeliveryMethods() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold">Delivery Methods</h1>
           <p className="text-gray-600 mt-2">
             Manage delivery options for your customers
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleNew} className="bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 shadow-md px-6 py-2 font-semibold" data-testid="button-add-delivery-method">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Delivery Method
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl bg-white">
+        <div className="flex justify-start md:justify-end">
+          <Button onClick={handleNew} className="bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 shadow-lg px-8 py-3 text-lg font-semibold rounded-lg transition-all duration-200 hover:shadow-xl" data-testid="button-add-delivery-method">
+            <Plus className="w-5 h-5 mr-2" />
+            Add Delivery Method
+          </Button>
+        </div>
+      </div>
+      
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl bg-white">
             <DialogHeader>
               <DialogTitle>
                 {editingMethod ? 'Edit Delivery Method' : 'Add New Delivery Method'}
@@ -376,7 +378,6 @@ export default function DeliveryMethods() {
             </Form>
           </DialogContent>
         </Dialog>
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
@@ -431,9 +432,9 @@ export default function DeliveryMethods() {
               <Truck className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No delivery methods</h3>
               <p className="text-gray-600 mb-4">Get started by adding your first delivery method.</p>
-              <Button onClick={handleNew} className="bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 shadow-md px-6 py-3 font-semibold" data-testid="button-add-first-delivery">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Delivery Method
+              <Button onClick={handleNew} className="bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 shadow-lg px-8 py-4 text-lg font-semibold rounded-lg transition-all duration-200 hover:shadow-xl" data-testid="button-add-first-delivery">
+                <Plus className="w-5 h-5 mr-3" />
+                Add Your First Delivery Method
               </Button>
             </div>
           ) : (
