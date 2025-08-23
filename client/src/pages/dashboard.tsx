@@ -16,8 +16,8 @@ interface BotStatus {
 }
 
 export default function Dashboard() {
-  const { data: stats, isLoading: statsLoading } = useQuery<{ stats: DashboardStats }>({
-    queryKey: ['/api/dashboard/overview'],
+  const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
+    queryKey: ['/api/dashboard/stats'],
     refetchInterval: 10000,
   })
 
@@ -30,7 +30,7 @@ export default function Dashboard() {
     return <div className="p-6">Loading dashboard...</div>
   }
 
-  const dashboardStats = stats?.stats
+  const dashboardStats = stats
 
   return (
     <div className="space-y-8">
