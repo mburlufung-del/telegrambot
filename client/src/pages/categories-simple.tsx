@@ -28,6 +28,8 @@ export default function Categories() {
 
   const { data: categories = [], isLoading } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
+    staleTime: 0, // Always fetch fresh data to show newly added categories
+    refetchOnWindowFocus: true,
   })
 
   const { data: products = [] } = useQuery<Product[]>({
@@ -48,8 +50,11 @@ export default function Categories() {
       })
     },
     onSuccess: (data) => {
+      // Force refresh all category-related queries
       queryClient.invalidateQueries({ queryKey: ['/api/categories'] })
       queryClient.invalidateQueries({ queryKey: ['/api/products'] })
+      queryClient.refetchQueries({ queryKey: ['/api/categories'] })
+      
       setIsAddDialogOpen(false)
       setNewCategoryName('')
       setNewCategoryDescription('')

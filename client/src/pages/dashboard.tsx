@@ -69,6 +69,7 @@ export default function Dashboard() {
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
     refetchInterval: false, // Only refetch manually
+    staleTime: 0, // Always fetch fresh categories
   })
 
   const refreshDashboard = async () => {
@@ -371,7 +372,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Total Stock Value</span>
               <span className="font-semibold text-green-600">
-                ${products.reduce((sum, p) => sum + (p.price * p.stock), 0).toFixed(2)}
+                ${products.reduce((sum, p) => sum + (Number(p.price) * p.stock), 0).toFixed(2)}
               </span>
             </div>
           </CardContent>
