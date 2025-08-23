@@ -1,8 +1,48 @@
+import * as React from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CategoriesDisplay } from '@/components/CategoriesDisplay'
 import { Users, ShoppingCart, DollarSign, MessageSquare, Bot, CheckCircle, Package, Settings, CreditCard, Mail, AlertCircle, RefreshCw, Tag, Folder } from 'lucide-react'
+
+// Direct categories test component
+function DirectCategoriesTest() {
+  const [categories, setCategories] = React.useState([])
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories')
+        const data = await response.json()
+        console.log('DirectCategoriesTest: Got categories:', data.length)
+        setCategories(data)
+      } catch (error) {
+        console.error('DirectCategoriesTest error:', error)
+      }
+      setLoading(false)
+    }
+    fetchCategories()
+  }, [])
+
+  if (loading) return <div className="text-sm">Loading categories...</div>
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-green-600">✓ Found {categories.length} categories</p>
+      <div className="grid grid-cols-2 gap-2">
+        {categories.slice(0, 8).map((cat: any) => (
+          <div key={cat.id} className="text-xs p-2 bg-blue-100 rounded">
+            {cat.name}
+          </div>
+        ))}
+      </div>
+      {categories.length > 8 && (
+        <p className="text-xs text-gray-600">...and {categories.length - 8} more</p>
+      )}
+    </div>
+  )
+}
 import type { Product, BotSettings, Category } from '@shared/schema'
 
 interface DashboardStats {
@@ -303,6 +343,12 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <CategoriesDisplay products={products || []} />
+          
+          {/* Fallback direct display */}
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+            <p className="text-sm font-semibold text-gray-700 mb-2">Direct Categories Test:</p>
+            <DirectCategoriesTest />
+          </div>
         </CardContent>
       </Card>
 
