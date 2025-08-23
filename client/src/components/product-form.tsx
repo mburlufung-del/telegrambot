@@ -64,6 +64,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
     staleTime: 0, // Always fetch fresh categories to show newly added ones
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    refetchInterval: 2000, // Auto-refresh every 2 seconds for debugging
   });
 
   const form = useForm<ProductFormData>({

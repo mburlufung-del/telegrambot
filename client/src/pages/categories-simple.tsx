@@ -49,17 +49,18 @@ export default function Categories() {
         body: JSON.stringify(payload)
       })
     },
-    onSuccess: async (data) => {
+    onSuccess: (data) => {
       console.log('Category created successfully:', data);
       
-      // Clear all caches and force fresh data fetch
-      await queryClient.resetQueries();
+      // Clear specific query cache immediately
+      queryClient.removeQueries({ queryKey: ['/api/categories'] });
+      queryClient.removeQueries({ queryKey: ['/api/products'] });
       
-      // Force immediate refetch of categories across all components
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: ['/api/categories'] }),
-        queryClient.refetchQueries({ queryKey: ['/api/products'] }),
-      ]);
+      // Force immediate refetch
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      }, 100);
       
       setIsAddDialogOpen(false)
       setNewCategoryName('')

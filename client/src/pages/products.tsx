@@ -36,6 +36,7 @@ export default function Products() {
     queryKey: ['/api/categories'],
     staleTime: 0, // Always fetch fresh categories to show newly added ones
     refetchOnMount: true,
+    refetchInterval: 2000, // Auto-refresh every 2 seconds for debugging
   })
 
   const createProductMutation = useMutation({

@@ -68,19 +68,9 @@ export default function Dashboard() {
 
   const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
-    refetchInterval: false,
+    refetchInterval: 1000, // Refetch every second for debugging
     staleTime: 0,
     retry: 2,
-    queryFn: async () => {
-      console.log('Dashboard: Fetching categories...');
-      const response = await fetch('/api/categories');
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      const data = await response.json();
-      console.log('Dashboard: Categories fetched:', data.length, 'items');
-      return data;
-    }
   })
 
   const refreshDashboard = async () => {
