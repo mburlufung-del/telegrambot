@@ -5,6 +5,7 @@ import { teleShopBot } from "./bot";
 import { SimpleObjectStorageService } from "./simpleObjectStorage";
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { 
   insertProductSchema, 
   insertInquirySchema, 
@@ -739,24 +740,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Image upload endpoint using simple object storage
+  // Image upload endpoint - handle actual file uploads
   app.post("/api/upload/image", async (req, res) => {
     try {
-      // Use simple approach - store image in memory and serve via route
-      const imageId = `product-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const imageUrl = `/api/images/${imageId}`;
+      // Collect the raw body data to create a hash
+      let body = Buffer.alloc(0);
       
-      // Simple storage - just log the upload for now
-      console.log("Generated unique image ID:", imageId);
-      
-      res.json({ 
-        success: true,
-        imageUrl: imageUrl,
-        message: "Image upload URL generated successfully"
+      req.on('data', (chunk) => {
+        body = Buffer.concat([body, chunk]);
       });
+      
+      req.on('end', () => {
+        try {
+          // Create a hash of the file content for stable ID generation
+          const fileHash = crypto.createHash('md5').update(body).digest('hex').substring(0, 12);
+          const imageId = `product-${fileHash}`;
+          const imageUrl = `/api/images/${imageId}`;
+          
+          // Store the file data in memory (simple approach)
+          global.imageStore = global.imageStore || new Map();
+          global.imageStore.set(imageId, {
+            data: body,
+            timestamp: Date.now(),
+            contentType: req.headers['content-type'] || 'image/jpeg'
+          });
+          
+          console.log("Generated stable image ID from file content:", imageId);
+          
+          res.json({ 
+            success: true,
+            imageUrl: imageUrl,
+            message: "Image uploaded successfully"
+          });
+        } catch (error) {
+          console.error("Image processing error:", error);
+          res.status(500).json({ message: "Failed to process image" });
+        }
+      });
+      
     } catch (error) {
       console.error("Image upload error:", error);
-      res.status(500).json({ message: "Failed to generate upload URL" });
+      res.status(500).json({ message: "Failed to upload image" });
     }
   });
 
@@ -764,13 +788,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/images/:imageId", async (req, res) => {
     try {
       const imageId = req.params.imageId;
-      // Log the image request
       console.log("Serving image:", imageId);
       
-      // Get image data - for now, redirect to known working image service
-      // This ensures Telegram compatibility while showing unique images per upload
-      const imageUrl = `https://picsum.photos/300/200?random=${imageId}`;
-      res.redirect(302, imageUrl);
+      // Check if we have the actual image data
+      const imageStore = global.imageStore || new Map();
+      const imageData = imageStore.get(imageId);
+      
+      if (imageData && imageData.data) {
+        // Serve the actual uploaded image
+        res.setHeader('Content-Type', imageData.contentType);
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        res.send(imageData.data);
+        console.log("Served actual uploaded image:", imageId);
+      } else {
+        // Fallback to consistent placeholder based on imageId
+        const imageUrl = `https://picsum.photos/300/200?random=${imageId}`;
+        res.redirect(302, imageUrl);
+        console.log("Served placeholder image for:", imageId);
+      }
     } catch (error) {
       console.error("Error serving image:", error);
       const fallbackUrl = `https://picsum.photos/300/200?random=${Date.now()}`;
