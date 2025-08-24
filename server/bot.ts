@@ -2077,6 +2077,11 @@ Type your complete information below:`;
     const customerPhone = lines[1] || 'Not provided';
     const customerAddress = lines.slice(2).join('\n') || address;
 
+    // Get delivery method name from database
+    const deliveryMethods = await storage.getActiveDeliveryMethods();
+    const selectedMethod = deliveryMethods.find(m => m.id === deliveryMethod);
+    const deliveryMethodName = selectedMethod ? selectedMethod.name : deliveryMethod;
+
     const message = `✅ Confirm Customer Information
 
 Order Number: ${orderNumber}
@@ -2087,7 +2092,7 @@ Username: ${username ? `@${username}` : 'Not available'}
 Delivery Address:
 ${customerAddress}
 
-Delivery Method: ${deliveryMethod}
+Delivery Method: ${deliveryMethodName}
 
 Is this information correct?`;
 
