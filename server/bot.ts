@@ -640,9 +640,9 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     const keyboard = {
       inline_keyboard: [
         [
-          { text: '📋 Listings', callback_data: 'listings' },
-          { text: '🛒 Carts', callback_data: 'carts' },
-          { text: '📦 Orders', callback_data: 'orders' }
+          { text: '📋 Browse Products', callback_data: 'listings' },
+          { text: '🛒 My Cart', callback_data: 'carts' },
+          { text: '📦 My Orders', callback_data: 'orders' }
         ],
         [
           { text: '❤️ Wishlist', callback_data: 'wishlist' },
