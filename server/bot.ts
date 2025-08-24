@@ -395,8 +395,7 @@ export class TeleShopBot {
       }
       
       // Send welcome message with main menu directly (no separate messages)
-      // Use actual Telegram username (escape special characters for Markdown)
-      const escapedDisplayName = displayName.replace(/[_*[\]()~`>#+-=|{}.!\\]/g, '\\$&');
+      // Use actual Telegram username without escaping for clean display
       
       // Get main menu keyboard
       const keyboard = {
@@ -418,7 +417,7 @@ export class TeleShopBot {
 
       // Get admin-configured welcome message
       const welcomeMessageSetting = await storage.getBotSetting('welcome_message');
-      const defaultWelcome = `🎉 Welcome ${escapedDisplayName} to our Shop! 
+      const defaultWelcome = `🎉 Welcome ${displayName} to our Shop! 
 
 🛍️ *Your one-stop destination for amazing products*
 
@@ -428,11 +427,11 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       let welcomeMessage = welcomeMessageSetting?.value || defaultWelcome;
       
       // Replace {username} placeholder with actual username
-      welcomeMessage = welcomeMessage.replace(/{username}/g, escapedDisplayName);
+      welcomeMessage = welcomeMessage.replace(/{username}/g, displayName);
       
       // If admin message doesn't contain username placeholder, add username after "Welcome"
       if (welcomeMessageSetting?.value && !welcomeMessageSetting.value.includes('{username}')) {
-        welcomeMessage = welcomeMessage.replace(/Welcome/i, `Welcome ${escapedDisplayName}`);
+        welcomeMessage = welcomeMessage.replace(/Welcome/i, `Welcome ${displayName}`);
       }
       
       // Send combined welcome message with menu in single message
