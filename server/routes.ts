@@ -517,7 +517,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/inquiries/:id", async (req, res) => {
+  app.patch("/api/inquiries/:id", async (req, res) => {
     try {
       const inquiryData = insertInquirySchema.partial().parse(req.body);
       const inquiry = await storage.updateInquiry(req.params.id, inquiryData);

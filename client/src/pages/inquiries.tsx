@@ -24,6 +24,9 @@ export default function Inquiries() {
   const { data: inquiries = [], isLoading } = useQuery<Inquiry[]>({
     queryKey: ['/api/inquiries'],
     refetchInterval: 3 * 60 * 1000, // 3 minutes for inquiries (more important to stay current)
+    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   })
 
   const markAsReadMutation = useMutation({
