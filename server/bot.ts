@@ -1240,10 +1240,7 @@ ${businessHours}
 
     const category = await storage.getCategories().then(cats => cats.find(c => c.id === product.categoryId));
     
-    // Clear previous messages first
-    await this.clearPreviousMessages(chatId);
-    
-    // Send product image if available
+    // Clear previous messages and send product image if available
     if (product.imageUrl) {
       try {
         // Convert relative path to full URL for Telegram compatibility
@@ -1251,6 +1248,18 @@ ${businessHours}
         const fullImageUrl = product.imageUrl.startsWith('http') ? product.imageUrl : `${baseUrl}${product.imageUrl}`;
         
         console.log(`Sending product image: ${fullImageUrl}`);
+        
+        // Clear previous messages first
+        const messagesToDelete = this.botMessagesToDelete.get(chatId) || [];
+        for (const msgId of messagesToDelete) {
+          try {
+            await this.bot?.deleteMessage(chatId, msgId);
+            console.log(`[INSTANT-VANISH] Cleared previous message ${msgId} for user ${chatId}`);
+          } catch (err) {
+            // Ignore errors if message already deleted
+          }
+        }
+        this.botMessagesToDelete.set(chatId, []);
         
         const sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
           caption: `📦 *${product.name}*`,
