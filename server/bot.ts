@@ -910,7 +910,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
   private async handleRatingCommand(chatId: number, userId: string) {
     console.log('Fetching weekly ratings...');
-    const weeklyRatings = await storage.getProductRatings("7");
+    const weeklyRatings = await storage.getWeeklyRatings();
     console.log('Weekly ratings found:', weeklyRatings.length);
     
     if (weeklyRatings.length === 0) {

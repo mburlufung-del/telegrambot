@@ -104,6 +104,13 @@ export interface IStorage {
   // Product Ratings
   createProductRating(rating: InsertProductRating): Promise<ProductRating>;
   getProductRatings(productId: string): Promise<ProductRating[]>;
+  getWeeklyRatings(): Promise<{
+    productId: string;
+    productName: string;
+    averageRating: number;
+    totalRatings: number;
+    ratingCounts: { [key: number]: number };
+  }[]>;
   getProductAverageRating(productId: string): Promise<{ averageRating: number; totalRatings: number }>;
   getUserProductRating(productId: string, telegramUserId: string): Promise<ProductRating | undefined>;
   updateUserProductRating(productId: string, telegramUserId: string, rating: number): Promise<ProductRating | undefined>;
@@ -533,6 +540,62 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(productRatings)
       .where(eq(productRatings.productId, productId))
       .orderBy(desc(productRatings.createdAt));
+  }
+
+  async getWeeklyRatings(): Promise<{
+    productId: string;
+    productName: string;
+    averageRating: number;
+    totalRatings: number;
+    ratingCounts: { [key: number]: number };
+  }[]> {
+    // Get ratings from the last 7 days
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    
+    const recentRatings = await db.select({
+      productId: productRatings.productId,
+      rating: productRatings.rating,
+      productName: products.name
+    })
+    .from(productRatings)
+    .innerJoin(products, eq(productRatings.productId, products.id))
+    .where(sql`${productRatings.createdAt} >= ${weekAgo.toISOString()}`)
+    .orderBy(desc(productRatings.createdAt));
+
+    // Group by product and calculate averages
+    const productMap = new Map<string, {
+      productId: string;
+      productName: string;
+      ratings: number[];
+      ratingCounts: { [key: number]: number };
+    }>();
+
+    for (const rating of recentRatings) {
+      if (!productMap.has(rating.productId)) {
+        productMap.set(rating.productId, {
+          productId: rating.productId,
+          productName: rating.productName,
+          ratings: [],
+          ratingCounts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+        });
+      }
+      
+      const product = productMap.get(rating.productId)!;
+      product.ratings.push(rating.rating);
+      product.ratingCounts[rating.rating] = (product.ratingCounts[rating.rating] || 0) + 1;
+    }
+
+    // Calculate averages and return sorted by average rating
+    return Array.from(productMap.values()).map(product => ({
+      productId: product.productId,
+      productName: product.productName,
+      averageRating: product.ratings.length > 0 
+        ? product.ratings.reduce((sum, r) => sum + r, 0) / product.ratings.length 
+        : 0,
+      totalRatings: product.ratings.length,
+      ratingCounts: product.ratingCounts
+    })).sort((a, b) => b.averageRating - a.averageRating);
   }
 
   async getProductAverageRating(productId: string): Promise<{ averageRating: number; totalRatings: number }> {
