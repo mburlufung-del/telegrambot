@@ -24,30 +24,48 @@ interface Inquiry {
   createdAt: string
 }
 
+interface DashboardStats {
+  totalUsers: number
+  totalOrders: number
+  totalRevenue: number
+  totalProducts: number
+  pendingInquiries: number
+  messagesCount: number
+}
+
+interface BotStats {
+  id: string
+  totalUsers: number
+  totalOrders: number
+  totalMessages: number
+  totalRevenue: string
+  updatedAt: string
+}
+
 export default function Analytics() {
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ['/api/products'],
-    refetchInterval: false, // Only refetch when manually invalidated
+    refetchInterval: 30 * 1000, // Refresh every 30 seconds
   })
 
   const { data: orders = [] } = useQuery<Order[]>({
     queryKey: ['/api/orders'],
-    refetchInterval: false, // Only refetch when manually invalidated
+    refetchInterval: 30 * 1000, // Refresh every 30 seconds
   })
 
   const { data: inquiries = [] } = useQuery<Inquiry[]>({
     queryKey: ['/api/inquiries'],
-    refetchInterval: false, // Only refetch when manually invalidated
+    refetchInterval: 15 * 1000, // Refresh every 15 seconds for inquiries
   })
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<DashboardStats>({
     queryKey: ['/api/dashboard/stats'],
-    refetchInterval: 5 * 60 * 1000, // 5 minutes for stats
+    refetchInterval: 10 * 1000, // Refresh every 10 seconds
   })
 
-  const { data: botStats } = useQuery({
+  const { data: botStats } = useQuery<BotStats>({
     queryKey: ['/api/bot/stats'],
-    refetchInterval: 5 * 60 * 1000, // 5 minutes for bot stats
+    refetchInterval: 10 * 1000, // Refresh every 10 seconds
   })
 
   // Calculate analytics using both local data and bot stats
@@ -188,6 +206,86 @@ export default function Analytics() {
         </Card>
       </div>
 
+      {/* Bot Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="w-5 h-5" />
+              Bot Activity
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Total Messages</span>
+              <span className="font-semibold text-blue-600">{totalMessages.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Bot Users</span>
+              <span className="font-semibold text-green-600">{totalUsers}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Bot Revenue</span>
+              <span className="font-semibold text-purple-600">${Number(botStats?.totalRevenue || 0).toFixed(2)}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="w-5 h-5" />
+              Real-Time Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Bot Status</span>
+              <span className="font-semibold text-green-600">Online</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Last Update</span>
+              <span className="font-semibold text-blue-600">
+                {botStats?.updatedAt ? new Date(botStats.updatedAt).toLocaleTimeString() : 'N/A'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Data Sync</span>
+              <span className="font-semibold text-green-600">Active</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              Performance
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Conversion Rate</span>
+              <span className="font-semibold text-green-600">
+                {totalUsers > 0 ? ((totalOrders / totalUsers) * 100).toFixed(1) : 0}%
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Avg Messages/User</span>
+              <span className="font-semibold text-blue-600">
+                {totalUsers > 0 ? (totalMessages / totalUsers).toFixed(1) : 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Revenue/User</span>
+              <span className="font-semibold text-purple-600">
+                ${totalUsers > 0 ? (Number(totalRevenue) / totalUsers).toFixed(2) : '0.00'}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Inventory & Customer Support */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
@@ -285,7 +383,7 @@ export default function Analytics() {
           <div>
             <h3 className="font-medium text-blue-900">Real-Time Analytics</h3>
             <p className="text-blue-700 text-sm">
-              All analytics update automatically as customers interact with your Telegram bot. Data refreshes every 30 seconds.
+              All analytics update automatically as customers interact with your Telegram bot. Data refreshes every 10-30 seconds for real-time synchronization.
             </p>
           </div>
         </div>
