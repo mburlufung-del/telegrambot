@@ -131,12 +131,20 @@ export default function Inquiries() {
       </div>
 
       <div className="space-y-4">
-        {inquiries.length === 0 ? (
+        {isLoading ? (
+          <Card>
+            <CardContent className="text-center py-10">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+              <p className="text-gray-600">Loading inquiries...</p>
+            </CardContent>
+          </Card>
+        ) : !inquiries || inquiries.length === 0 ? (
           <Card>
             <CardContent className="text-center py-10">
               <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No inquiries yet</h3>
               <p className="text-gray-600">Customer messages from your Telegram bot will appear here.</p>
+              <div className="text-xs text-gray-400 mt-2">Debug: {inquiries?.length || 0} inquiries loaded</div>
             </CardContent>
           </Card>
         ) : (
