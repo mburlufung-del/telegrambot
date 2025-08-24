@@ -252,6 +252,8 @@ export class TeleShopBot {
       // Track this message for future deletion
       this.userMessages.set(chatId, [message.message_id]);
       
+      console.log(`[INSTANT-VANISH] Cleared previous messages and sent new message ${message.message_id} for user ${chatId}`);
+      
       // Set up 5-hour auto-deletion timer
       const vanishTimer = setTimeout(async () => {
         await this.clearUserChatHistory(chatId);
@@ -346,27 +348,7 @@ export class TeleShopBot {
     }
   }
 
-  // Enhanced message sending that tracks all bot messages for auto-vanish
-  private async sendAutoVanishMessage(chatId: number, text: string, options: any = {}) {
-    if (!this.bot) return;
 
-    try {
-      const message = await this.bot.sendMessage(chatId, text, options);
-      
-      // Track this message for auto-deletion (both client and bot messages)
-      const userMsgIds = this.userMessages.get(chatId) || [];
-      userMsgIds.push(message.message_id);
-      this.userMessages.set(chatId, userMsgIds);
-      
-      // Reset the 5-hour auto-vanish timer
-      this.resetAutoVanishTimer(chatId);
-      
-      console.log(`[AUTO-VANISH] Tracked message ${message.message_id} for user ${chatId}, timer reset`);
-      return message;
-    } catch (error) {
-      console.error('Error sending tracked message:', error);
-    }
-  }
 
   private resetAutoVanishTimer(chatId: number) {
     // Clear existing timer
@@ -391,6 +373,11 @@ export class TeleShopBot {
       const chatId = msg.chat.id;
       const userId = msg.from?.id.toString() || '';
       const userName = msg.from?.first_name || 'there';
+      
+      // Track user's /start message for auto-vanish
+      const userMsgIds = this.userMessages.get(chatId) || [];
+      userMsgIds.push(msg.message_id);
+      this.userMessages.set(chatId, userMsgIds);
       
       await storage.incrementMessageCount();
       
@@ -429,6 +416,11 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const chatId = msg.chat.id;
       const userId = msg.from?.id.toString() || '';
       const messageText = msg.text?.toLowerCase() || '';
+      
+      // Track user's message for auto-vanish
+      const userMsgIds = this.userMessages.get(chatId) || [];
+      userMsgIds.push(msg.message_id);
+      this.userMessages.set(chatId, userMsgIds);
       
       console.log(`[MESSAGE] Processing text: "${messageText}"`);
       await storage.incrementMessageCount();
