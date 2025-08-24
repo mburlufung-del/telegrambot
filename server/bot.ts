@@ -419,7 +419,7 @@ export class TeleShopBot {
       const welcomeMessageSetting = await storage.getBotSetting('welcome_message');
       const defaultWelcome = `🎉 Welcome ${displayName} to our Shop! 
 
-🛍️ *Your one-stop destination for amazing products*
+🛍️ <b>Your one-stop destination for amazing products</b>
 
 Use the buttons below to explore our catalog, manage your cart, or get support.`;
       
@@ -434,9 +434,9 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         welcomeMessage = welcomeMessage.replace(/Welcome/i, `Welcome ${displayName}`);
       }
       
-      // Send combined welcome message with menu in single message
+      // Send combined welcome message with menu in single message (use HTML to avoid underscore issues)
       await this.sendAutoVanishMessage(chatId, welcomeMessage, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
     });
