@@ -69,7 +69,7 @@ export default function Analytics() {
   })
 
   // Calculate analytics using both local data and bot stats
-  const totalRevenue = stats?.totalRevenue || botStats?.totalRevenue || orders.reduce((sum, order) => sum + Number(order.totalAmount), 0)
+  const totalRevenue = stats?.totalRevenue || Number(botStats?.totalRevenue || 0) || orders.reduce((sum, order) => sum + Number(order.totalAmount), 0)
   const totalOrders = stats?.totalOrders || botStats?.totalOrders || orders.length
   const totalMessages = stats?.messagesCount || botStats?.totalMessages || 0
   const totalUsers = botStats?.totalUsers || stats?.totalUsers || 0
@@ -79,6 +79,16 @@ export default function Analytics() {
   const activeProducts = products.filter(p => p.isActive).length
   const lowStockProducts = products.filter(p => p.stock < 5).length
   const unreadInquiries = inquiries.filter(i => !i.isRead).length
+
+  // Debug logging for troubleshooting
+  console.log('Analytics Debug:', {
+    products: products.length,
+    activeProducts,
+    stats,
+    botStats,
+    totalUsers,
+    totalProducts
+  })
   
   // Recent activity (last 7 days)
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -106,7 +116,10 @@ export default function Analytics() {
             <Users className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{totalUsers}</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {totalUsers}
+              {stats ? '' : ' (loading...)'}
+            </div>
             <p className="text-xs text-muted-foreground">Telegram bot users</p>
           </CardContent>
         </Card>
@@ -128,7 +141,10 @@ export default function Analytics() {
             <Package className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{activeProducts}</div>
+            <div className="text-2xl font-bold text-purple-600">
+              {activeProducts}
+              {products.length === 0 ? ' (loading...)' : ''}
+            </div>
             <p className="text-xs text-muted-foreground">of {totalProducts} total</p>
           </CardContent>
         </Card>
