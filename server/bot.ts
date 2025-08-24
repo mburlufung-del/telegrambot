@@ -394,18 +394,39 @@ export class TeleShopBot {
         console.log(`[USER STATS] Error checking user stats: ${error}`);
       }
       
-      // Send personalized welcome message with actual Telegram username (escape special characters)
+      // Send welcome message with main menu directly (no separate messages)
+      // Use actual Telegram username (escape special characters for Markdown)
       const escapedDisplayName = displayName.replace(/[_*[\]()~`>#+-=|{}.!\\]/g, '\\$&');
+      
+      // Get main menu keyboard
+      const keyboard = {
+        inline_keyboard: [
+          [
+            { text: '📋 Browse Products', callback_data: 'listings' },
+            { text: '🛒 My Cart', callback_data: 'carts' }
+          ],
+          [
+            { text: '📦 My Orders', callback_data: 'orders' },
+            { text: '💝 Wishlist', callback_data: 'wishlist' }
+          ],
+          [
+            { text: '⭐ Rating', callback_data: 'rating' },
+            { text: '👤 Contact Operator', callback_data: 'operator' }
+          ]
+        ]
+      };
+
       const welcomeMessage = `🎉 Welcome to our Shop, ${escapedDisplayName}! 
 
 🛍️ *Your one-stop destination for amazing products*
 
 Use the buttons below to explore our catalog, manage your cart, or get support.`;
       
-      // Send welcome message with auto-vanish
-      await this.sendAutoVanishMessage(chatId, welcomeMessage, { parse_mode: 'Markdown' });
-      
-      await this.sendMainMenu(chatId);
+      // Send combined welcome message with menu in single message
+      await this.sendAutoVanishMessage(chatId, welcomeMessage, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
     });
 
     // Handle text messages
