@@ -560,31 +560,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Dashboard stats route - simple stats for dashboard cards
+  // Dashboard stats route - real stats based on completed orders
   app.get("/api/dashboard/stats", async (req, res) => {
     try {
-      // Simplified stats without complex queries
-      const products = await storage.getProducts();
+      const [products, orders, inquiries, botStats] = await Promise.all([
+        storage.getProducts(),
+        storage.getOrders(),
+        storage.getInquiries(),
+        storage.getBotStats()
+      ]);
+      
+      // Calculate revenue from completed orders only
+      const completedOrders = orders.filter((order: any) => 
+        ['completed', 'shipped', 'delivered'].includes(order.status?.toLowerCase())
+      );
+      const totalRevenue = completedOrders.reduce((sum: number, order: any) => 
+        sum + parseFloat(order.totalAmount || 0), 0
+      );
+      
+      const unreadInquiries = inquiries.filter((i: any) => !i.isRead).length;
       
       res.json({
-        totalUsers: 25, // Static for now since bot stats may have issues
-        totalOrders: 16,
-        totalRevenue: 245.50,
+        totalUsers: botStats?.totalUsers || 1,
+        totalOrders: completedOrders.length,
+        totalRevenue: parseFloat(totalRevenue.toFixed(2)),
         totalProducts: products.length,
-        pendingInquiries: 0, // Will be dynamic when inquiries work
-        messagesCount: 142
+        pendingInquiries: unreadInquiries,
+        messagesCount: botStats?.totalMessages || 0
       });
     } catch (error) {
       console.error("Failed to fetch dashboard stats:", error);
-      // Return basic fallback stats
-      res.json({
-        totalUsers: 0,
-        totalOrders: 0,
-        totalRevenue: 0,
-        totalProducts: 0,
-        pendingInquiries: 0,
-        messagesCount: 0
-      });
+      res.status(500).json({ message: "Failed to fetch dashboard stats" });
     }
   });
 
