@@ -401,12 +401,6 @@ export default function BotSettings() {
               <div className="text-sm text-muted-foreground bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <strong>Tip:</strong> Use {'{username}'} in your message to automatically insert the user's Telegram username (e.g., @john_doe)
               </div>
-              <SettingInput
-                settingKey="auto_reply_message"
-                label="Auto Reply Message"
-                placeholder="Hello! Thanks for contacting us. How can we help you today?"
-                type="textarea"
-              />
             </CardContent>
           </Card>
         </div>
