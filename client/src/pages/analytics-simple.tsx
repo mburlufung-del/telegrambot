@@ -3,29 +3,54 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, Users, ShoppingCart, DollarSign, MessageSquare, Package, Activity, Clock } from 'lucide-react'
 
 export default function Analytics() {
-  // Simplified queries without complex type inference
+  // Direct API queries with explicit fetch functions
   const { data: productsData, isLoading: productsLoading } = useQuery({
-    queryKey: ['/api/products'],
+    queryKey: ['products'],
+    queryFn: async () => {
+      const response = await fetch('/api/products')
+      if (!response.ok) throw new Error('Failed to fetch products')
+      return response.json()
+    },
     refetchInterval: 30 * 1000,
   })
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
-    queryKey: ['/api/dashboard/stats'], 
+    queryKey: ['dashboard-stats'], 
+    queryFn: async () => {
+      const response = await fetch('/api/dashboard/stats')
+      if (!response.ok) throw new Error('Failed to fetch dashboard stats')
+      return response.json()
+    },
     refetchInterval: 10 * 1000,
   })
 
   const { data: botStatsData, isLoading: botStatsLoading } = useQuery({
-    queryKey: ['/api/bot/stats'],
+    queryKey: ['bot-stats'],
+    queryFn: async () => {
+      const response = await fetch('/api/bot/stats')
+      if (!response.ok) throw new Error('Failed to fetch bot stats')
+      return response.json()
+    },
     refetchInterval: 10 * 1000,
   })
 
   const { data: ordersData, isLoading: ordersLoading } = useQuery({
-    queryKey: ['/api/orders'],
+    queryKey: ['orders'],
+    queryFn: async () => {
+      const response = await fetch('/api/orders')
+      if (!response.ok) throw new Error('Failed to fetch orders')
+      return response.json()
+    },
     refetchInterval: 30 * 1000,
   })
 
   const { data: inquiriesData, isLoading: inquiriesLoading } = useQuery({
-    queryKey: ['/api/inquiries'],
+    queryKey: ['inquiries'],
+    queryFn: async () => {
+      const response = await fetch('/api/inquiries')
+      if (!response.ok) throw new Error('Failed to fetch inquiries')
+      return response.json()
+    },
     refetchInterval: 15 * 1000,
   })
 

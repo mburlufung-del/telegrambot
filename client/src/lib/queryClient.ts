@@ -12,10 +12,11 @@ export const queryClient = new QueryClient({
         console.log(`[QueryClient] Fetching: ${url}`)
         const res = await fetch(url)
         if (!res.ok) {
+          console.error(`[QueryClient] Error: ${url} - ${res.status}: ${res.statusText}`)
           throw new Error(`${res.status}: ${res.statusText}`)
         }
         const data = await res.json()
-        console.log(`[QueryClient] Success: ${url} - ${Array.isArray(data) ? data.length : 'non-array'} items`)
+        console.log(`[QueryClient] Success: ${url} - Data:`, data)
         return data
       },
     },
