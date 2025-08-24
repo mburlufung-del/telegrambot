@@ -388,14 +388,15 @@ export class TeleShopBot {
       try {
         const existingOrders = await storage.getUserOrders(userId);
         if (existingOrders.length === 0) {
-          console.log(`[NEW USER] Welcome ${displayName} (${userId}) - updating dashboard stats`);
+          console.log(`[NEW USER] Welcome ${displayName} (ID: ${userId}) - updating dashboard stats`);
         }
       } catch (error) {
         console.log(`[USER STATS] Error checking user stats: ${error}`);
       }
       
-      // Send personalized welcome message with actual Telegram username
-      const welcomeMessage = `🎉 Welcome to our Shop, ${displayName}! 
+      // Send personalized welcome message with actual Telegram username (escape special characters)
+      const escapedDisplayName = displayName.replace(/[_*[\]()~`>#+-=|{}.!\\]/g, '\\$&');
+      const welcomeMessage = `🎉 Welcome to our Shop, ${escapedDisplayName}! 
 
 🛍️ *Your one-stop destination for amazing products*
 
