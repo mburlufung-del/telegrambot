@@ -227,7 +227,7 @@ export class TeleShopBot {
     if (!this.bot) return;
 
     try {
-      // Delete previous messages for this user
+      // Delete ALL previous messages for this user (instant vanish)
       const userMsgIds = this.userMessages.get(chatId) || [];
       for (const msgId of userMsgIds) {
         try {
@@ -236,6 +236,9 @@ export class TeleShopBot {
           // Ignore deletion errors (message might be too old)
         }
       }
+
+      // Clear the message tracking array since we deleted everything
+      this.userMessages.set(chatId, []);
 
       // Clear existing timer for this user
       const existingTimer = this.autoVanishTimers.get(chatId);
@@ -344,7 +347,7 @@ export class TeleShopBot {
   }
 
   // Enhanced message sending that tracks all bot messages for auto-vanish
-  private async sendTrackedMessage(chatId: number, text: string, options: any = {}) {
+  private async sendAutoVanishMessage(chatId: number, text: string, options: any = {}) {
     if (!this.bot) return;
 
     try {
@@ -408,8 +411,8 @@ export class TeleShopBot {
 
 Use the buttons below to explore our catalog, manage your cart, or get support.`;
       
-      // Send welcome message with tracking
-      await this.sendTrackedMessage(chatId, welcomeMessage, { parse_mode: 'Markdown' });
+      // Send welcome message with auto-vanish
+      await this.sendAutoVanishMessage(chatId, welcomeMessage, { parse_mode: 'Markdown' });
       
       await this.sendMainMenu(chatId);
     });
@@ -457,7 +460,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const customResponse = await this.handleCustomCommands(messageText);
       if (customResponse) {
         console.log(`[MESSAGE] Custom command matched! Response: ${customResponse}`);
-        await this.sendTrackedMessage(chatId, customResponse, { parse_mode: 'Markdown' });
+        await this.sendAutoVanishMessage(chatId, customResponse, { parse_mode: 'Markdown' });
         return;
       }
       console.log('[MESSAGE] No custom command matched');
@@ -465,7 +468,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       // Send acknowledgment without showing menu for other messages
       const ackMessage = 'Message received! Use /start to see the main menu or type "menu" anytime.';
       console.log(`[MESSAGE] Sending acknowledgment`);
-      await this.sendTrackedMessage(chatId, ackMessage);
+      await this.sendAutoVanishMessage(chatId, ackMessage);
     });
 
     // Handle callback queries for the command buttons
@@ -620,8 +623,9 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       ]
     };
 
-    await this.sendTrackedMessage(chatId, welcomeMessage, {
-      reply_markup: keyboard
+    await this.sendAutoVanishMessage(chatId, welcomeMessage, {
+      reply_markup: keyboard,
+      parse_mode: 'Markdown'
     });
   }
 
@@ -648,7 +652,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
       };
       
-      await this.sendTrackedMessage(chatId, message, { reply_markup: backButton });
+      await this.sendAutoVanishMessage(chatId, message, { reply_markup: backButton });
       return;
     }
 
@@ -679,7 +683,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
     const keyboard = { inline_keyboard: categoryButtons };
 
-    await this.sendTrackedMessage(chatId, categoriesMessage, {
+    await this.sendAutoVanishMessage(chatId, categoriesMessage, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
@@ -699,7 +703,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
           ]
         };
         
-        await this.sendTrackedMessage(chatId, message, {
+        await this.sendAutoVanishMessage(chatId, message, {
           parse_mode: 'Markdown',
           reply_markup: keyboard
         });
@@ -766,7 +770,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
       const keyboard = { inline_keyboard: cartButtons };
       
-      await this.sendTrackedMessage(chatId, cartMessage, {
+      await this.sendAutoVanishMessage(chatId, cartMessage, {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
@@ -781,7 +785,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         ]
       };
       
-      await this.sendTrackedMessage(chatId, message, {
+      await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
@@ -802,7 +806,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
           ]
         };
         
-        await this.sendTrackedMessage(chatId, message, {
+        await this.sendAutoVanishMessage(chatId, message, {
           parse_mode: 'Markdown',
           reply_markup: keyboard
         });
@@ -837,7 +841,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       };
       
       console.log(`Sending orders message for user ${userId}: ${message.length} chars`);
-      await this.sendTrackedMessage(chatId, message, {
+      await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
@@ -852,7 +856,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         ]
       };
       
-      await this.sendTrackedMessage(chatId, message, {
+      await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
@@ -872,7 +876,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
           ]
         };
         
-        await this.sendTrackedMessage(chatId, message, {
+        await this.sendAutoVanishMessage(chatId, message, {
           parse_mode: 'Markdown',
           reply_markup: keyboard
         });
@@ -901,7 +905,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         ]
       };
       
-      await this.sendTrackedMessage(chatId, message, {
+      await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
@@ -927,7 +931,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         ]
       };
 
-      await this.sendTrackedMessage(chatId, message, {
+      await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
@@ -971,7 +975,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       ]
     };
 
-    await this.sendTrackedMessage(chatId, message, {
+    await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
@@ -1025,7 +1029,7 @@ ${businessHours}
       ]
     };
 
-    await this.sendTrackedMessage(chatId, message, {
+    await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'HTML',
       reply_markup: keyboard
     });
@@ -1149,7 +1153,7 @@ ${businessHours}
         ]
       };
       
-      await this.sendTrackedMessage(chatId, message, { 
+      await this.sendAutoVanishMessage(chatId, message, { 
         parse_mode: 'Markdown',
         reply_markup: keyboard 
       });
@@ -1190,7 +1194,7 @@ ${businessHours}
 
     const keyboard = { inline_keyboard: productButtons };
 
-    await this.sendTrackedMessage(chatId, productsMessage, {
+    await this.sendAutoVanishMessage(chatId, productsMessage, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
@@ -1290,7 +1294,7 @@ ${businessHours}
 
     const keyboard = { inline_keyboard: actionButtons };
 
-    await this.sendTrackedMessage(chatId, message, {
+    await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
@@ -1314,7 +1318,7 @@ ${businessHours}
           inline_keyboard: [[{ text: '🔙 Back to Product', callback_data: `product_${productId}` }]]
         };
         
-        await this.sendTrackedMessage(chatId, message, {
+        await this.sendAutoVanishMessage(chatId, message, {
           parse_mode: 'Markdown',
           reply_markup: keyboard
         });
@@ -1363,7 +1367,7 @@ ${businessHours}
         ]
       };
 
-      await this.sendTrackedMessage(chatId, message, {
+      await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
@@ -1394,7 +1398,7 @@ ${businessHours}
       // Show success message and auto-return to main menu
       const message = `❤️ *Added to Wishlist!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Price: $${product.price} each\n\nReturning to main menu...`;
       
-      await this.sendTrackedMessage(chatId, message, {
+      await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown'
       });
 
@@ -1439,7 +1443,7 @@ ${businessHours}
         ]
       };
 
-      await this.sendTrackedMessage(chatId, message, {
+      await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
@@ -1467,14 +1471,14 @@ ${businessHours}
           ]
         };
 
-        await this.sendTrackedMessage(chatId, message, {
+        await this.sendAutoVanishMessage(chatId, message, {
           parse_mode: 'Markdown',
           reply_markup: keyboard
         });
       } catch (error) {
         console.error('Error saving rating:', error);
         const message = 'Failed to save your rating. Please try again.';
-        await this.sendTrackedMessage(chatId, message);
+        await this.sendAutoVanishMessage(chatId, message);
       }
     }
   }
@@ -1491,7 +1495,7 @@ ${businessHours}
         ]
       };
       
-      await this.sendTrackedMessage(chatId, message, {
+      await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
@@ -1513,7 +1517,7 @@ ${businessHours}
       
       if (cartItems.length === 0) {
         const message = '🛒 Your cart is empty. Add items before checkout.';
-        await this.sendTrackedMessage(chatId, message);
+        await this.sendAutoVanishMessage(chatId, message);
         setTimeout(() => this.sendMainMenu(chatId), 2000);
         return;
       }
@@ -1537,7 +1541,7 @@ ${businessHours}
 
       if (deliveryMethods.length === 0) {
         const message = '❌ No delivery methods available. Please contact support.';
-        await this.sendTrackedMessage(chatId, message);
+        await this.sendAutoVanishMessage(chatId, message);
         return;
       }
 
@@ -1569,7 +1573,7 @@ ${businessHours}
       // Add back button
       keyboard.inline_keyboard.push([{ text: '🔙 Back to Cart', callback_data: 'cart' }]);
 
-      await this.sendTrackedMessage(chatId, message, {
+      await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
@@ -1577,7 +1581,7 @@ ${businessHours}
     } catch (error) {
       console.error('Error during checkout start:', error);
       const message = '❌ Checkout failed. Please try again or contact support.';
-      await this.sendTrackedMessage(chatId, message);
+      await this.sendAutoVanishMessage(chatId, message);
       setTimeout(() => this.sendMainMenu(chatId), 2000);
     }
   }
@@ -1646,7 +1650,7 @@ ${businessHours}
 
     const keyboard = { inline_keyboard: quantityControls };
 
-    await this.sendTrackedMessage(chatId, message, {
+    await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
@@ -1774,7 +1778,7 @@ Please describe your issue or question. Our support team will respond within ${r
 
 Type your message below and send it:`;
 
-    await this.sendTrackedMessage(chatId, message, {
+    await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [
@@ -1826,7 +1830,7 @@ Additional Details:
 
 ⚡ **Response Time:** ${responseTime} during business hours`;
 
-    await this.sendTrackedMessage(chatId, message, {
+    await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [
@@ -1869,7 +1873,7 @@ Additional Details:
 
 Need more help? Contact our support team!`;
 
-    await this.sendTrackedMessage(chatId, message, {
+    await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [
@@ -1913,7 +1917,7 @@ Your support request has been received. Our team will respond within ${responseT
 
 You can continue shopping while we prepare your response.`;
 
-      await this.sendTrackedMessage(chatId, confirmMessage, {
+      await this.sendAutoVanishMessage(chatId, confirmMessage, {
         parse_mode: 'Markdown',
         reply_markup: {
           inline_keyboard: [
@@ -1925,7 +1929,7 @@ You can continue shopping while we prepare your response.`;
 
     } catch (error) {
       console.error('Error creating support inquiry:', error);
-      await this.sendTrackedMessage(chatId, '❌ Error sending message. Please try again or contact support directly.', {
+      await this.sendAutoVanishMessage(chatId, '❌ Error sending message. Please try again or contact support directly.', {
         reply_markup: {
           inline_keyboard: [
             [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
@@ -1981,7 +1985,7 @@ United States
 
 Type your complete information below:`;
 
-      await this.sendTrackedMessage(chatId, message, {
+      await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: {
           inline_keyboard: [
@@ -2037,7 +2041,7 @@ Is this information correct?`;
       ]
     };
 
-    await this.sendTrackedMessage(chatId, message, {
+    await this.sendAutoVanishMessage(chatId, message, {
       reply_markup: keyboard
     });
 
@@ -2079,7 +2083,7 @@ Select your preferred payment option:`;
     // Add back button
     keyboard.inline_keyboard.push([{ text: '🔙 Back to Delivery', callback_data: 'start_checkout' }]);
 
-    await this.sendTrackedMessage(chatId, message, {
+    await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
@@ -2141,7 +2145,7 @@ Include your Order Number: ${orderNumber}`;
       ]
     };
 
-    await this.sendTrackedMessage(chatId, message, {
+    await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'HTML',
       reply_markup: keyboard
     });
@@ -2152,7 +2156,7 @@ Include your Order Number: ${orderNumber}`;
       const cartItems = await storage.getCart(userId);
       
       if (cartItems.length === 0) {
-        await this.sendTrackedMessage(chatId, '🛒 No items in cart to checkout.', {
+        await this.sendAutoVanishMessage(chatId, '🛒 No items in cart to checkout.', {
           reply_markup: {
             inline_keyboard: [
               [{ text: '📋 Browse Products', callback_data: 'listings' }]
@@ -2234,14 +2238,14 @@ Thank you for shopping with us! 🛍️`;
         ]
       };
 
-      await this.sendTrackedMessage(chatId, message, {
+      await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'HTML',
         reply_markup: keyboard
       });
 
     } catch (error) {
       console.error('Error completing order:', error);
-      await this.sendTrackedMessage(chatId, '❌ Error processing order. Please contact support.', {
+      await this.sendAutoVanishMessage(chatId, '❌ Error processing order. Please contact support.', {
         reply_markup: {
           inline_keyboard: [
             [{ text: '👤 Contact Support', callback_data: 'operator' }],
