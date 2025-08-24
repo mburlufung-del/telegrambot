@@ -303,11 +303,14 @@ export class TeleShopBot {
     if (!this.bot) return;
 
     try {
-      // Delete all tracked messages for this user
+      // Delete all tracked messages for this user (both bot and client)
       const userMsgIds = this.userMessages.get(chatId) || [];
+      let deletedCount = 0;
+      
       for (const msgId of userMsgIds) {
         try {
           await this.bot.deleteMessage(chatId, msgId);
+          deletedCount++;
         } catch (error) {
           // Ignore deletion errors (message might be too old or already deleted)
           console.log(`Could not delete message ${msgId} for user ${chatId}:`, error instanceof Error ? error.message : error);
@@ -320,7 +323,7 @@ export class TeleShopBot {
 
       // Send a brief notice about auto-cleanup (this message will also auto-vanish)
       const cleanupNotice = "🕐 Chat history automatically cleared after 5 hours.\n\n" +
-                           "Your order history is safely preserved and can be accessed anytime.\n\n" +
+                           "✅ Your order history is safely preserved and can be accessed anytime.\n\n" +
                            "Type /start to begin a new session.";
       
       const noticeMessage = await this.bot.sendMessage(chatId, cleanupNotice);
@@ -334,27 +337,28 @@ export class TeleShopBot {
         }
       }, 60 * 60 * 1000); // 1 hour
 
-      console.log(`Auto-vanish: Cleared chat history for user ${chatId} after 5 hours`);
+      console.log(`[AUTO-VANISH] Cleared ${deletedCount}/${userMsgIds.length} messages for user ${chatId} after 5 hours`);
     } catch (error) {
       console.error('Error clearing user chat history:', error);
     }
   }
 
-  // Enhanced message sending that tracks all bot messages
+  // Enhanced message sending that tracks all bot messages for auto-vanish
   private async sendTrackedMessage(chatId: number, text: string, options: any = {}) {
     if (!this.bot) return;
 
     try {
       const message = await this.bot.sendMessage(chatId, text, options);
       
-      // Track this message for auto-deletion
+      // Track this message for auto-deletion (both client and bot messages)
       const userMsgIds = this.userMessages.get(chatId) || [];
       userMsgIds.push(message.message_id);
       this.userMessages.set(chatId, userMsgIds);
       
-      // Reset the 5-hour timer
+      // Reset the 5-hour auto-vanish timer
       this.resetAutoVanishTimer(chatId);
       
+      console.log(`[AUTO-VANISH] Tracked message ${message.message_id} for user ${chatId}, timer reset`);
       return message;
     } catch (error) {
       console.error('Error sending tracked message:', error);
@@ -397,12 +401,15 @@ export class TeleShopBot {
         console.log(`[USER STATS] Error checking user stats: ${error}`);
       }
       
-      // Send personalized welcome message
+      // Send personalized welcome message with auto-vanish tracking
       const welcomeMessage = `🎉 Welcome to our Shop, ${userName}! 
 
 🛍️ *Your one-stop destination for amazing products*
 
 Use the buttons below to explore our catalog, manage your cart, or get support.`;
+      
+      // Send welcome message with tracking
+      await this.sendTrackedMessage(chatId, welcomeMessage, { parse_mode: 'Markdown' });
       
       await this.sendMainMenu(chatId);
     });
