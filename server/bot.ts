@@ -401,7 +401,7 @@ export class TeleShopBot {
       const keyboard = {
         inline_keyboard: [
           [
-            { text: '📋 Browse Products', callback_data: 'listings' },
+            { text: '📋 Listings', callback_data: 'listings' },
             { text: '🛒 My Cart', callback_data: 'carts' }
           ],
           [
@@ -640,9 +640,9 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     const keyboard = {
       inline_keyboard: [
         [
-          { text: '📋 Browse Products', callback_data: 'listings' },
-          { text: '🛒 My Cart', callback_data: 'carts' },
-          { text: '📦 My Orders', callback_data: 'orders' }
+          { text: '📋 Listings', callback_data: 'listings' },
+          { text: '🛒 Carts', callback_data: 'carts' },
+          { text: '📦 Orders', callback_data: 'orders' }
         ],
         [
           { text: '❤️ Wishlist', callback_data: 'wishlist' },
@@ -727,7 +727,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         const message = '🛒 *Your Shopping Cart*\n\nYour cart is empty. Start shopping to add items!';
         const keyboard = {
           inline_keyboard: [
-            [{ text: '📋 Browse Products', callback_data: 'listings' }],
+            [{ text: '📋 Listings', callback_data: 'listings' }],
             [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
           ]
         };
@@ -791,7 +791,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       ]);
       cartButtons.push([
         { text: '🔄 Clear Cart', callback_data: 'clear_cart' },
-        { text: '📋 Continue Shopping', callback_data: 'listings' }
+        { text: '📋 Listings', callback_data: 'listings' }
       ]);
       cartButtons.push([
         { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
@@ -809,7 +809,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const message = '🛒 *Your Shopping Cart*\n\nUnable to load cart. Please try again.';
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Browse Products', callback_data: 'listings' }],
+          [{ text: '📋 Listings', callback_data: 'listings' }],
           [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
         ]
       };
@@ -830,7 +830,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         const message = '📦 *Your Orders*\n\nYou have no orders yet.\n\nStart shopping to create your first order!';
         const keyboard = {
           inline_keyboard: [
-            [{ text: '📋 Browse Products', callback_data: 'listings' }],
+            [{ text: '📋 Listings', callback_data: 'listings' }],
             [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
           ]
         };
@@ -863,7 +863,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Browse Products', callback_data: 'listings' }],
+          [{ text: '📋 Listings', callback_data: 'listings' }],
           [{ text: '🛒 View Cart', callback_data: 'carts' }],
           [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
         ]
@@ -880,7 +880,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const message = '📦 *Your Orders*\n\nUnable to load orders. Please try again.';
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Browse Products', callback_data: 'listings' }],
+          [{ text: '📋 Listings', callback_data: 'listings' }],
           [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
         ]
       };
@@ -900,7 +900,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         const message = '❤️ *Your Wishlist*\n\nYour wishlist is empty.\n\nBrowse products and add items you love to your wishlist!';
         const keyboard = {
           inline_keyboard: [
-            [{ text: '📋 Browse Products', callback_data: 'listings' }],
+            [{ text: '📋 Listings', callback_data: 'listings' }],
             [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
           ]
         };
@@ -928,7 +928,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Browse More Products', callback_data: 'listings' }],
+          [{ text: '📋 Listings', callback_data: 'listings' }],
           [{ text: '🛒 View Cart', callback_data: 'carts' }],
           [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
         ]
@@ -955,7 +955,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Browse Products', callback_data: 'listings' }],
+          [{ text: '📋 Listings', callback_data: 'listings' }],
           [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
         ]
       };
@@ -999,7 +999,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
     const keyboard = {
       inline_keyboard: [
-        [{ text: '📋 Browse Products to Rate', callback_data: 'listings' }],
+        [{ text: '📋 Listings', callback_data: 'listings' }],
         [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
       ]
     };
@@ -1388,7 +1388,7 @@ ${businessHours}
         inline_keyboard: [
           [
             { text: '🛒 View Cart', callback_data: 'carts' },
-            { text: '📋 Continue Shopping', callback_data: 'listings' }
+            { text: '📋 Listings', callback_data: 'listings' }
           ],
           [
             { text: '🔙 Back to Product', callback_data: `product_${productId}` }
@@ -1519,7 +1519,7 @@ ${businessHours}
       const message = '🗑️ *Cart Cleared*\n\nAll items have been removed from your cart.';
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Browse Products', callback_data: 'listings' }],
+          [{ text: '📋 Listings', callback_data: 'listings' }],
           [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
         ]
       };
@@ -1950,7 +1950,7 @@ You can continue shopping while we prepare your response.`;
         parse_mode: 'Markdown',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '📋 Browse Products', callback_data: 'listings' }],
+            [{ text: '📋 Listings', callback_data: 'listings' }],
             [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
           ]
         }
@@ -2188,7 +2188,7 @@ Include your Order Number: ${orderNumber}`;
         await this.sendAutoVanishMessage(chatId, '🛒 No items in cart to checkout.', {
           reply_markup: {
             inline_keyboard: [
-              [{ text: '📋 Browse Products', callback_data: 'listings' }]
+              [{ text: '📋 Listings', callback_data: 'listings' }]
             ]
           }
         });
@@ -2262,7 +2262,7 @@ Thank you for shopping with us! 🛍️`;
         inline_keyboard: [
           [{ text: '📦 View My Orders', callback_data: 'orders' }],
           [{ text: '👤 Contact Support', callback_data: 'operator' }],
-          [{ text: '📋 Continue Shopping', callback_data: 'listings' }],
+          [{ text: '📋 Listings', callback_data: 'listings' }],
           [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
         ]
       };
