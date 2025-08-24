@@ -418,7 +418,7 @@ export class TeleShopBot {
 
       // Get admin-configured welcome message
       const welcomeMessageSetting = await storage.getBotSetting('welcome_message');
-      const defaultWelcome = `🎉 Welcome to our Shop, ${escapedDisplayName}! 
+      const defaultWelcome = `🎉 Welcome ${escapedDisplayName} to our Shop! 
 
 🛍️ *Your one-stop destination for amazing products*
 
@@ -426,7 +426,14 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       
       // Use admin welcome message and replace {username} placeholder with actual username
       let welcomeMessage = welcomeMessageSetting?.value || defaultWelcome;
+      
+      // Replace {username} placeholder with actual username
       welcomeMessage = welcomeMessage.replace(/{username}/g, escapedDisplayName);
+      
+      // If admin message doesn't contain username placeholder, add username after "Welcome"
+      if (welcomeMessageSetting?.value && !welcomeMessageSetting.value.includes('{username}')) {
+        welcomeMessage = welcomeMessage.replace(/Welcome/i, `Welcome ${escapedDisplayName}`);
+      }
       
       // Send combined welcome message with menu in single message
       await this.sendAutoVanishMessage(chatId, welcomeMessage, {
