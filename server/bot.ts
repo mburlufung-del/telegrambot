@@ -626,6 +626,11 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         const parts = data.split('_');
         const orderNumber = parts.length > 2 ? `#${parts[2]}` : `#${Date.now().toString().slice(-6)}`;
         await this.handleOrderCompletion(chatId, userId, orderNumber);
+      } else if (data?.startsWith('confirm_info_')) {
+        const parts = data.split('_');
+        const deliveryMethod = parts[2];
+        const orderNumber = `#${parts[3]}`;
+        await this.handleOrderConfirmation(chatId, userId, deliveryMethod, orderNumber);
       } else {
         // Unknown callback, show main menu again
         await this.sendMainMenu(chatId);
@@ -2150,11 +2155,22 @@ Is this information correct?`;
       reply_markup: keyboard
     });
 
-    // Store information temporarily (in production, use proper session storage)
-    // For now, proceed to payment after confirmation
-    setTimeout(() => {
-      this.handlePaymentMethodSelection(chatId, userId, deliveryMethod, orderNumber, customerName, customerPhone, customerAddress, username);
-    }, 3000);
+    // Wait for user to manually confirm information via callback
+    // No automatic timeout - user must click "Confirm Information"
+  }
+
+  // Handle order confirmation when user clicks "Confirm Information"
+  private async handleOrderConfirmation(chatId: number, userId: string, deliveryMethod: string, orderNumber: string) {
+    const confirmMessage = `✅ **Information Confirmed!**
+
+Thank you for confirming your order details. Now please select your payment method:`;
+
+    await this.sendAutoVanishMessage(chatId, confirmMessage, {
+      parse_mode: 'Markdown'
+    });
+
+    // Proceed to payment method selection
+    await this.handlePaymentMethodSelection(chatId, userId, deliveryMethod, orderNumber);
   }
 
   private async handlePaymentMethodSelection(chatId: number, userId: string, deliveryMethod: string, orderNumber: string, customerName?: string, customerPhone?: string, customerAddress?: string, username?: string) {
