@@ -472,6 +472,9 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
             message: msg.text || ''
           });
           console.log(`[INQUIRY] Created new inquiry from user ${userId}`);
+          
+          // Send notification to operator if configured
+          await this.notifyOperatorOfInquiry(userId, msg.from?.first_name || 'Anonymous', msg.text || '', msg.from?.username);
         } catch (error) {
           console.log(`[INQUIRY] Failed to create inquiry: ${error}`);
         }
@@ -1807,6 +1810,45 @@ ${businessHours}
         // Ignore errors when stopping polling
       }
       this.bot = null;
+    }
+  }
+
+  // Notify operator of new inquiry
+  private async notifyOperatorOfInquiry(userId: string, customerName: string, message: string, username?: string) {
+    if (!this.bot) return;
+    
+    try {
+      // Get operator settings from database
+      const botSettings = await storage.getBotSettings();
+      const operatorIdSetting = botSettings.find(s => s.key === 'operator_id');
+      const operatorUsernameSetting = botSettings.find(s => s.key === 'operator_username');
+      
+      const operatorId = operatorIdSetting?.value;
+      const operatorUsername = operatorUsernameSetting?.value || '@operator';
+      
+      // If operator ID is not configured, skip notification
+      if (!operatorId) {
+        console.log('[INQUIRY-NOTIFY] No operator ID configured, skipping notification');
+        return;
+      }
+      
+      const customerInfo = username ? `${customerName} (@${username})` : customerName;
+      const notificationMessage = `🔔 *New Customer Inquiry*
+
+👤 **Customer:** ${customerInfo}
+🆔 **Telegram ID:** ${userId}
+📝 **Message:** ${message}
+
+Please respond to this customer inquiry from the admin dashboard.`;
+
+      // Send notification to operator
+      await this.bot.sendMessage(operatorId, notificationMessage, {
+        parse_mode: 'Markdown'
+      });
+      
+      console.log(`[INQUIRY-NOTIFY] Sent notification to operator ${operatorUsername} (ID: ${operatorId})`);
+    } catch (error) {
+      console.log(`[INQUIRY-NOTIFY] Failed to send notification to operator: ${error}`);
     }
   }
 
