@@ -443,6 +443,16 @@ export default function BotSettings() {
               </div>
 
               <SettingInput
+                settingKey="operator_id"
+                label="Operator Telegram ID"
+                placeholder="123456789"
+                type="text"
+              />
+              <div className="text-sm text-muted-foreground bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <strong>Important:</strong> Enter your Telegram ID here to receive notifications when customers send messages. To find your Telegram ID, send a message to @userinfobot on Telegram.
+              </div>
+
+              <SettingInput
                 settingKey="support_hours"
                 label="Business Hours"
                 placeholder="Monday - Friday: 9:00 AM - 6:00 PM&#10;Saturday: 10:00 AM - 4:00 PM&#10;Sunday: Closed"
