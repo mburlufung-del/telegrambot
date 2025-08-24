@@ -45,9 +45,19 @@ export default function Analytics() {
     refetchInterval: 5 * 60 * 1000, // 5 minutes for stats
   })
 
-  // Calculate analytics
-  const totalRevenue = orders.reduce((sum, order) => sum + Number(order.totalAmount), 0)
-  const averageOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0
+  const { data: botStats } = useQuery({
+    queryKey: ['/api/bot/stats'],
+    refetchInterval: 5 * 60 * 1000, // 5 minutes for bot stats
+  })
+
+  // Calculate analytics using both local data and bot stats
+  const totalRevenue = stats?.totalRevenue || botStats?.totalRevenue || orders.reduce((sum, order) => sum + Number(order.totalAmount), 0)
+  const totalOrders = stats?.totalOrders || botStats?.totalOrders || orders.length
+  const totalMessages = stats?.messagesCount || botStats?.totalMessages || 0
+  const totalUsers = botStats?.totalUsers || stats?.totalUsers || 0
+  const totalProducts = stats?.totalProducts || products.length
+  
+  const averageOrderValue = totalOrders > 0 ? Number(totalRevenue) / totalOrders : 0
   const activeProducts = products.filter(p => p.isActive).length
   const lowStockProducts = products.filter(p => p.stock < 5).length
   const unreadInquiries = inquiries.filter(i => !i.isRead).length
@@ -78,7 +88,7 @@ export default function Analytics() {
             <Users className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats?.totalUsers || 0}</div>
+            <div className="text-2xl font-bold text-blue-600">{totalUsers}</div>
             <p className="text-xs text-muted-foreground">Telegram bot users</p>
           </CardContent>
         </Card>
@@ -89,8 +99,8 @@ export default function Analytics() {
             <DollarSign className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">${totalRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">From {orders.length} orders</p>
+            <div className="text-2xl font-bold text-green-600">${Number(totalRevenue).toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground">From {totalOrders} orders</p>
           </CardContent>
         </Card>
 
@@ -101,7 +111,7 @@ export default function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">{activeProducts}</div>
-            <p className="text-xs text-muted-foreground">of {products.length} total</p>
+            <p className="text-xs text-muted-foreground">of {totalProducts} total</p>
           </CardContent>
         </Card>
 
