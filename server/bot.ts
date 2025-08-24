@@ -372,7 +372,10 @@ export class TeleShopBot {
     this.bot.onText(/\/start/, async (msg) => {
       const chatId = msg.chat.id;
       const userId = msg.from?.id.toString() || '';
-      const userName = msg.from?.first_name || 'there';
+      // Use actual Telegram username with @ prefix, fallback to first name, then generic greeting
+      const telegramUsername = msg.from?.username ? `@${msg.from.username}` : '';
+      const firstName = msg.from?.first_name || '';
+      const displayName = telegramUsername || firstName || 'there';
       
       // Track user's /start message for auto-vanish
       const userMsgIds = this.userMessages.get(chatId) || [];
@@ -385,14 +388,14 @@ export class TeleShopBot {
       try {
         const existingOrders = await storage.getUserOrders(userId);
         if (existingOrders.length === 0) {
-          console.log(`[NEW USER] Welcome ${userName} (${userId}) - updating dashboard stats`);
+          console.log(`[NEW USER] Welcome ${displayName} (${userId}) - updating dashboard stats`);
         }
       } catch (error) {
         console.log(`[USER STATS] Error checking user stats: ${error}`);
       }
       
-      // Send personalized welcome message with auto-vanish tracking
-      const welcomeMessage = `🎉 Welcome to our Shop, ${userName}! 
+      // Send personalized welcome message with actual Telegram username
+      const welcomeMessage = `🎉 Welcome to our Shop, ${displayName}! 
 
 🛍️ *Your one-stop destination for amazing products*
 
