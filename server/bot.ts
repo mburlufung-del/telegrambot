@@ -1250,7 +1250,7 @@ ${businessHours}
         console.log(`Sending product image: ${fullImageUrl}`);
         
         // Clear previous messages first
-        const messagesToDelete = this.botMessagesToDelete.get(chatId) || [];
+        const messagesToDelete = this.userMessages.get(chatId) || [];
         for (const msgId of messagesToDelete) {
           try {
             await this.bot?.deleteMessage(chatId, msgId);
@@ -1259,7 +1259,7 @@ ${businessHours}
             // Ignore errors if message already deleted
           }
         }
-        this.botMessagesToDelete.set(chatId, []);
+        this.userMessages.set(chatId, []);
         
         const sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
           caption: `📦 *${product.name}*`,
@@ -1268,9 +1268,9 @@ ${businessHours}
         
         // Add to auto-vanish tracking
         if (sentMessage) {
-          const botMsgIds = this.botMessagesToDelete.get(chatId) || [];
-          botMsgIds.push(sentMessage.message_id);
-          this.botMessagesToDelete.set(chatId, botMsgIds);
+          const userMsgIds = this.userMessages.get(chatId) || [];
+          userMsgIds.push(sentMessage.message_id);
+          this.userMessages.set(chatId, userMsgIds);
           console.log(`[INSTANT-VANISH] Tracked product image message ${sentMessage.message_id} for user ${chatId}`);
         }
       } catch (error) {
