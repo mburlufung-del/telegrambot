@@ -2,124 +2,74 @@ import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, Users, ShoppingCart, DollarSign, MessageSquare, Package, Activity, Clock } from 'lucide-react'
 
-interface Product {
-  id: string
-  name: string
-  price: number
-  stock: number
-  isActive: boolean
-  createdAt: string
-}
-
-interface Order {
-  id: string
-  totalAmount: number
-  status: string
-  createdAt: string
-}
-
-interface Inquiry {
-  id: string
-  isRead: boolean
-  createdAt: string
-}
-
-interface DashboardStats {
-  totalUsers: number
-  totalOrders: number
-  totalRevenue: number
-  totalProducts: number
-  pendingInquiries: number
-  messagesCount: number
-}
-
-interface BotStats {
-  id: string
-  totalUsers: number
-  totalOrders: number
-  totalMessages: number
-  totalRevenue: string
-  updatedAt: string
-}
-
 export default function Analytics() {
-  const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({
+  // Simplified queries without complex type inference
+  const { data: productsData, isLoading: productsLoading } = useQuery({
     queryKey: ['/api/products'],
     refetchInterval: 30 * 1000,
-    staleTime: 0,
-    gcTime: 0,
   })
 
-  const { data: orders = [], isLoading: ordersLoading } = useQuery<Order[]>({
-    queryKey: ['/api/orders'],
-    refetchInterval: 30 * 1000,
-    staleTime: 0,
-    gcTime: 0,
-  })
-
-  const { data: inquiries = [], isLoading: inquiriesLoading } = useQuery<Inquiry[]>({
-    queryKey: ['/api/inquiries'],
-    refetchInterval: 15 * 1000,
-    staleTime: 0,
-    gcTime: 0,
-  })
-
-  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<DashboardStats>({
-    queryKey: ['/api/dashboard/stats'],
+  const { data: statsData, isLoading: statsLoading } = useQuery({
+    queryKey: ['/api/dashboard/stats'], 
     refetchInterval: 10 * 1000,
-    staleTime: 0,
-    gcTime: 0,
   })
 
-  const { data: botStats, isLoading: botStatsLoading, error: botStatsError } = useQuery<BotStats>({
+  const { data: botStatsData, isLoading: botStatsLoading } = useQuery({
     queryKey: ['/api/bot/stats'],
     refetchInterval: 10 * 1000,
-    staleTime: 0,
-    gcTime: 0,
   })
 
-  // Calculate analytics using both local data and bot stats
-  const totalRevenue = stats?.totalRevenue || Number(botStats?.totalRevenue || 0) || orders.reduce((sum, order) => sum + Number(order.totalAmount), 0)
-  const totalOrders = stats?.totalOrders || botStats?.totalOrders || orders.length
-  const totalMessages = stats?.messagesCount || botStats?.totalMessages || 0
-  const totalUsers = botStats?.totalUsers || stats?.totalUsers || 0
-  const totalProducts = stats?.totalProducts || products.length
-  
+  const { data: ordersData, isLoading: ordersLoading } = useQuery({
+    queryKey: ['/api/orders'],
+    refetchInterval: 30 * 1000,
+  })
+
+  const { data: inquiriesData, isLoading: inquiriesLoading } = useQuery({
+    queryKey: ['/api/inquiries'],
+    refetchInterval: 15 * 1000,
+  })
+
+  // Safe data access with fallbacks
+  const products = Array.isArray(productsData) ? productsData : []
+  const stats = statsData || {}
+  const botStats = botStatsData || {}
+  const orders = Array.isArray(ordersData) ? ordersData : []
+  const inquiries = Array.isArray(inquiriesData) ? inquiriesData : []
+
+  // Calculate metrics safely
+  const totalUsers = botStats.totalUsers || stats.totalUsers || 0
+  const totalProducts = stats.totalProducts || products.length
+  const activeProducts = products.filter((p: any) => p.isActive).length
+  const totalRevenue = stats.totalRevenue || Number(botStats.totalRevenue || 0) || 0
+  const totalOrders = stats.totalOrders || botStats.totalOrders || orders.length
+  const totalMessages = stats.messagesCount || botStats.totalMessages || 0
+
   const averageOrderValue = totalOrders > 0 ? Number(totalRevenue) / totalOrders : 0
-  const activeProducts = products.filter(p => p.isActive).length
-  const lowStockProducts = products.filter(p => p.stock < 5).length
-  const unreadInquiries = inquiries.filter(i => !i.isRead).length
+  const lowStockProducts = products.filter((p: any) => p.stock < 5).length
+  const unreadInquiries = inquiries.filter((i: any) => !i.isRead).length
 
-  // Debug logging for troubleshooting
-  console.log('Analytics Debug:', {
-    products: products.length,
-    activeProducts,
-    stats,
-    botStats,
-    totalUsers,
-    totalProducts,
-    loading: {
-      products: productsLoading,
-      stats: statsLoading,
-      botStats: botStatsLoading
-    },
-    errors: {
-      products: productsError,
-      stats: statsError,
-      botStats: botStatsError
-    }
-  })
-  
   // Recent activity (last 7 days)
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-  const recentOrders = orders.filter(o => new Date(o.createdAt) > weekAgo)
-  const recentInquiries = inquiries.filter(i => new Date(i.createdAt) > weekAgo)
-  const recentProducts = products.filter(p => new Date(p.createdAt) > weekAgo)
+  const recentOrders = orders.filter((o: any) => new Date(o.createdAt) > weekAgo)
+  const recentInquiries = inquiries.filter((i: any) => new Date(i.createdAt) > weekAgo)
+  const recentProducts = products.filter((p: any) => new Date(p.createdAt) > weekAgo)
 
   // Order status breakdown
-  const pendingOrders = orders.filter(o => o.status.toLowerCase() === 'pending').length
-  const completedOrders = orders.filter(o => ['shipped', 'delivered'].includes(o.status.toLowerCase())).length
-  const processingOrders = orders.filter(o => ['confirmed', 'processing'].includes(o.status.toLowerCase())).length
+  const pendingOrders = orders.filter((o: any) => o.status?.toLowerCase() === 'pending').length
+  const completedOrders = orders.filter((o: any) => ['shipped', 'delivered'].includes(o.status?.toLowerCase())).length
+  const processingOrders = orders.filter((o: any) => ['confirmed', 'processing'].includes(o.status?.toLowerCase())).length
+
+  const isLoading = productsLoading || statsLoading || botStatsLoading
+
+  console.log('Analytics Simple Debug:', {
+    totalUsers,
+    totalProducts,
+    activeProducts,
+    products: products.length,
+    stats,
+    botStats,
+    isLoading
+  })
 
   return (
     <div className="space-y-6">
@@ -137,7 +87,7 @@ export default function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              {statsLoading || botStatsLoading ? 'Loading...' : totalUsers}
+              {isLoading ? 'Loading...' : totalUsers}
             </div>
             <p className="text-xs text-muted-foreground">Telegram bot users</p>
           </CardContent>
@@ -161,9 +111,9 @@ export default function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">
-              {productsLoading ? 'Loading...' : activeProducts}
+              {isLoading ? 'Loading...' : activeProducts}
             </div>
-            <p className="text-xs text-muted-foreground">of {productsLoading ? '...' : totalProducts} total</p>
+            <p className="text-xs text-muted-foreground">of {totalProducts} total</p>
           </CardContent>
         </Card>
 
@@ -204,7 +154,7 @@ export default function Analytics() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Revenue (7d)</span>
               <span className="font-semibold text-green-600">
-                ${recentOrders.reduce((sum, order) => sum + Number(order.totalAmount), 0).toFixed(2)}
+                ${recentOrders.reduce((sum: number, order: any) => sum + Number(order.totalAmount || 0), 0).toFixed(2)}
               </span>
             </div>
           </CardContent>
@@ -260,7 +210,7 @@ export default function Analytics() {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Bot Revenue</span>
-              <span className="font-semibold text-purple-600">${Number(botStats?.totalRevenue || 0).toFixed(2)}</span>
+              <span className="font-semibold text-purple-600">${Number(botStats.totalRevenue || 0).toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
@@ -280,7 +230,7 @@ export default function Analytics() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Last Update</span>
               <span className="font-semibold text-blue-600">
-                {botStats?.updatedAt ? new Date(botStats.updatedAt).toLocaleTimeString() : 'N/A'}
+                {botStats.updatedAt ? new Date(botStats.updatedAt).toLocaleTimeString() : 'N/A'}
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -319,97 +269,6 @@ export default function Analytics() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Inventory & Customer Support */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5" />
-              Inventory Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Total Products</span>
-              <span className="font-semibold">{products.length}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Active Products</span>
-              <span className="font-semibold text-green-600">{activeProducts}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Low Stock (&lt; 5)</span>
-              <span className={`font-semibold ${lowStockProducts > 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                {lowStockProducts}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Total Stock Value</span>
-              <span className="font-semibold text-green-600">
-                ${products.reduce((sum, p) => sum + (p.price * p.stock), 0).toFixed(2)}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5" />
-              Customer Support
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Total Messages</span>
-              <span className="font-semibold">{inquiries.length}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Unread Messages</span>
-              <span className={`font-semibold ${unreadInquiries > 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                {unreadInquiries}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Response Rate</span>
-              <span className="font-semibold text-green-600">
-                {inquiries.length > 0 ? Math.round(((inquiries.length - unreadInquiries) / inquiries.length) * 100) : 100}%
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Avg Daily Messages</span>
-              <span className="font-semibold text-blue-600">
-                {Math.round(inquiries.length / Math.max(1, (Date.now() - new Date(inquiries[inquiries.length - 1]?.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24)))}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Alerts & Recommendations */}
-      {(lowStockProducts > 0 || unreadInquiries > 0) && (
-        <Card className="border-orange-200 bg-orange-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-800">
-              <Clock className="w-5 h-5" />
-              Action Required
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {lowStockProducts > 0 && (
-              <div className="text-sm text-orange-700">
-                • {lowStockProducts} product{lowStockProducts > 1 ? 's have' : ' has'} low stock (&lt; 5 units) - consider restocking
-              </div>
-            )}
-            {unreadInquiries > 0 && (
-              <div className="text-sm text-orange-700">
-                • {unreadInquiries} unread customer message{unreadInquiries > 1 ? 's' : ''} - respond to maintain customer satisfaction
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-start">

@@ -7,7 +7,7 @@ import Categories from './pages/categories'
 import Orders from './pages/orders'
 import Inquiries from './pages/inquiries'
 import BotSettings from './pages/bot-settings'
-import Analytics from './pages/analytics'
+import Analytics from './pages/analytics-simple'
 import Broadcast from './pages/broadcast'
 
 import PaymentMethods from './pages/payment-methods'
