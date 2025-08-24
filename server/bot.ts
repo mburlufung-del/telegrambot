@@ -1240,6 +1240,9 @@ ${businessHours}
 
     const category = await storage.getCategories().then(cats => cats.find(c => c.id === product.categoryId));
     
+    // Clear previous messages first
+    await this.clearPreviousMessages(chatId);
+    
     // Send product image if available
     if (product.imageUrl) {
       try {
@@ -1256,9 +1259,9 @@ ${businessHours}
         
         // Add to auto-vanish tracking
         if (sentMessage) {
-          const botMsgIds = this.botMessages.get(chatId) || [];
+          const botMsgIds = this.botMessagesToDelete.get(chatId) || [];
           botMsgIds.push(sentMessage.message_id);
-          this.botMessages.set(chatId, botMsgIds);
+          this.botMessagesToDelete.set(chatId, botMsgIds);
           console.log(`[INSTANT-VANISH] Tracked product image message ${sentMessage.message_id} for user ${chatId}`);
         }
       } catch (error) {
