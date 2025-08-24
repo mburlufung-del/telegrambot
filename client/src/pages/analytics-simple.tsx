@@ -81,7 +81,7 @@ export default function Analytics() {
 
   // Order status breakdown
   const pendingOrders = orders.filter((o: any) => o.status?.toLowerCase() === 'pending').length
-  const completedOrders = orders.filter((o: any) => ['shipped', 'delivered'].includes(o.status?.toLowerCase())).length
+  const completedOrders = orders.filter((o: any) => ['completed', 'shipped', 'delivered'].includes(o.status?.toLowerCase())).length
   const processingOrders = orders.filter((o: any) => ['confirmed', 'processing'].includes(o.status?.toLowerCase())).length
 
   const isLoading = productsLoading || statsLoading || botStatsLoading
@@ -93,7 +93,18 @@ export default function Analytics() {
     products: products.length,
     stats,
     botStats,
-    isLoading
+    isLoading,
+    orders: {
+      total: orders.length,
+      pending: pendingOrders,
+      processing: processingOrders,
+      completed: completedOrders,
+      statusBreakdown: orders.reduce((acc: any, order: any) => {
+        const status = order.status?.toLowerCase() || 'unknown'
+        acc[status] = (acc[status] || 0) + 1
+        return acc
+      }, {})
+    }
   })
 
   return (
