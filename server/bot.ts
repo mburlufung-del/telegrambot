@@ -1249,10 +1249,18 @@ ${businessHours}
         
         console.log(`Sending product image: ${fullImageUrl}`);
         
-        await this.bot?.sendPhoto(chatId, fullImageUrl, {
+        const sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
           caption: `📦 *${product.name}*`,
           parse_mode: 'Markdown'
         });
+        
+        // Add to auto-vanish tracking
+        if (sentMessage) {
+          const botMsgIds = this.botMessages.get(chatId) || [];
+          botMsgIds.push(sentMessage.message_id);
+          this.botMessages.set(chatId, botMsgIds);
+          console.log(`[INSTANT-VANISH] Tracked product image message ${sentMessage.message_id} for user ${chatId}`);
+        }
       } catch (error) {
         console.log('Image sending failed, continuing with text display:', error);
       }
