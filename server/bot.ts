@@ -1343,10 +1343,19 @@ ${businessHours}
 
     const keyboard = { inline_keyboard: actionButtons };
 
-    await this.sendAutoVanishMessage(chatId, message, {
+    // Send product details message without clearing the image
+    const detailsMessage = await this.bot?.sendMessage(chatId, message, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
     });
+
+    // Add details message to tracking (but keep the image)
+    if (detailsMessage) {
+      const userMsgIds = this.userMessages.get(chatId) || [];
+      userMsgIds.push(detailsMessage.message_id);
+      this.userMessages.set(chatId, userMsgIds);
+      console.log(`[INSTANT-VANISH] Tracked product details message ${detailsMessage.message_id} for user ${chatId}`);
+    }
   }
 
 
