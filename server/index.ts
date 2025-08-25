@@ -93,17 +93,29 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // serve the dashboard with a simple working frontend
+  // serve the React admin dashboard with workaround for Vite path issues
   const path = require('path');
   
-  // For all non-API routes, serve the simple dashboard first
+  // Try to serve built files first, then development files
+  app.use(express.static(path.resolve(process.cwd(), 'dist', 'public')));
+  app.use('/assets', express.static(path.resolve(process.cwd(), 'client', 'src')));
+  
+  // For all non-API routes, serve the React app
   app.get('*', (req, res) => {
     if (req.path.startsWith('/api')) {
       return res.status(404).json({ error: 'API route not found' });
     }
     
-    // Serve the simple HTML dashboard for all frontend routes
-    res.sendFile(path.resolve(process.cwd(), 'client', 'simple.html'));
+    // Try built version first, fallback to development
+    const builtIndex = path.resolve(process.cwd(), 'dist', 'public', 'index.html');
+    const devIndex = path.resolve(process.cwd(), 'client', 'index.html');
+    
+    const fs = require('fs');
+    if (fs.existsSync(builtIndex)) {
+      res.sendFile(builtIndex);
+    } else {
+      res.sendFile(devIndex);
+    }
   });
 
   // ALWAYS serve the app on the port specified in the environment variable PORT

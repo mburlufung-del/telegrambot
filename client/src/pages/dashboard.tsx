@@ -249,7 +249,7 @@ export default function Dashboard() {
             <Folder className="h-4 w-4 text-teal-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-teal-600">{categories.length}</div>
+            <div className="text-2xl font-bold text-teal-600">{categories?.length || 0}</div>
             <p className="text-xs text-gray-600">Product categories</p>
           </CardContent>
         </Card>
