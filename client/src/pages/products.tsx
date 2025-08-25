@@ -40,15 +40,13 @@ export default function Products() {
     queryKey: ['/api/products'],
     staleTime: 0,
     refetchOnMount: true,
-    refetchInterval: 5000, // Refetch every 5 seconds to see new products
+    refetchInterval: 30000,
     queryFn: async () => {
-      console.log('Products page: Fetching products...');
       const response = await fetch('/api/products');
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       const data = await response.json();
-      console.log('Products page: Got', data.length, 'products');
       return data;
     }
   })
@@ -57,15 +55,13 @@ export default function Products() {
     queryKey: ['/api/categories'],
     staleTime: 0,
     refetchOnMount: true,
-    refetchInterval: 3000,
+    refetchInterval: 30000,
     queryFn: async () => {
-      console.log('Products page: Fetching categories...');
       const response = await fetch('/api/categories');
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       const data = await response.json();
-      console.log('Products page: Got', data.length, 'categories');
       return data;
     }
   })

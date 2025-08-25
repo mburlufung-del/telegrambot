@@ -8,19 +8,11 @@ export default function FreshDashboard() {
   const { data: botSettings = [], isLoading, error } = useQuery<BotSettings[]>({
     queryKey: ['bot-settings-fresh'],
     queryFn: async () => {
-      console.log('🚀 Fresh fetch starting...')
       const response = await fetch('/api/bot/settings')
-      console.log('📡 Response status:', response.status)
-      
       if (!response.ok) {
-        console.error('❌ Response not OK:', response.status, response.statusText)
         throw new Error(`HTTP ${response.status}`)
       }
-      
-      const data = await response.json()
-      console.log('✅ Success! Data received:', data.length, 'items')
-      console.log('📋 First item:', data[0])
-      return data
+      return response.json()
     },
     retry: false,
     refetchOnMount: true,
@@ -35,7 +27,7 @@ export default function FreshDashboard() {
       }
       return response.json()
     },
-    refetchInterval: 5000, // Refresh every 5 seconds to show new additions
+    refetchInterval: 30000
   })
 
   const getSetting = (key: string): string => {

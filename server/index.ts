@@ -80,14 +80,13 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
+  // temporarily bypass vite middleware due to import.meta.dirname issues
+  // use simple static file serving for now
+  const path = require('path');
+  app.use(express.static('public'));
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(process.cwd(), 'client', 'index.html'));
+  });
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
@@ -111,12 +110,16 @@ async function autoInitializeBot() {
     const tokenSetting = settings.find(s => s.key === 'bot_token');
     
     if (!tokenSetting) {
-      // Set the bot token automatically
-      await storage.setBotSetting({
-        key: 'bot_token',
-        value: '7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs'
-      });
-      log('Bot token auto-configured');
+      // Set the bot token from environment variable
+      if (process.env.TELEGRAM_BOT_TOKEN) {
+        await storage.setBotSetting({
+          key: 'bot_token',
+          value: process.env.TELEGRAM_BOT_TOKEN
+        });
+        log('Bot token auto-configured from environment');
+      } else {
+        log('TELEGRAM_BOT_TOKEN environment variable not found');
+      }
     }
     
     // Initialize bot by calling the bot restart endpoint

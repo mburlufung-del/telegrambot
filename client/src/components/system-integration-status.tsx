@@ -36,7 +36,7 @@ export default function SystemIntegrationStatus() {
   });
 
   const restartBotMutation = useMutation({
-    mutationFn: () => apiRequest("/api/bot/restart", "POST"),
+    mutationFn: () => apiRequest("/api/bot/restart", { method: "POST" }),
     onSuccess: () => {
       toast({
         title: "Bot Restarted",

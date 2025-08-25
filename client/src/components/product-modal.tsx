@@ -75,7 +75,10 @@ export default function ProductModal({ open, onOpenChange, product }: ProductMod
 
   const createProductMutation = useMutation({
     mutationFn: async (data: any) => {
-      await apiRequest("POST", "/api/products", data);
+      await apiRequest("/api/products", {
+        method: "POST",
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
@@ -96,7 +99,10 @@ export default function ProductModal({ open, onOpenChange, product }: ProductMod
 
   const updateProductMutation = useMutation({
     mutationFn: async (data: any) => {
-      await apiRequest("PUT", `/api/products/${product!.id}`, data);
+      await apiRequest(`/api/products/${product!.id}`, {
+        method: "PUT",
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });

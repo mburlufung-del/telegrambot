@@ -24,28 +24,17 @@ export default function Inquiries() {
   const { data: inquiries = [], isLoading, error } = useQuery<Inquiry[]>({
     queryKey: ['/api/inquiries'],
     queryFn: async () => {
-      console.log('🔍 Fetching inquiries from API...');
       const response = await fetch('/api/inquiries');
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      const data = await response.json();
-      console.log('📝 Inquiries received:', data.length, 'items');
-      console.log('📄 First inquiry sample:', data[0]);
-      return data;
+      return response.json();
     },
-    refetchInterval: 30 * 1000, // Refresh every 30 seconds for testing
+    refetchInterval: 30 * 1000,
     staleTime: 0, // Always fetch fresh data
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   })
-
-  console.log('📊 Current inquiries state:', { 
-    count: inquiries?.length || 0, 
-    loading: isLoading,
-    error: error?.message,
-    firstInquiry: inquiries?.[0]
-  });
 
   const markAsReadMutation = useMutation({
     mutationFn: async (id: string) => {

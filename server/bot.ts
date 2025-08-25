@@ -16,18 +16,16 @@ export class TeleShopBot {
       if (!token) {
         const botSettings = await storage.getBotSettings();
         const tokenSetting = botSettings.find(s => s.key === 'bot_token');
-        token = tokenSetting?.value || '7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs';
+        token = tokenSetting?.value;
         
-        // Save default token if none exists
-        if (!tokenSetting) {
-          await storage.setBotSetting({
-            key: 'bot_token',
-            value: '7331717510:AAGbWPSCRgCgi3TO423wu7RWH1oTTaRSXbs'
-          });
+        if (!token) {
+          throw new Error('Bot token not configured. Please set TELEGRAM_BOT_TOKEN environment variable or configure via admin panel.');
         }
       }
 
-      console.log('Initializing bot with token...', token ? 'YES' : 'NO');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Initializing bot with token...', token ? 'YES' : 'NO');
+      }
       
       // Choose polling for development, webhook for production
       const useWebhook = process.env.NODE_ENV === 'production' && process.env.WEBHOOK_URL;
@@ -36,17 +34,22 @@ export class TeleShopBot {
         this.bot = new TelegramBot(token, { webHook: true });
         const webhookUrl = `${process.env.WEBHOOK_URL}/webhook`;
         await this.bot.setWebHook(webhookUrl);
-        console.log(`Telegram bot initialized with webhook: ${webhookUrl}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Telegram bot initialized with webhook: ${webhookUrl}`);
+        }
       } else {
         this.bot = new TelegramBot(token, { polling: true });
-        console.log('Telegram bot initialized with polling for development');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Telegram bot initialized with polling for development');
+        }
       }
 
       this.setupMessageHandlers();
-      // setupAdditionalCallbacks() removed to prevent duplicate callback processing
       return true;
     } catch (error) {
-      console.error('Failed to initialize Telegram bot:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to initialize Telegram bot:', error);
+      }
       this.bot = null;
       return false;
     }
@@ -54,7 +57,9 @@ export class TeleShopBot {
 
   async restart() {
     try {
-      console.log('Restarting bot...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Restarting bot...');
+      }
       // Stop current bot
       if (this.bot) {
         await this.bot.stopPolling();
