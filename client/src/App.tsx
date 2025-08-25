@@ -2,6 +2,7 @@ import { Switch, Route } from 'wouter'
 import Sidebar from './components/layout/sidebar'
 import Header from './components/layout/header'
 import Dashboard from './pages/dashboard'
+import FreshDashboard from './pages/fresh-dashboard'
 import Products from './pages/products'
 import Categories from './pages/categories'
 import Orders from './pages/orders'
@@ -23,7 +24,7 @@ function App() {
         
         <main className="flex-1 p-6">
           <Switch>
-            <Route path="/" component={Dashboard} />
+            <Route path="/" component={FreshDashboard} />
             <Route path="/products" component={Products} />
             <Route path="/categories" component={Categories} />
             <Route path="/orders" component={Orders} />
