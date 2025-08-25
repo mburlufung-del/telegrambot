@@ -78,19 +78,19 @@ export default function Inquiries() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Customer Inquiries</h1>
-          <p className="text-gray-600 mt-2">Messages and inquiries from your Telegram bot users</p>
+          <h1 className="text-2xl lg:text-3xl font-bold">Customer Inquiries</h1>
+          <p className="text-gray-600 mt-1 lg:mt-2">Messages and inquiries from your Telegram bot users</p>
         </div>
-        <div className="text-right">
+        <div className="text-center sm:text-right">
           <div className="text-2xl font-bold text-blue-600">{totalInquiries}</div>
           <div className="text-sm text-gray-600">Total Messages</div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">

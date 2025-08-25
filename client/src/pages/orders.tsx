@@ -44,19 +44,19 @@ export default function Orders() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Order Management</h1>
-          <p className="text-gray-600 mt-2">View and manage customer orders from Telegram bot</p>
+          <h1 className="text-2xl lg:text-3xl font-bold">Order Management</h1>
+          <p className="text-gray-600 mt-1 lg:mt-2">View and manage customer orders from Telegram bot</p>
         </div>
-        <div className="text-right">
+        <div className="text-center sm:text-right">
           <div className="text-2xl font-bold text-blue-600">{orders.length}</div>
           <div className="text-sm text-gray-600">Total Orders</div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
