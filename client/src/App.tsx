@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import Dashboard from './pages/dashboard'
 import FreshDashboard from './pages/fresh-dashboard'
+import ComprehensiveDashboard from './pages/comprehensive-dashboard'
 import Products from './pages/products'
 import Categories from './pages/categories'
 import Orders from './pages/orders'
@@ -167,7 +168,8 @@ function App() {
           </div>
           
           <Switch>
-          <Route path="/" component={FreshDashboard} />
+          <Route path="/" component={ComprehensiveDashboard} />
+          <Route path="/simple-dashboard" component={FreshDashboard} />
           <Route path="/old-dashboard" component={Dashboard} />
           <Route path="/products" component={Products} />
           <Route path="/categories">
