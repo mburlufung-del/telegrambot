@@ -1,72 +1,8 @@
-import * as React from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { SimpleCategories } from '@/components/SimpleCategories'
-import { Users, ShoppingCart, DollarSign, MessageSquare, Bot, CheckCircle, Package, Settings, CreditCard, Mail, AlertCircle, RefreshCw, Tag, Folder } from 'lucide-react'
-
-// Direct categories test component
-function DirectCategoriesTest() {
-  const [categories, setCategories] = React.useState([])
-  const [loading, setLoading] = React.useState(true)
-
-  React.useEffect(() => {
-    console.log('DirectCategoriesTest: Starting fetch...')
-    const fetchCategories = async () => {
-      try {
-        console.log('DirectCategoriesTest: Making API call...')
-        const response = await fetch('/api/categories')
-        console.log('DirectCategoriesTest: Response status:', response.status)
-        const data = await response.json()
-        console.log('DirectCategoriesTest: Got categories:', data.length)
-        console.log('DirectCategoriesTest: Categories:', data.map((c: any) => c.name).join(', '))
-        setCategories(data)
-      } catch (error) {
-        console.error('DirectCategoriesTest error:', error)
-      }
-      setLoading(false)
-    }
-    fetchCategories()
-    
-    // Also set interval for testing
-    const interval = setInterval(fetchCategories, 5000)
-    return () => clearInterval(interval)
-  }, [])
-
-  if (loading) return <div className="text-sm">Loading categories...</div>
-
-  console.log('DirectCategoriesTest render - categories:', categories.length, 'loading:', loading)
-
-  return (
-    <div className="space-y-2">
-      <p className="text-sm font-bold text-blue-600">
-        DirectCategoriesTest Status: {loading ? 'Loading...' : `✓ Found ${categories.length} categories`}
-      </p>
-      
-      {!loading && categories.length > 0 && (
-        <>
-          <div className="grid grid-cols-3 gap-2">
-            {categories.slice(0, 12).map((cat: any, index: number) => (
-              <div key={cat.id || index} className="text-xs p-2 bg-blue-100 rounded border">
-                <strong>{cat.name}</strong>
-                {cat.isActive && <span className="text-green-600"> ✓</span>}
-              </div>
-            ))}
-          </div>
-          {categories.length > 12 && (
-            <p className="text-xs text-gray-600 font-medium">...and {categories.length - 12} more categories</p>
-          )}
-        </>
-      )}
-      
-      {!loading && categories.length === 0 && (
-        <div className="text-red-600 text-sm font-medium">
-          No categories found! Check API /api/categories
-        </div>
-      )}
-    </div>
-  )
-}
+import { Users, ShoppingCart, DollarSign, MessageSquare, Bot, CheckCircle, Package, RefreshCw, Folder, CreditCard, Mail, Tag, Settings, AlertCircle } from 'lucide-react'
 import type { Product, BotSettings, Category } from '@shared/schema'
 
 interface DashboardStats {
@@ -84,10 +20,6 @@ interface BotStatus {
   mode: 'polling' | 'webhook'
 }
 
-// Remove local interface - will use BotSettings from shared schema
-
-// Remove local interface - will use Product from shared schema
-
 export default function Dashboard() {
   const queryClient = useQueryClient()
 
@@ -101,47 +33,23 @@ export default function Dashboard() {
     refetchInterval: 2 * 60 * 1000, // 2 minutes
   })
 
-  const { data: botSettings = [], isLoading: settingsLoading, error: settingsError } = useQuery<BotSettings[]>({
+  const { data: botSettings = [] } = useQuery<BotSettings[]>({
     queryKey: ['/api/bot/settings'],
-    refetchInterval: false,
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
-    staleTime: 0,
-    retry: 1,
-    queryFn: async () => {
-      console.log('Fetching bot settings from API...')
-      try {
-        const response = await fetch('/api/bot/settings')
-        console.log('API Response status:', response.status)
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-        const data = await response.json()
-        console.log('Fetched bot settings data:', data)
-        return data
-      } catch (error) {
-        console.error('Error fetching bot settings:', error)
-        throw error
-      }
-    }
+    refetchInterval: 5 * 60 * 1000, // 5 minutes
   })
 
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ['/api/products'],
-    refetchInterval: false, // Only refetch manually
+    refetchInterval: 5 * 60 * 1000, // 5 minutes
   })
 
-  // Categories are now handled by the CategoriesDisplay component
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ['/api/categories'],
+    refetchInterval: 5 * 60 * 1000, // 5 minutes
+  })
 
   const refreshDashboard = async () => {
-    console.log('Refreshing dashboard data...')
-    await queryClient.invalidateQueries({ queryKey: ['/api/bot/settings'] })
-    await queryClient.invalidateQueries({ queryKey: ['/api/products'] })
-    await queryClient.invalidateQueries({ queryKey: ['/api/categories'] })
-    await queryClient.refetchQueries({ queryKey: ['/api/categories'] })
-    await queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] })
-    await queryClient.invalidateQueries({ queryKey: ['/api/bot/status'] })
-    console.log('Dashboard refresh triggered')
+    await queryClient.invalidateQueries()
   }
 
   if (statsLoading) {
@@ -151,15 +59,7 @@ export default function Dashboard() {
   const dashboardStats = stats
   
   const getSetting = (key: string) => {
-    if (settingsLoading) return 'Loading...'
-    if (settingsError) {
-      console.error('Settings error:', settingsError)
-      return 'Error loading'
-    }
-    console.log('All bot settings:', botSettings)
-    console.log('Settings length:', botSettings?.length)
     const setting = botSettings.find(s => s.key === key)
-    console.log(`Getting setting ${key}:`, setting)
     return setting?.value || 'Not set'
   }
 
@@ -249,7 +149,7 @@ export default function Dashboard() {
             <Folder className="h-4 w-4 text-teal-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-teal-600">{categories?.length || 0}</div>
+            <div className="text-2xl font-bold text-teal-600">{categories.length}</div>
             <p className="text-xs text-gray-600">Product categories</p>
           </CardContent>
         </Card>
