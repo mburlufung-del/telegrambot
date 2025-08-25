@@ -5,6 +5,19 @@ import { storage } from "./storage";
 import { seedDatabase } from "./seed";
 
 const app = express();
+
+// Add proper MIME type handling middleware
+app.use((req, res, next) => {
+  if (req.url.endsWith('.js') || req.url.endsWith('.mjs')) {
+    res.type('application/javascript');
+  } else if (req.url.endsWith('.css')) {
+    res.type('text/css');
+  } else if (req.url.endsWith('.html')) {
+    res.type('text/html');
+  }
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -80,12 +93,17 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // temporarily bypass vite middleware due to import.meta.dirname issues
-  // use simple static file serving for now
+  // serve the dashboard with a simple working frontend
   const path = require('path');
-  app.use(express.static('public'));
+  
+  // For all non-API routes, serve the simple dashboard first
   app.get('*', (req, res) => {
-    res.sendFile(path.resolve(process.cwd(), 'client', 'index.html'));
+    if (req.path.startsWith('/api')) {
+      return res.status(404).json({ error: 'API route not found' });
+    }
+    
+    // Serve the simple HTML dashboard for all frontend routes
+    res.sendFile(path.resolve(process.cwd(), 'client', 'simple.html'));
   });
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
