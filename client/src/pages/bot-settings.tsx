@@ -250,85 +250,100 @@ export default function BotSettings() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Bot Settings</h1>
-          <p className="text-gray-600 mt-2">Configure your Telegram bot settings. Changes sync instantly.</p>
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold">Bot Settings</h1>
+            <p className="text-gray-600 mt-1 lg:mt-2">Configure your Telegram bot settings. Changes sync instantly.</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <Button 
+              onClick={refreshSettings} 
+              variant="outline" 
+              size="sm"
+              className="flex items-center gap-2 w-full sm:w-auto"
+              disabled={isLoading}
+              data-testid="button-refresh-settings"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh Settings
+            </Button>
+            {botStatus && (
+              <div className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm ${
+                botStatus.status === 'online' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                <Bot className="w-4 h-4 mr-2" />
+                {botStatus.status} ({botStatus.mode})
+              </div>
+            )}
+            <Button
+              onClick={() => restartBotMutation.mutate()}
+              disabled={restartBotMutation.isPending}
+              variant="outline"
+              className="w-full sm:w-auto"
+              data-testid="button-restart-bot"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${restartBotMutation.isPending ? 'animate-spin' : ''}`} />
+              Restart Bot
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2 items-center">
-          <Button 
-            onClick={refreshSettings} 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-2"
-            disabled={isLoading}
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh Settings
-          </Button>
-          {botStatus && (
-            <div className={`flex items-center px-3 py-2 rounded-lg text-sm ${
-              botStatus.status === 'online' 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
-              <Bot className="w-4 h-4 mr-2" />
-              {botStatus.status} ({botStatus.mode})
-            </div>
-          )}
-          <Button
-            onClick={() => restartBotMutation.mutate()}
-            disabled={restartBotMutation.isPending}
-            variant="outline"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${restartBotMutation.isPending ? 'animate-spin' : ''}`} />
-            Restart Bot
-          </Button>
-        </div>
-      </div>
 
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+      </div>
+      
+      {/* Mobile-friendly tab navigation */}
+      <div className="flex flex-wrap sm:flex-nowrap gap-1 bg-gray-100 p-1 rounded-lg">
         <button
           onClick={() => setActiveTab('general')}
-          className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+          className={`flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium flex-1 sm:flex-none ${
             activeTab === 'general' ? 'bg-white shadow' : 'hover:bg-gray-200'
           }`}
+          data-testid="tab-general"
         >
-          <Settings className="w-4 h-4 mr-2" />
-          General
+          <Settings className="w-4 h-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">General</span>
+          <span className="sm:hidden">Info</span>
         </button>
         <button
           onClick={() => setActiveTab('messages')}
-          className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+          className={`flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium flex-1 sm:flex-none ${
             activeTab === 'messages' ? 'bg-white shadow' : 'hover:bg-gray-200'
           }`}
+          data-testid="tab-messages"
         >
-          <MessageSquare className="w-4 h-4 mr-2" />
-          Messages
+          <MessageSquare className="w-4 h-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Messages</span>
+          <span className="sm:hidden">Msgs</span>
         </button>
         <button
           onClick={() => setActiveTab('operator')}
-          className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+          className={`flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium flex-1 sm:flex-none ${
             activeTab === 'operator' ? 'bg-white shadow' : 'hover:bg-gray-200'
           }`}
+          data-testid="tab-operator"
         >
-          <User className="w-4 h-4 mr-2" />
-          Support
+          <User className="w-4 h-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Support</span>
+          <span className="sm:hidden">Help</span>
         </button>
         <button
           onClick={() => setActiveTab('payment')}
-          className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+          className={`flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium flex-1 sm:flex-none ${
             activeTab === 'payment' ? 'bg-white shadow' : 'hover:bg-gray-200'
           }`}
+          data-testid="tab-payment"
         >
-          <CreditCard className="w-4 h-4 mr-2" />
-          Payment
+          <CreditCard className="w-4 h-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Payment</span>
+          <span className="sm:hidden">Pay</span>
         </button>
       </div>
 
       {activeTab === 'general' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Bot Information</CardTitle>
