@@ -223,6 +223,12 @@ export default function FreshDashboard() {
           <div className="text-sm">
             <strong>Settings Count:</strong> {botSettings.length}
           </div>
+          <div className="text-sm">
+            <strong>Categories Count:</strong> {categories.length}
+          </div>
+          <div className="text-sm">
+            <strong>Categories Data:</strong> {JSON.stringify(categories.map(c => c.name))}
+          </div>
           {botSettings.length > 0 && (
             <div className="text-sm">
               <strong>Sample Setting:</strong> {botSettings[0].key} = {botSettings[0].value}
