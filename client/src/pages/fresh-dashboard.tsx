@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Bot, MessageSquare, RefreshCw, CreditCard } from 'lucide-react'
-import type { BotSettings, PaymentMethod } from '@shared/schema'
+import { Bot, MessageSquare, RefreshCw, CreditCard, Folder } from 'lucide-react'
+import type { BotSettings, PaymentMethod, Category } from '@shared/schema'
 
 export default function FreshDashboard() {
   const { data: botSettings = [], isLoading, error } = useQuery<BotSettings[]>({
@@ -22,6 +22,18 @@ export default function FreshDashboard() {
     queryKey: ['payment-methods-dashboard'],
     queryFn: async () => {
       const response = await fetch('/api/payment-methods')
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      return response.json()
+    },
+    refetchInterval: 30000
+  })
+
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ['categories-dashboard'],
+    queryFn: async () => {
+      const response = await fetch('/api/categories')
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
       }
@@ -97,12 +109,12 @@ export default function FreshDashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="w-5 h-5" />
-              Active Payment Methods
+              Payment Methods
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -137,6 +149,43 @@ export default function FreshDashboard() {
 
         <Card>
           <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Folder className="w-5 h-5" />
+              Product Categories
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {categories.length === 0 ? (
+              <div className="text-sm text-gray-500 text-center py-4">
+                No categories configured
+              </div>
+            ) : (
+              categories
+                .filter(cat => cat.isActive)
+                .map((category, index) => (
+                  <div key={category.id} className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <div>
+                      <span className="font-medium">{category.name}</span>
+                      <div className="text-xs text-blue-600 mt-1">
+                        Active Category
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      #{index + 1}
+                    </div>
+                  </div>
+                ))
+            )}
+            <div className="pt-2 border-t">
+              <div className="text-xs text-gray-500">
+                Total: {categories.filter(cat => cat.isActive).length} active categories
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>System Status</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -147,6 +196,10 @@ export default function FreshDashboard() {
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Payment Methods:</span>
               <span className="font-medium">{paymentMethods.filter(pm => pm.isActive).length} Active</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Categories:</span>
+              <span className="font-medium">{categories.filter(cat => cat.isActive).length} Active</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Configuration:</span>
