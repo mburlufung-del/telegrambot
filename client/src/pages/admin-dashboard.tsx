@@ -37,28 +37,33 @@ export default function AdminDashboard() {
 
   const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
-    refetchInterval: 30000,
+    refetchInterval: 5000, // Faster refresh for testing
     staleTime: 0,
     refetchOnMount: true,
     queryFn: async () => {
-      console.log('Admin Dashboard: Fetching categories...')
+      console.log('🔍 Admin Dashboard: Fetching categories...')
       const response = await fetch('/api/categories')
       if (!response.ok) {
+        console.error('❌ Categories API Error:', response.status, response.statusText)
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
       const data = await response.json()
-      console.log('Admin Dashboard: Got', data.length, 'categories:', data)
+      console.log('✅ Admin Dashboard: Got', data.length, 'categories:', data.map(c => c.name))
       return data
     }
   })
 
   // Debug logging
-  console.log('Admin Dashboard render:', {
+  console.log('🎯 Dashboard Render State:', {
     categoriesLoading,
-    categoriesCount: categories.length,
-    categories: categories,
-    categoriesError
+    categoriesCount: categories?.length || 0,
+    hasCategories: categories && categories.length > 0,
+    categoriesError: categoriesError?.message || null
   })
+
+  // Force a re-render indicator
+  const renderTime = new Date().toISOString()
+  console.log('🔄 Dashboard rendered at:', renderTime)
 
   // Calculate stats
   const activeProducts = products.filter(p => p.isActive).length
