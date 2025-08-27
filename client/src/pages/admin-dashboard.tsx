@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import React
+import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -36,21 +36,26 @@ export default function AdminDashboard() {
     refetchInterval: 30000
   })
 
-  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError, refetch: refetchCategories } = useQuery<Category[]>({
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
-    refetchInterval: 5000, // Faster refresh for testing
+    refetchInterval: 3000,
     staleTime: 0,
     refetchOnMount: true,
-    retry: false,
     queryFn: async () => {
+      console.log('Fetching categories...')
       const response = await fetch('/api/categories')
       if (!response.ok) {
+        console.error('Categories API failed:', response.status)
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
       const data = await response.json()
+      console.log('Categories loaded:', data.length, 'items')
       return data
     }
   })
+
+  // Add debugging
+  console.log('Categories state:', { loading: categoriesLoading, error: categoriesError, count: categories.length })
 
 
 
@@ -193,11 +198,11 @@ export default function AdminDashboard() {
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Categories */}
-        <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <Card className="border-red-200 bg-red-50">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Folder className="w-6 h-6 text-blue-600" />
-              Category Management
+            <CardTitle className="flex items-center gap-2 text-red-700">
+              <Folder className="w-6 h-6 text-red-600" />
+              Categories [DEBUG: {categoriesLoading ? 'Loading' : 'Loaded'} - {categories.length} items]
             </CardTitle>
             <div className="flex gap-2">
               <Link href="/categories">
@@ -206,86 +211,43 @@ export default function AdminDashboard() {
                   Create Category
                 </Button>
               </Link>
-              <Link href="/categories">
-                <Button variant="outline" size="sm" data-testid="button-manage-categories-main">
-                  <Edit className="w-4 h-4 mr-1" />
-                  Manage All
-                </Button>
-              </Link>
             </div>
           </CardHeader>
           <CardContent>
-            {categoriesLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-pulse text-blue-600">Loading categories...</div>
-              </div>
-            ) : categoriesError ? (
-              <div className="text-center py-8">
-                <div className="text-red-600 mb-4">Error loading categories</div>
-                <Link href="/categories">
-                  <Button variant="outline" size="sm">Try Again</Button>
-                </Link>
-              </div>
-            ) : categories.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Folder className="w-8 h-8 text-blue-600" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No categories created yet</h3>
-                <p className="text-gray-600 mb-4">Create your first product category to organize your inventory</p>
-                <Link href="/categories">
-                  <Button data-testid="button-create-first-category-main">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create First Category
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-sm text-gray-600">
-                    {categories.filter(c => c.isActive).length} active categories
-                  </div>
-                  <Link href="/categories">
-                    <Button variant="ghost" size="sm" className="text-blue-600">
-                      View all {categories.length} categories →
-                    </Button>
-                  </Link>
-                </div>
-                <div className="space-y-3">
-                  {categories.slice(0, 5).map((category) => {
-                    const categoryProducts = products.filter(p => p.categoryId === category.id)
-                    return (
-                      <div key={category.id} className="flex items-center justify-between p-3 bg-white border border-blue-200 rounded-lg hover:shadow-md transition-all">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Folder className="w-4 h-4 text-blue-600" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900">{category.name}</div>
-                            <div className="text-sm text-gray-600">{categoryProducts.length} products</div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 text-xs rounded-full font-medium ${
-                            category.isActive 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {category.isActive ? 'Active' : 'Inactive'}
-                          </span>
-                          <Link href="/categories">
-                            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-100">
-                              Edit
-                            </Button>
-                          </Link>
-                        </div>
+            <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded text-xs">
+              DEBUG INFO: Loading={String(categoriesLoading)}, Error={String(categoriesError)}, Count={categories.length}
+              <br />
+              Categories: {categories.map(c => c.name).join(', ')}
+            </div>
+            
+            <div className="mb-4 p-4 bg-green-100 border border-green-400 rounded">
+              <h3 className="font-bold text-green-800 mb-2">TEST DISPLAY - Categories:</h3>
+              {categories.length > 0 ? (
+                <ul className="space-y-2">
+                  {categories.map(category => (
+                    <li key={category.id} className="flex items-center justify-between bg-white p-2 rounded border">
+                      <div>
+                        <strong>{category.name}</strong>
+                        <br />
+                        <small className="text-gray-600">{category.description}</small>
                       </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+                      <span className={`px-2 py-1 text-xs rounded ${category.isActive ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-800'}`}>
+                        {category.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-red-600 font-bold">NO CATEGORIES FOUND!</p>
+              )}
+            </div>
+            
+            <Link href="/categories">
+              <Button className="w-full">
+                <Plus className="w-4 h-4 mr-2" />
+                Go to Categories Page
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 
