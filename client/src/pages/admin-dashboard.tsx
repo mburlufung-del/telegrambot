@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import React
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,11 +36,12 @@ export default function AdminDashboard() {
     refetchInterval: 30000
   })
 
-  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError, refetch: refetchCategories } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
     refetchInterval: 5000, // Faster refresh for testing
     staleTime: 0,
     refetchOnMount: true,
+    retry: false,
     queryFn: async () => {
       console.log('🔍 Admin Dashboard: Fetching categories...')
       const response = await fetch('/api/categories')
@@ -48,10 +50,16 @@ export default function AdminDashboard() {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
       const data = await response.json()
-      console.log('✅ Admin Dashboard: Got', data.length, 'categories:', data.map(c => c.name))
+      console.log('✅ Admin Dashboard: Got', data.length, 'categories:', data.map((c: any) => c.name))
       return data
     }
   })
+
+  // Force refetch on component mount
+  React.useEffect(() => {
+    console.log('🚀 AdminDashboard mounted, forcing categories refetch')
+    refetchCategories()
+  }, [refetchCategories])
 
   // Debug logging
   console.log('🎯 Dashboard Render State:', {
@@ -129,6 +137,10 @@ export default function AdminDashboard() {
           </div>
         </CardHeader>
         <CardContent>
+          <div className="p-2 mb-4 bg-red-100 border border-red-300 rounded text-xs">
+            <strong>DEBUG:</strong> Loading={String(categoriesLoading)}, Error={String(categoriesError)}, Count={categories.length}
+            <br />Data: {JSON.stringify(categories.slice(0, 2).map((c: any) => ({ name: c.name, id: c.id.slice(0, 8) })))}
+          </div>
           {categoriesLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-pulse text-blue-600">Loading categories...</div>
