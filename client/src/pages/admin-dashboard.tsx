@@ -194,6 +194,19 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
+      {/* Categories Debug Section */}
+      <Card className="border-red-200 bg-red-50">
+        <CardHeader>
+          <CardTitle className="text-red-700">DEBUG: Categories Status</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm">
+          <div>Categories Loading: {String(categoriesLoading)}</div>
+          <div>Categories Error: {categoriesError ? String(categoriesError) : 'None'}</div>
+          <div>Categories Count: {categories.length}</div>
+          <div>Categories Data: {JSON.stringify(categories.slice(0, 2), null, 2)}</div>
+        </CardContent>
+      </Card>
+
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Orders */}
