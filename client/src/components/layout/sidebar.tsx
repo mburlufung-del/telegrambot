@@ -3,8 +3,8 @@ import { cn } from "@/lib/utils";
 import { Bot, Package, MessageSquare, Settings, BarChart3, Activity, Folder, ShoppingCart, TrendingUp, Send } from "lucide-react";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: BarChart3 },
-  { name: "Live Activity", href: "/live-activity", icon: Activity },
+  { name: "Admin Dashboard", href: "/", icon: BarChart3 },
+  { name: "Debug Dashboard", href: "/fresh-dashboard", icon: Activity },
   { name: "Products", href: "/products", icon: Package },
   { name: "Categories", href: "/categories", icon: Folder },
   { name: "Orders", href: "/orders", icon: ShoppingCart },
