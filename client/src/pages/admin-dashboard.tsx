@@ -43,35 +43,16 @@ export default function AdminDashboard() {
     refetchOnMount: true,
     retry: false,
     queryFn: async () => {
-      console.log('🔍 Admin Dashboard: Fetching categories...')
       const response = await fetch('/api/categories')
       if (!response.ok) {
-        console.error('❌ Categories API Error:', response.status, response.statusText)
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
       const data = await response.json()
-      console.log('✅ Admin Dashboard: Got', data.length, 'categories:', data.map((c: any) => c.name))
       return data
     }
   })
 
-  // Force refetch on component mount
-  React.useEffect(() => {
-    console.log('🚀 AdminDashboard mounted, forcing categories refetch')
-    refetchCategories()
-  }, [refetchCategories])
 
-  // Debug logging
-  console.log('🎯 Dashboard Render State:', {
-    categoriesLoading,
-    categoriesCount: categories?.length || 0,
-    hasCategories: categories && categories.length > 0,
-    categoriesError: categoriesError?.message || null
-  })
-
-  // Force a re-render indicator
-  const renderTime = new Date().toISOString()
-  console.log('🔄 Dashboard rendered at:', renderTime)
 
   // Calculate stats
   const activeProducts = products.filter(p => p.isActive).length
@@ -114,112 +95,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Category Management Section */}
-      <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Folder className="w-6 h-6 text-blue-600" />
-            Category Management
-          </CardTitle>
-          <div className="flex gap-2">
-            <Link href="/categories">
-              <Button size="sm" data-testid="button-create-category-main">
-                <Plus className="w-4 h-4 mr-1" />
-                Create Category
-              </Button>
-            </Link>
-            <Link href="/categories">
-              <Button variant="outline" size="sm" data-testid="button-manage-categories-main">
-                <Edit className="w-4 h-4 mr-1" />
-                Manage All
-              </Button>
-            </Link>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="p-2 mb-4 bg-red-100 border border-red-300 rounded text-xs">
-            <strong>DEBUG:</strong> Loading={String(categoriesLoading)}, Error={String(categoriesError)}, Count={categories.length}
-            <br />Data: {JSON.stringify(categories.slice(0, 2).map((c: any) => ({ name: c.name, id: c.id.slice(0, 8) })))}
-          </div>
-          {categoriesLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-pulse text-blue-600">Loading categories...</div>
-            </div>
-          ) : categoriesError ? (
-            <div className="text-center py-8">
-              <div className="text-red-600 mb-4">Error loading categories</div>
-              <Link href="/categories">
-                <Button variant="outline" size="sm">Try Again</Button>
-              </Link>
-            </div>
-          ) : categories.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                <Folder className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No categories created yet</h3>
-              <p className="text-gray-600 mb-4">Create your first product category to organize your inventory</p>
-              <Link href="/categories">
-                <Button data-testid="button-create-first-category-main">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create First Category
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-sm text-gray-600">
-                  {categories.filter(c => c.isActive).length} active categories
-                </div>
-                <Link href="/categories">
-                  <Button variant="ghost" size="sm" className="text-blue-600">
-                    View all {categories.length} categories →
-                  </Button>
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {categories.slice(0, 6).map((category) => {
-                  const categoryProducts = products.filter(p => p.categoryId === category.id)
-                  return (
-                    <div key={category.id} className="p-4 bg-white border border-blue-200 rounded-lg hover:shadow-md transition-all">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Folder className="w-4 h-4 text-blue-600" />
-                          </div>
-                          <div className="font-medium text-gray-900">{category.name}</div>
-                        </div>
-                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${
-                          category.isActive 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          {category.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                      {category.description && (
-                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{category.description}</p>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1 text-sm text-blue-600">
-                          <Package className="w-3 h-3" />
-                          <span>{categoryProducts.length} product{categoryProducts.length !== 1 ? 's' : ''}</span>
-                        </div>
-                        <Link href="/categories">
-                          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-100">
-                            Edit
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -317,49 +192,100 @@ export default function AdminDashboard() {
 
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Orders */}
-        <Card>
+        {/* Categories */}
+        <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5" />
-              Recent Orders
+              <Folder className="w-6 h-6 text-blue-600" />
+              Category Management
             </CardTitle>
-            <Link href="/orders">
-              <Button variant="ghost" size="sm" data-testid="button-view-all-orders">
-                <Eye className="w-4 h-4 mr-1" />
-                View All
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link href="/categories">
+                <Button size="sm" data-testid="button-create-category-main">
+                  <Plus className="w-4 h-4 mr-1" />
+                  Create Category
+                </Button>
+              </Link>
+              <Link href="/categories">
+                <Button variant="outline" size="sm" data-testid="button-manage-categories-main">
+                  <Edit className="w-4 h-4 mr-1" />
+                  Manage All
+                </Button>
+              </Link>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {recentOrders.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No orders yet
+            {categoriesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-pulse text-blue-600">Loading categories...</div>
+              </div>
+            ) : categoriesError ? (
+              <div className="text-center py-8">
+                <div className="text-red-600 mb-4">Error loading categories</div>
+                <Link href="/categories">
+                  <Button variant="outline" size="sm">Try Again</Button>
+                </Link>
+              </div>
+            ) : categories.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Folder className="w-8 h-8 text-blue-600" />
                 </div>
-              ) : (
-                recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-1">
-                      <div className="font-medium">Order #{order.id.slice(0, 8)}</div>
-                      <div className="text-sm text-gray-600">
-                        {order.customerName || 'Anonymous'} • ${Number(order.totalAmount).toFixed(2)}
-                      </div>
-                    </div>
-                    <Badge 
-                      variant={
-                        order.status === 'completed' ? 'default' :
-                        order.status === 'pending' ? 'secondary' :
-                        order.status === 'cancelled' ? 'destructive' : 'outline'
-                      }
-                      data-testid={`badge-order-status-${order.status}`}
-                    >
-                      {order.status}
-                    </Badge>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No categories created yet</h3>
+                <p className="text-gray-600 mb-4">Create your first product category to organize your inventory</p>
+                <Link href="/categories">
+                  <Button data-testid="button-create-first-category-main">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create First Category
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-sm text-gray-600">
+                    {categories.filter(c => c.isActive).length} active categories
                   </div>
-                ))
-              )}
-            </div>
+                  <Link href="/categories">
+                    <Button variant="ghost" size="sm" className="text-blue-600">
+                      View all {categories.length} categories →
+                    </Button>
+                  </Link>
+                </div>
+                <div className="space-y-3">
+                  {categories.slice(0, 5).map((category) => {
+                    const categoryProducts = products.filter(p => p.categoryId === category.id)
+                    return (
+                      <div key={category.id} className="flex items-center justify-between p-3 bg-white border border-blue-200 rounded-lg hover:shadow-md transition-all">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Folder className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900">{category.name}</div>
+                            <div className="text-sm text-gray-600">{categoryProducts.length} products</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                            category.isActive 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {category.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                          <Link href="/categories">
+                            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-100">
+                              Edit
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
