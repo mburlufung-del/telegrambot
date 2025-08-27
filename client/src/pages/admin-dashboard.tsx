@@ -12,7 +12,9 @@ import {
   Settings,
   Eye,
   Plus,
-  BarChart3
+  BarChart3,
+  Folder,
+  Edit
 } from 'lucide-react'
 import { Link } from 'wouter'
 import type { Product, Order, Inquiry, Category } from '@shared/schema'
@@ -64,6 +66,12 @@ export default function AdminDashboard() {
           <p className="text-gray-600 mt-1">Manage your Telegram shop bot efficiently</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/categories">
+            <Button variant="outline" data-testid="button-add-category-header">
+              <Folder className="w-4 h-4 mr-2" />
+              Add Category
+            </Button>
+          </Link>
           <Link href="/products">
             <Button data-testid="button-add-product">
               <Plus className="w-4 h-4 mr-2" />
@@ -258,35 +266,91 @@ export default function AdminDashboard() {
 
       {/* Categories Overview */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" />
+            <Folder className="w-5 h-5" />
             Product Categories
           </CardTitle>
+          <div className="flex gap-2">
+            <Link href="/categories">
+              <Button variant="outline" size="sm" data-testid="button-manage-all-categories">
+                <Edit className="w-4 h-4 mr-1" />
+                Manage All
+              </Button>
+            </Link>
+            <Link href="/categories">
+              <Button size="sm" data-testid="button-add-category">
+                <Plus className="w-4 h-4 mr-1" />
+                Add Category
+              </Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {categories.length === 0 ? (
-              <div className="col-span-3 text-center py-8 text-gray-500">
-                No categories configured yet
-              </div>
-            ) : (
-              categories.map((category) => {
+          {categories.length === 0 ? (
+            <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
+              <Folder className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No categories yet</h3>
+              <p className="text-gray-500 mb-4">Create categories to organize your products</p>
+              <Link href="/categories">
+                <Button data-testid="button-create-first-category">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create First Category
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {categories.slice(0, 6).map((category) => {
                 const categoryProducts = products.filter(p => p.categoryId === category.id)
                 return (
-                  <div key={category.id} className="p-4 border rounded-lg bg-blue-50 border-blue-200">
-                    <div className="font-medium text-blue-900">{category.name}</div>
-                    <div className="text-sm text-blue-700 mt-1">
-                      {categoryProducts.length} products
+                  <div key={category.id} className="p-4 border rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Folder className="w-4 h-4 text-blue-600" />
+                        <div className="font-medium text-blue-900">{category.name}</div>
+                      </div>
+                      <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                        category.isActive 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {category.isActive ? 'Active' : 'Inactive'}
+                      </span>
                     </div>
-                    <div className="text-xs text-blue-600 mt-2">
-                      {category.isActive ? 'Active' : 'Inactive'}
+                    {category.description && (
+                      <p className="text-sm text-blue-700 mb-2 line-clamp-2">{category.description}</p>
+                    )}
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-1 text-blue-600">
+                        <Package className="w-3 h-3" />
+                        <span>{categoryProducts.length} product{categoryProducts.length !== 1 ? 's' : ''}</span>
+                      </div>
+                      <Link href="/categories">
+                        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-blue-600 hover:bg-blue-100">
+                          Edit
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 )
-              })
-            )}
-          </div>
+              })}
+              {categories.length > 6 && (
+                <div className="p-4 border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-sm text-gray-500 mb-2">
+                      +{categories.length - 6} more categories
+                    </div>
+                    <Link href="/categories">
+                      <Button variant="outline" size="sm">
+                        View All
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
