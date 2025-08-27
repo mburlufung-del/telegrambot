@@ -35,9 +35,11 @@ export default function AdminDashboard() {
     refetchInterval: 30000
   })
 
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
     refetchInterval: 30000,
+    staleTime: 0,
+    refetchOnMount: true,
     queryFn: async () => {
       console.log('Admin Dashboard: Fetching categories...')
       const response = await fetch('/api/categories')
@@ -48,6 +50,14 @@ export default function AdminDashboard() {
       console.log('Admin Dashboard: Got', data.length, 'categories:', data)
       return data
     }
+  })
+
+  // Debug logging
+  console.log('Admin Dashboard render:', {
+    categoriesLoading,
+    categoriesCount: categories.length,
+    categories: categories,
+    categoriesError
   })
 
   // Calculate stats
@@ -301,6 +311,10 @@ export default function AdminDashboard() {
             <div className="text-center py-8">
               <div className="animate-pulse">Loading categories...</div>
             </div>
+          ) : categoriesError ? (
+            <div className="text-center py-8 text-red-600">
+              Error loading categories: {String(categoriesError)}
+            </div>
           ) : categories.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
               <Folder className="w-12 h-12 mx-auto text-gray-400 mb-4" />
@@ -315,8 +329,8 @@ export default function AdminDashboard() {
             </div>
           ) : (
             <div>
-              <div className="text-sm text-gray-500 mb-4">
-                Found {categories.length} categories
+              <div className="text-sm text-gray-500 mb-4 p-2 bg-yellow-100 rounded">
+                Debug: Found {categories.length} categories - {JSON.stringify(categories.map(c => c.name))}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {categories.slice(0, 6).map((category) => {
