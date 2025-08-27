@@ -35,9 +35,19 @@ export default function AdminDashboard() {
     refetchInterval: 30000
   })
 
-  const { data: categories = [] } = useQuery<Category[]>({
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
-    refetchInterval: 30000
+    refetchInterval: 30000,
+    queryFn: async () => {
+      console.log('Admin Dashboard: Fetching categories...')
+      const response = await fetch('/api/categories')
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      const data = await response.json()
+      console.log('Admin Dashboard: Got', data.length, 'categories:', data)
+      return data
+    }
   })
 
   // Calculate stats
@@ -287,7 +297,11 @@ export default function AdminDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          {categories.length === 0 ? (
+          {categoriesLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-pulse">Loading categories...</div>
+            </div>
+          ) : categories.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
               <Folder className="w-12 h-12 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No categories yet</h3>
@@ -300,8 +314,12 @@ export default function AdminDashboard() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categories.slice(0, 6).map((category) => {
+            <div>
+              <div className="text-sm text-gray-500 mb-4">
+                Found {categories.length} categories
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {categories.slice(0, 6).map((category) => {
                 const categoryProducts = products.filter(p => p.categoryId === category.id)
                 return (
                   <div key={category.id} className="p-4 border rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 hover:shadow-md transition-shadow">
@@ -349,6 +367,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )}
+              </div>
             </div>
           )}
         </CardContent>
