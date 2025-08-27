@@ -101,6 +101,109 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Category Management Section */}
+      <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Folder className="w-6 h-6 text-blue-600" />
+            Category Management
+          </CardTitle>
+          <div className="flex gap-2">
+            <Link href="/categories">
+              <Button size="sm" data-testid="button-create-category-main">
+                <Plus className="w-4 h-4 mr-1" />
+                Create Category
+              </Button>
+            </Link>
+            <Link href="/categories">
+              <Button variant="outline" size="sm" data-testid="button-manage-categories-main">
+                <Edit className="w-4 h-4 mr-1" />
+                Manage All
+              </Button>
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {categoriesLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-pulse text-blue-600">Loading categories...</div>
+            </div>
+          ) : categoriesError ? (
+            <div className="text-center py-8">
+              <div className="text-red-600 mb-4">Error loading categories</div>
+              <Link href="/categories">
+                <Button variant="outline" size="sm">Try Again</Button>
+              </Link>
+            </div>
+          ) : categories.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                <Folder className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No categories created yet</h3>
+              <p className="text-gray-600 mb-4">Create your first product category to organize your inventory</p>
+              <Link href="/categories">
+                <Button data-testid="button-create-first-category-main">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create First Category
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-sm text-gray-600">
+                  {categories.filter(c => c.isActive).length} active categories
+                </div>
+                <Link href="/categories">
+                  <Button variant="ghost" size="sm" className="text-blue-600">
+                    View all {categories.length} categories →
+                  </Button>
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {categories.slice(0, 6).map((category) => {
+                  const categoryProducts = products.filter(p => p.categoryId === category.id)
+                  return (
+                    <div key={category.id} className="p-4 bg-white border border-blue-200 rounded-lg hover:shadow-md transition-all">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Folder className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <div className="font-medium text-gray-900">{category.name}</div>
+                        </div>
+                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                          category.isActive 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {category.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                      {category.description && (
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{category.description}</p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-sm text-blue-600">
+                          <Package className="w-3 h-3" />
+                          <span>{categoryProducts.length} product{categoryProducts.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <Link href="/categories">
+                          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-100">
+                            Edit
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="hover:shadow-lg transition-shadow">
@@ -194,18 +297,6 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* Categories Debug Section */}
-      <Card className="border-red-200 bg-red-50">
-        <CardHeader>
-          <CardTitle className="text-red-700">DEBUG: Categories Status</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm">
-          <div>Categories Loading: {String(categoriesLoading)}</div>
-          <div>Categories Error: {categoriesError ? String(categoriesError) : 'None'}</div>
-          <div>Categories Count: {categories.length}</div>
-          <div>Categories Data: {JSON.stringify(categories.slice(0, 2), null, 2)}</div>
-        </CardContent>
-      </Card>
 
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -297,108 +388,6 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Categories Overview */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Folder className="w-5 h-5" />
-            Product Categories
-          </CardTitle>
-          <div className="flex gap-2">
-            <Link href="/categories">
-              <Button variant="outline" size="sm" data-testid="button-manage-all-categories">
-                <Edit className="w-4 h-4 mr-1" />
-                Manage All
-              </Button>
-            </Link>
-            <Link href="/categories">
-              <Button size="sm" data-testid="button-add-category">
-                <Plus className="w-4 h-4 mr-1" />
-                Add Category
-              </Button>
-            </Link>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {categoriesLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-pulse">Loading categories...</div>
-            </div>
-          ) : categoriesError ? (
-            <div className="text-center py-8 text-red-600">
-              Error loading categories: {String(categoriesError)}
-            </div>
-          ) : categories.length === 0 ? (
-            <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
-              <Folder className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No categories yet</h3>
-              <p className="text-gray-500 mb-4">Create categories to organize your products</p>
-              <Link href="/categories">
-                <Button data-testid="button-create-first-category">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create First Category
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <div>
-              <div className="text-sm text-gray-500 mb-4 p-2 bg-yellow-100 rounded">
-                Debug: Found {categories.length} categories - {JSON.stringify(categories.map(c => c.name))}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {categories.slice(0, 6).map((category) => {
-                const categoryProducts = products.filter(p => p.categoryId === category.id)
-                return (
-                  <div key={category.id} className="p-4 border rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Folder className="w-4 h-4 text-blue-600" />
-                        <div className="font-medium text-blue-900">{category.name}</div>
-                      </div>
-                      <span className={`px-2 py-1 text-xs rounded-full font-medium ${
-                        category.isActive 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {category.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                    {category.description && (
-                      <p className="text-sm text-blue-700 mb-2 line-clamp-2">{category.description}</p>
-                    )}
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-1 text-blue-600">
-                        <Package className="w-3 h-3" />
-                        <span>{categoryProducts.length} product{categoryProducts.length !== 1 ? 's' : ''}</span>
-                      </div>
-                      <Link href="/categories">
-                        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-blue-600 hover:bg-blue-100">
-                          Edit
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                )
-              })}
-              {categories.length > 6 && (
-                <div className="p-4 border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-sm text-gray-500 mb-2">
-                      +{categories.length - 6} more categories
-                    </div>
-                    <Link href="/categories">
-                      <Button variant="outline" size="sm">
-                        View All
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              )}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
 }
