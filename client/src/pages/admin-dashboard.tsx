@@ -1,6 +1,8 @@
 import React from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { 
   BarChart3, 
   Send, 
@@ -13,11 +15,61 @@ import {
   TrendingUp,
   Users,
   ShoppingCart,
-  DollarSign
+  DollarSign,
+  Activity,
+  Clock,
+  CheckCircle
 } from 'lucide-react'
 import { Link } from 'wouter'
+import type { Product, Order, Inquiry, Category, PaymentMethod, DeliveryMethod } from '@shared/schema'
 
 export default function AdminDashboard() {
+  // Fetch real data
+  const { data: products = [] } = useQuery<Product[]>({
+    queryKey: ['/api/products'],
+    refetchInterval: 30000
+  })
+
+  const { data: orders = [] } = useQuery<Order[]>({
+    queryKey: ['/api/orders'],
+    refetchInterval: 30000
+  })
+
+  const { data: inquiries = [] } = useQuery<Inquiry[]>({
+    queryKey: ['/api/inquiries'],
+    refetchInterval: 30000
+  })
+
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ['/api/categories'],
+    refetchInterval: 30000
+  })
+
+  const { data: paymentMethods = [] } = useQuery<PaymentMethod[]>({
+    queryKey: ['/api/payment-methods'],
+    refetchInterval: 30000
+  })
+
+  const { data: deliveryMethods = [] } = useQuery<DeliveryMethod[]>({
+    queryKey: ['/api/delivery-methods'],
+    refetchInterval: 30000
+  })
+
+  // Calculate real stats
+  const activeProducts = products.filter(p => p.isActive).length
+  const pendingOrders = orders.filter(o => o.status === 'pending').length
+  const unreadInquiries = inquiries.filter(i => !i.isRead).length
+  const totalRevenue = orders
+    .filter(o => o.status === 'completed' || o.status === 'delivered')
+    .reduce((sum, order) => sum + Number(order.totalAmount), 0)
+
+  const recentOrders = orders
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3)
+
+  const recentInquiries = inquiries
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3)
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -185,30 +237,171 @@ export default function AdminDashboard() {
 
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">24</div>
-            <div className="text-sm text-gray-600">Products</div>
+      {/* Live Analytics Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm font-medium">Active Products</p>
+                <p className="text-3xl font-bold">{activeProducts}</p>
+                <p className="text-blue-100 text-xs">of {products.length} total</p>
+              </div>
+              <Package className="w-8 h-8 text-blue-200" />
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">156</div>
-            <div className="text-sm text-gray-600">Orders</div>
+
+        <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm font-medium">Total Orders</p>
+                <p className="text-3xl font-bold">{orders.length}</p>
+                <p className="text-green-100 text-xs">{pendingOrders} pending</p>
+              </div>
+              <ShoppingCart className="w-8 h-8 text-green-200" />
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-red-600">8</div>
-            <div className="text-sm text-gray-600">New Messages</div>
+
+        <Card className="bg-gradient-to-r from-red-500 to-red-600 text-white">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-red-100 text-sm font-medium">Customer Messages</p>
+                <p className="text-3xl font-bold">{inquiries.length}</p>
+                <p className="text-red-100 text-xs">{unreadInquiries} unread</p>
+              </div>
+              <MessageSquare className="w-8 h-8 text-red-200" />
+            </div>
           </CardContent>
         </Card>
+
+        <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-100 text-sm font-medium">Total Revenue</p>
+                <p className="text-3xl font-bold">${totalRevenue.toFixed(2)}</p>
+                <p className="text-purple-100 text-xs">from completed orders</p>
+              </div>
+              <DollarSign className="w-8 h-8 text-purple-200" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Feature Status Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Categories</p>
+              <p className="text-2xl font-bold">{categories.length}</p>
+            </div>
+            <FolderPlus className="w-6 h-6 text-orange-600" />
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Payment Methods</p>
+              <p className="text-2xl font-bold">{paymentMethods.length}</p>
+            </div>
+            <CreditCard className="w-6 h-6 text-teal-600" />
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Delivery Options</p>
+              <p className="text-2xl font-bold">{deliveryMethods.length}</p>
+            </div>
+            <Truck className="w-6 h-6 text-indigo-600" />
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Bot Status</p>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm font-medium text-green-600">Online</span>
+              </div>
+            </div>
+            <Activity className="w-6 h-6 text-green-600" />
+          </div>
+        </Card>
+      </div>
+
+      {/* Recent Activity Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Orders */}
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600">$2,340</div>
-            <div className="text-sm text-gray-600">Revenue</div>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              Recent Orders
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentOrders.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No orders yet</p>
+            ) : (
+              <div className="space-y-3">
+                {recentOrders.map((order) => (
+                  <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium">{order.customerName}</p>
+                      <p className="text-sm text-gray-600">${Number(order.totalAmount).toFixed(2)}</p>
+                    </div>
+                    <Badge variant={
+                      order.status === 'completed' ? 'default' :
+                      order.status === 'pending' ? 'secondary' :
+                      order.status === 'cancelled' ? 'destructive' : 'outline'
+                    }>
+                      {order.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Inquiries */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="w-5 h-5" />
+              Recent Inquiries
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentInquiries.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No inquiries yet</p>
+            ) : (
+              <div className="space-y-3">
+                {recentInquiries.map((inquiry) => (
+                  <div key={inquiry.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <p className="font-medium">{inquiry.customerName}</p>
+                      <p className="text-sm text-gray-600 truncate">{inquiry.message}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {!inquiry.isRead && <div className="w-2 h-2 bg-red-500 rounded-full"></div>}
+                      <Badge variant={inquiry.isRead ? 'secondary' : 'default'}>
+                        {inquiry.isRead ? 'Read' : 'New'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
