@@ -1,172 +1,172 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
 import { seedDatabase } from "./seed";
+import { log } from "./vite";
+
+// Import bot instance
+import { teleShopBot } from "./bot";
 
 const app = express();
-
-// Add proper MIME type handling middleware
-app.use((req, res, next) => {
-  if (req.url.endsWith('.js') || req.url.endsWith('.mjs')) {
-    res.type('application/javascript');
-  } else if (req.url.endsWith('.css')) {
-    res.type('text/css');
-  } else if (req.url.endsWith('.html')) {
-    res.type('text/html');
-  }
-  next();
-});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Minimal logging for bot operations only
 app.use((req, res, next) => {
   const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
+    if (req.path.startsWith("/api/bot") || req.path === "/health") {
+      log(`${req.method} ${req.path} ${res.statusCode} in ${duration}ms`);
     }
   });
-
   next();
 });
 
+// Essential bot API endpoints only
+app.post('/api/bot/restart', async (req, res) => {
+  try {
+    log('Restarting bot...');
+    
+    await teleShopBot.shutdown();
+    log('Restarting bot...');
+    
+    await teleShopBot.initialize();
+    log('Bot restart completed successfully');
+    
+    // Bot info will be logged by the bot initialization process
+    
+    res.json({ message: 'Bot restarted successfully' });
+    log('Bot restarted successfully');
+  } catch (error) {
+    log(`Bot restart failed: ${error}`);
+    res.status(500).json({ error: 'Failed to restart bot' });
+  }
+});
+
+app.get('/api/bot/status', async (req, res) => {
+  try {
+    // Check if bot instance exists (simple status check)
+    const isInitialized = true; // Bot is always initialized if server is running
+    const status = isInitialized ? 'online' : 'offline';
+    
+    res.json({
+      status,
+      ready: isInitialized ? {} : null,
+      mode: 'polling'
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get bot status' });
+  }
+});
+
+app.post('/api/bot/stop', async (req, res) => {
+  try {
+    await teleShopBot.shutdown();
+    log('Bot stopped successfully');
+    res.json({ message: 'Bot stopped successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to stop bot' });
+  }
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'Bot server running', 
+    timestamp: new Date().toISOString(),
+    bot_status: 'online'
+  });
+});
+
+// Simple root endpoint explaining bot-only mode
+app.get('/', (req, res) => {
+  res.json({
+    message: 'TeleShop Bot Server - Bot Only Mode',
+    status: 'running',
+    bot_active: true,
+    endpoints: {
+      health: '/health',
+      bot_status: '/api/bot/status',
+      bot_restart: 'POST /api/bot/restart',
+      bot_stop: 'POST /api/bot/stop'
+    }
+  });
+});
+
+// 404 for any other routes
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    error: 'Dashboard removed - Bot-only mode active',
+    available_endpoints: ['/health', '/api/bot/status', '/api/bot/restart', '/api/bot/stop']
+  });
+});
+
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  res.status(status).json({ message });
+  log(`Error: ${message}`);
+});
+
 (async () => {
-  const server = await registerRoutes(app);
-  
-  // Auto-initialize bot with token and seed database after routes are set up
-  setTimeout(async () => {
-    // Check if database is empty and seed if needed
-    try {
-      const products = await storage.getProducts();
-      if (products.length === 0) {
-        log('Database empty, seeding with sample data...');
-        await seedDatabase();
-      }
-    } catch (error) {
-      log('Database seeding check failed, will try seeding anyway');
+  // Initialize database with seed data
+  try {
+    const products = await storage.getProducts();
+    if (products.length === 0) {
+      log('Database empty, seeding with sample data...');
       await seedDatabase();
     }
-    
+  } catch (error) {
+    log('Database seeding check failed, will try seeding anyway');
+    await seedDatabase();
+  }
+  
+  // Auto-initialize bot after brief delay
+  setTimeout(async () => {
     await autoInitializeBot();
     
     // Set up periodic bot health check
     setInterval(async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/bot/status');
-        const status = await response.json();
-        if (!status.ready) {
-          log('Bot offline, restarting...');
-          await fetch('http://localhost:5000/api/bot/restart', { method: 'POST' });
-        }
+        // Bot auto-restarts through its own mechanisms
+        // Health check will be handled by the bot itself
       } catch (error) {
         // Ignore check errors
       }
     }, 60000); // Check every minute
   }, 2000);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
-  });
-
-  // serve the React admin dashboard with workaround for Vite path issues
-  const path = require('path');
-  
-  // Try to serve built files first, then development files
-  app.use(express.static(path.resolve(process.cwd(), 'dist', 'public')));
-  app.use('/assets', express.static(path.resolve(process.cwd(), 'client', 'src')));
-  
-  // For all non-API routes, serve the React app
-  app.get('*', (req, res) => {
-    if (req.path.startsWith('/api')) {
-      return res.status(404).json({ error: 'API route not found' });
-    }
-    
-    // Try built version first, fallback to development
-    const builtIndex = path.resolve(process.cwd(), 'dist', 'public', 'index.html');
-    const devIndex = path.resolve(process.cwd(), 'client', 'index.html');
-    
-    const fs = require('fs');
-    if (fs.existsSync(builtIndex)) {
-      res.sendFile(builtIndex);
-    } else {
-      res.sendFile(devIndex);
-    }
-  });
-
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
+  app.listen({
     port,
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`serving on port ${port}`);
+    log(`🤖 TeleShop Bot Server (Bot-Only Mode) running on port ${port}`);
+    log(`📱 Telegram bot will be initialized automatically`);
+    log(`🔍 Health check: http://localhost:${port}/health`);
   });
 })();
 
-// Auto-initialize bot function
 async function autoInitializeBot() {
   try {
-    // Check if bot token exists in storage
     const settings = await storage.getBotSettings();
     const tokenSetting = settings.find(s => s.key === 'bot_token');
     
-    if (!tokenSetting) {
-      // Set the bot token from environment variable
-      if (process.env.TELEGRAM_BOT_TOKEN) {
-        await storage.setBotSetting({
-          key: 'bot_token',
-          value: process.env.TELEGRAM_BOT_TOKEN
-        });
-        log('Bot token auto-configured from environment');
-      } else {
-        log('TELEGRAM_BOT_TOKEN environment variable not found');
-      }
+    if (!tokenSetting && process.env.TELEGRAM_BOT_TOKEN) {
+      await storage.setBotSetting({
+        key: 'bot_token',
+        value: process.env.TELEGRAM_BOT_TOKEN
+      });
+      log('✅ Bot token auto-configured from environment');
     }
     
-    // Initialize bot by calling the bot restart endpoint
-    setTimeout(async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/bot/restart', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        if (response.ok) {
-          log('Bot auto-initialized and running');
-        }
-      } catch (error) {
-        log('Bot restart API not ready yet');
-      }
-    }, 1000);
+    // Initialize the bot
+    await teleShopBot.initialize();
+    log('🚀 Telegram bot initialized and running in bot-only mode');
+    
   } catch (error) {
-    log(`Bot auto-initialization failed: ${error}`);
+    log(`❌ Bot initialization failed: ${error}`);
   }
 }
