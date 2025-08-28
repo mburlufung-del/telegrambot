@@ -7,14 +7,9 @@ import { Link, useLocation } from "wouter"
 
 const sidebarNavigation = [
   {
-    title: "Admin Dashboard",
+    title: "Dashboard",
     href: "/",
     icon: BarChart3
-  },
-  {
-    title: "Debug Dashboard",
-    href: "/fresh-dashboard",
-    icon: Activity
   },
   {
     title: "Products",
