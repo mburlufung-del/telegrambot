@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeleShop Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <nav class="bg-white border-b border-gray-200 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-xl font-bold text-gray-900">🤖 TeleShop Admin</h1>
+                        <div class="ml-6 flex space-x-8">
+                            <a href="#" onclick="showSection('dashboard')" class="text-gray-900 px-3 py-2 text-sm font-medium">Dashboard</a>
+                            <a href="#" onclick="showSection('products')" class="text-gray-500 px-3 py-2 text-sm font-medium">Products</a>
+                            <a href="#" onclick="showSection('payments')" class="text-gray-500 px-3 py-2 text-sm font-medium">Payment Methods</a>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Bot Online</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div id="dashboard-section">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Dashboard Overview</h2>
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-indigo-500 rounded-md flex items-center justify-center">
+                                    <span class="text-white font-semibold">📦</span>
+                                </div>
+                                <div class="ml-5">
+                                    <p class="text-sm font-medium text-gray-500">Total Products</p>
+                                    <p class="text-lg font-medium text-gray-900" id="total-products">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                                    <span class="text-white font-semibold">🛒</span>
+                                </div>
+                                <div class="ml-5">
+                                    <p class="text-sm font-medium text-gray-500">Total Orders</p>
+                                    <p class="text-lg font-medium text-gray-900" id="total-orders">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                                    <span class="text-white font-semibold">💬</span>
+                                </div>
+                                <div class="ml-5">
+                                    <p class="text-sm font-medium text-gray-500">Inquiries</p>
+                                    <p class="text-lg font-medium text-gray-900" id="total-inquiries">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                                    <span class="text-white font-semibold">💳</span>
+                                </div>
+                                <div class="ml-5">
+                                    <p class="text-sm font-medium text-gray-500">Payment Methods</p>
+                                    <p class="text-lg font-medium text-gray-900" id="total-payments">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="products-section" style="display: none;">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Product Management</h2>
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Products</h3>
+                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded" onclick="loadProducts()">
+                                Refresh
+                            </button>
+                        </div>
+                        <div id="products-list">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="payments-section" style="display: none;">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Payment Methods</h2>
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Available Payment Methods</h3>
+                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded" onclick="loadPaymentMethods()">
+                                Refresh
+                            </button>
+                        </div>
+                        <div id="payment-methods-list">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function showSection(section) {
+            const sections = ['dashboard', 'products', 'payments'];
+            sections.forEach(s => {
+                const element = document.getElementById(s + '-section');
+                if (element) element.style.display = 'none';
+            });
+            
+            const targetSection = document.getElementById(section + '-section');
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                if (section === 'products') loadProducts();
+                else if (section === 'payments') loadPaymentMethods();
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                const [products, orders, inquiries, payments] = await Promise.all([
+                    fetch('/api/products').then(r => r.json()),
+                    fetch('/api/orders').then(r => r.json()),
+                    fetch('/api/inquiries').then(r => r.json()),
+                    fetch('/api/payment-methods').then(r => r.json())
+                ]);
+
+                document.getElementById('total-products').textContent = products.length;
+                document.getElementById('total-orders').textContent = orders.length;
+                document.getElementById('total-inquiries').textContent = inquiries.length;
+                document.getElementById('total-payments').textContent = payments.length;
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products');
+                const products = await response.json();
+                const productsList = document.getElementById('products-list');
+                
+                if (products.length === 0) {
+                    productsList.innerHTML = '<p class="text-gray-500">No products found</p>';
+                    return;
+                }
+
+                let tableHTML = '<table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th></tr></thead><tbody>';
+                
+                products.forEach(product => {
+                    tableHTML += '<tr><td class="px-6 py-4 text-sm font-medium text-gray-900">' + product.name + '</td><td class="px-6 py-4 text-sm text-gray-500">$' + product.price + '</td><td class="px-6 py-4 text-sm text-gray-500">' + product.stock + '</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ' + (product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') + '">' + (product.isActive ? 'Active' : 'Inactive') + '</span></td></tr>';
+                });
+                
+                tableHTML += '</tbody></table>';
+                productsList.innerHTML = tableHTML;
+            } catch (error) {
+                document.getElementById('products-list').innerHTML = '<p class="text-red-500">Error loading products</p>';
+            }
+        }
+
+        async function loadPaymentMethods() {
+            try {
+                const response = await fetch('/api/payment-methods');
+                const methods = await response.json();
+                const methodsList = document.getElementById('payment-methods-list');
+                
+                if (methods.length === 0) {
+                    methodsList.innerHTML = '<p class="text-gray-500">No payment methods configured</p>';
+                    return;
+                }
+
+                let html = '';
+                methods.forEach(method => {
+                    html += '<div class="border rounded-lg p-4 mb-4"><div class="flex justify-between items-start"><div><h4 class="font-semibold text-lg">' + method.name + '</h4>';
+                    if (method.description) html += '<p class="text-gray-600 text-sm">' + method.description + '</p>';
+                    if (method.paymentInfo) html += '<div class="mt-2"><strong>Payment Info:</strong><br><div class="bg-gray-50 p-2 rounded text-sm">' + method.paymentInfo + '</div></div>';
+                    html += '</div><span class="px-2 py-1 text-xs font-semibold rounded-full ' + (method.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') + '">' + (method.isActive ? 'Active' : 'Inactive') + '</span></div></div>';
+                });
+                
+                methodsList.innerHTML = html;
+            } catch (error) {
+                document.getElementById('payment-methods-list').innerHTML = '<p class="text-red-500">Error loading payment methods</p>';
+            }
+        }
+
+        window.onload = function() {
+            loadDashboardData();
+        };
+    </script>
+</body>
+</html>
