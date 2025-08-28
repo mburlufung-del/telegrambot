@@ -979,6 +979,17 @@ function registerAllRoutes(app: Express): void {
     }
   });
 
+  // Create pricing tier (standalone)
+  app.post("/api/pricing-tiers", async (req, res) => {
+    try {
+      const tier = await storage.createPricingTier(req.body);
+      res.json(tier);
+    } catch (error) {
+      console.error("Error creating pricing tier:", error);
+      res.status(500).json({ message: "Failed to create pricing tier" });
+    }
+  });
+
   // Update pricing tier
   app.put("/api/pricing-tiers/:id", async (req, res) => {
     try {

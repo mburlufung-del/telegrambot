@@ -101,34 +101,128 @@
                 <!-- Add Product Form -->
                 <div id="add-product-form" class="bg-white shadow rounded-lg p-6 mb-6" style="display: none;">
                     <h3 class="text-lg font-semibold mb-4">Add New Product</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                            <input type="text" id="product-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
-                            <input type="number" id="product-price" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
-                            <input type="number" id="product-stock" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                            <select id="product-category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="">Select Category</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                            <textarea id="product-description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Specifications (JSON format)</label>
-                            <textarea id="product-specs" rows="2" placeholder='{"weight": "1kg", "color": "red"}' class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    
+                    <!-- Basic Product Information -->
+                    <div class="mb-6">
+                        <h4 class="text-md font-medium text-gray-800 mb-3">Basic Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                                <input type="text" id="product-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                <select id="product-category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="">Select Category</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <textarea id="product-description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Product Image Upload -->
+                    <div class="mb-6">
+                        <h4 class="text-md font-medium text-gray-800 mb-3">Product Image</h4>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <div class="space-y-2">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                                <div class="text-sm text-gray-600">
+                                    <button type="button" class="text-indigo-600 hover:text-indigo-500 font-medium" onclick="uploadProductImage()">
+                                        Upload image
+                                    </button>
+                                    or drag and drop
+                                </div>
+                                <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                            </div>
+                            <input type="file" id="product-image-input" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+                            <div id="image-preview" class="mt-4 hidden">
+                                <img id="preview-img" src="" alt="Product preview" class="mx-auto h-32 w-32 object-cover rounded-lg">
+                                <p class="text-sm text-gray-600 mt-2">✓ Image uploaded successfully</p>
+                                <input type="hidden" id="product-image-url" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing and Stock -->
+                    <div class="mb-6">
+                        <h4 class="text-md font-medium text-gray-800 mb-3">Pricing & Stock</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Base Price ($)</label>
+                                <input type="number" id="product-price" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Compare At Price ($)</label>
+                                <input type="number" id="product-compare-price" step="0.01" min="0" placeholder="Optional" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
+                                <input type="number" id="product-stock" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Measurement and Ordering -->
+                    <div class="mb-6">
+                        <h4 class="text-md font-medium text-gray-800 mb-3">Measurement & Ordering</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Unit of Measurement</label>
+                                <select id="product-unit" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="piece">Piece</option>
+                                    <option value="kg">Kilogram (kg)</option>
+                                    <option value="gram">Gram (g)</option>
+                                    <option value="liter">Liter (L)</option>
+                                    <option value="ml">Milliliter (ml)</option>
+                                    <option value="meter">Meter (m)</option>
+                                    <option value="cm">Centimeter (cm)</option>
+                                    <option value="inch">Inch</option>
+                                    <option value="pack">Pack</option>
+                                    <option value="box">Box</option>
+                                    <option value="dozen">Dozen</option>
+                                    <option value="pair">Pair</option>
+                                    <option value="set">Set</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Min Order Quantity</label>
+                                <input type="number" id="product-min-qty" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Max Order Quantity</label>
+                                <input type="number" id="product-max-qty" min="1" placeholder="Optional" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Tiers -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-md font-medium text-gray-800">Bulk Pricing Tiers</h4>
+                            <button type="button" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md" onclick="addPricingTier()">
+                                + Add Tier
+                            </button>
+                        </div>
+                        <div id="pricing-tiers" class="space-y-2">
+                            <p class="text-sm text-gray-500">Add pricing tiers for bulk discounts (optional)</p>
+                        </div>
+                    </div>
+
+                    <!-- Additional Details -->
+                    <div class="mb-6">
+                        <h4 class="text-md font-medium text-gray-800 mb-3">Additional Details</h4>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Specifications (JSON format)</label>
+                            <textarea id="product-specs" rows="3" placeholder='{"weight": "1kg", "color": "red", "material": "cotton"}' class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Enter product specifications in JSON format for detailed product information</p>
+                        </div>
+                    </div>
+
                     <div class="flex justify-end space-x-3 mt-6">
                         <button class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" onclick="hideAddProductForm()">Cancel</button>
                         <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="addProduct()">Add Product</button>
@@ -492,6 +586,29 @@
             document.getElementById('add-product-form').style.display = 'none';
             clearProductForm();
         }
+        
+        function clearProductForm() {
+            // Clear basic fields
+            document.getElementById('product-name').value = '';
+            document.getElementById('product-description').value = '';
+            document.getElementById('product-price').value = '';
+            document.getElementById('product-compare-price').value = '';
+            document.getElementById('product-stock').value = '';
+            document.getElementById('product-unit').value = 'piece';
+            document.getElementById('product-min-qty').value = '1';
+            document.getElementById('product-max-qty').value = '';
+            document.getElementById('product-category').value = '';
+            document.getElementById('product-specs').value = '';
+            
+            // Clear image upload
+            document.getElementById('product-image-input').value = '';
+            document.getElementById('product-image-url').value = '';
+            document.getElementById('image-preview').classList.add('hidden');
+            
+            // Clear pricing tiers
+            document.getElementById('pricing-tiers').innerHTML = '<p class="text-sm text-gray-500">Add pricing tiers for bulk discounts (optional)</p>';
+            tierCounter = 0;
+        }
         function showAddCategoryForm() {
             document.getElementById('add-category-form').style.display = 'block';
         }
@@ -581,19 +698,159 @@
             }
         }
 
-        // Add new items functions
+        // Image upload functions
+        function uploadProductImage() {
+            document.getElementById('product-image-input').click();
+        }
+
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                showNotification('File size must be less than 10MB', 'error');
+                return;
+            }
+
+            try {
+                // Get upload URL from server
+                const uploadResponse = await fetch('/api/objects/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const { uploadURL } = await uploadResponse.json();
+
+                // Upload file to object storage
+                const fileResponse = await fetch(uploadURL, {
+                    method: 'PUT',
+                    body: file,
+                    headers: {
+                        'Content-Type': file.type
+                    }
+                });
+
+                if (fileResponse.ok) {
+                    // Extract object path from upload URL
+                    const objectPath = '/objects/' + uploadURL.split('/').pop().split('?')[0];
+                    
+                    // Show preview
+                    const preview = document.getElementById('image-preview');
+                    const previewImg = document.getElementById('preview-img');
+                    previewImg.src = URL.createObjectURL(file);
+                    document.getElementById('product-image-url').value = objectPath;
+                    preview.classList.remove('hidden');
+                    
+                    showNotification('Image uploaded successfully!', 'success');
+                } else {
+                    showNotification('Failed to upload image', 'error');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showNotification('Error uploading image', 'error');
+            }
+        }
+
+        // Pricing tier management
+        let tierCounter = 0;
+        function addPricingTier() {
+            tierCounter++;
+            const tiersDiv = document.getElementById('pricing-tiers');
+            
+            if (tierCounter === 1) {
+                tiersDiv.innerHTML = ''; // Clear the placeholder text
+            }
+
+            const tierHTML = `
+                <div class="border rounded-lg p-3 bg-gray-50" id="tier-${tierCounter}">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Min Quantity</label>
+                            <input type="number" class="tier-min-qty w-full px-2 py-1 text-sm border border-gray-300 rounded-md" min="1" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Max Quantity</label>
+                            <input type="number" class="tier-max-qty w-full px-2 py-1 text-sm border border-gray-300 rounded-md" min="1" placeholder="Optional">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Price ($)</label>
+                            <input type="number" class="tier-price w-full px-2 py-1 text-sm border border-gray-300 rounded-md" step="0.01" min="0" required>
+                        </div>
+                        <div>
+                            <button type="button" class="text-red-600 hover:text-red-800 text-sm px-2 py-1" onclick="removePricingTier(${tierCounter})">
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            tiersDiv.insertAdjacentHTML('beforeend', tierHTML);
+        }
+
+        function removePricingTier(id) {
+            const tierElement = document.getElementById(`tier-${id}`);
+            tierElement.remove();
+            
+            // If no tiers left, show placeholder
+            const tiersDiv = document.getElementById('pricing-tiers');
+            if (tiersDiv.children.length === 0) {
+                tiersDiv.innerHTML = '<p class="text-sm text-gray-500">Add pricing tiers for bulk discounts (optional)</p>';
+                tierCounter = 0;
+            }
+        }
+
+        function collectPricingTiers() {
+            const tiers = [];
+            const tierElements = document.querySelectorAll('#pricing-tiers .border');
+            
+            tierElements.forEach(tierElement => {
+                const minQty = parseInt(tierElement.querySelector('.tier-min-qty').value);
+                const maxQty = tierElement.querySelector('.tier-max-qty').value;
+                const price = parseFloat(tierElement.querySelector('.tier-price').value);
+                
+                if (minQty && price) {
+                    tiers.push({
+                        minQuantity: minQty,
+                        maxQuantity: maxQty ? parseInt(maxQty) : null,
+                        price: price,
+                        isActive: true
+                    });
+                }
+            });
+            
+            return tiers;
+        }
+
+        // Enhanced add product function
         async function addProduct() {
+            // Collect basic product data
             const productData = {
                 name: document.getElementById('product-name').value,
-                price: parseFloat(document.getElementById('product-price').value),
-                stock: parseInt(document.getElementById('product-stock').value),
-                categoryId: document.getElementById('product-category').value || null,
                 description: document.getElementById('product-description').value,
-                specifications: document.getElementById('product-specs').value || '{}'
+                price: parseFloat(document.getElementById('product-price').value),
+                compareAtPrice: document.getElementById('product-compare-price').value ? 
+                    parseFloat(document.getElementById('product-compare-price').value) : null,
+                stock: parseInt(document.getElementById('product-stock').value),
+                unit: document.getElementById('product-unit').value,
+                minOrderQuantity: parseInt(document.getElementById('product-min-qty').value) || 1,
+                maxOrderQuantity: document.getElementById('product-max-qty').value ? 
+                    parseInt(document.getElementById('product-max-qty').value) : null,
+                categoryId: document.getElementById('product-category').value || null,
+                imageUrl: document.getElementById('product-image-url').value || null,
+                specifications: document.getElementById('product-specs').value || '{}',
+                isActive: true,
+                isFeatured: false
             };
+
+            // Validate required fields
+            if (!productData.name || !productData.description || !productData.price || productData.stock < 0) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
 
             try {
                 JSON.parse(productData.specifications); // Validate JSON
+                
+                // Create the product first
                 const response = await fetch('/api/products', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -601,15 +858,32 @@
                 });
                 
                 if (response.ok) {
+                    const createdProduct = await response.json();
+                    
+                    // Add pricing tiers if any
+                    const pricingTiers = collectPricingTiers();
+                    if (pricingTiers.length > 0) {
+                        for (const tier of pricingTiers) {
+                            tier.productId = createdProduct.id;
+                            await fetch('/api/pricing-tiers', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(tier)
+                            });
+                        }
+                    }
+                    
                     hideAddProductForm();
                     loadProducts();
                     loadDashboardData();
-                    showNotification('Product added successfully!', 'success');
+                    showNotification('Product added successfully with all features!', 'success');
                 } else {
-                    showNotification('Error adding product', 'error');
+                    const errorData = await response.json();
+                    showNotification(`Error adding product: ${errorData.message || 'Unknown error'}`, 'error');
                 }
             } catch (error) {
-                showNotification('Invalid JSON in specifications', 'error');
+                console.error('Error adding product:', error);
+                showNotification('Invalid JSON in specifications or server error', 'error');
             }
         }
 
