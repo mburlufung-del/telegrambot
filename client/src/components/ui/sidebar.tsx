@@ -2,14 +2,19 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, BarChart3, Package, ShoppingCart, MessageSquare, Settings, Bot, FolderOpen } from "lucide-react"
+import { Menu, BarChart3, Package, ShoppingCart, MessageSquare, Settings, Bot, FolderOpen, CreditCard, Truck, Send, TrendingUp, Headphones, Activity } from "lucide-react"
 import { Link, useLocation } from "wouter"
 
 const sidebarNavigation = [
   {
-    title: "Dashboard",
+    title: "Admin Dashboard",
     href: "/",
     icon: BarChart3
+  },
+  {
+    title: "Debug Dashboard",
+    href: "/fresh-dashboard",
+    icon: Activity
   },
   {
     title: "Products",
@@ -32,6 +37,31 @@ const sidebarNavigation = [
     icon: MessageSquare
   },
   {
+    title: "Payment Methods",
+    href: "/payment-methods",
+    icon: CreditCard
+  },
+  {
+    title: "Delivery Methods",
+    href: "/delivery-methods",
+    icon: Truck
+  },
+  {
+    title: "Broadcast",
+    href: "/broadcast",
+    icon: Send
+  },
+  {
+    title: "Analytics",
+    href: "/analytics",
+    icon: TrendingUp
+  },
+  {
+    title: "Operator Support",
+    href: "/operator-support",
+    icon: Headphones
+  },
+  {
     title: "Bot Settings",
     href: "/bot-settings",
     icon: Bot
@@ -48,7 +78,7 @@ export function Sidebar({ className }: SidebarProps) {
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
           <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-            TeleShop Admin
+            TeleShop Admin v2.0
           </h2>
           <div className="space-y-1">
             {sidebarNavigation.map((item) => {
