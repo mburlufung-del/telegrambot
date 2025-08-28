@@ -382,6 +382,13 @@ export class TeleShopBot {
       const firstName = msg.from?.first_name || '';
       const displayName = telegramUsername || firstName || 'there';
       
+      // Track user for broadcast functionality
+      await storage.trackUser(chatId.toString(), {
+        username: msg.from?.username,
+        first_name: msg.from?.first_name,
+        last_name: msg.from?.last_name
+      });
+      
       // Track user's /start message for auto-vanish
       const userMsgIds = this.userMessages.get(chatId) || [];
       userMsgIds.push(msg.message_id);
@@ -450,12 +457,18 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     this.bot.on('message', async (msg) => {
       console.log(`[MESSAGE] Received message from chat ${msg.chat.id}: "${msg.text}"`);
       
+      // Track user for broadcast functionality on any message
+      const chatId = msg.chat.id;
+      await storage.trackUser(chatId.toString(), {
+        username: msg.from?.username,
+        first_name: msg.from?.first_name,
+        last_name: msg.from?.last_name
+      });
+      
       if (msg.text?.startsWith('/')) {
         console.log(`[MESSAGE] Skipping command: ${msg.text}`);
         return; // Skip commands
       }
-
-      const chatId = msg.chat.id;
       const userId = msg.from?.id.toString() || '';
       const messageText = msg.text?.toLowerCase() || '';
       
@@ -515,6 +528,13 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const data = query.data;
       
       if (!chatId || !data) return;
+      
+      // Track user for broadcast functionality on callback queries too
+      await storage.trackUser(chatId.toString(), {
+        username: query.from?.username,
+        first_name: query.from?.first_name,
+        last_name: query.from?.last_name
+      });
       
       await storage.incrementMessageCount();
       

@@ -146,6 +146,10 @@ export interface IStorage {
   deleteDeliveryMethod(id: string): Promise<boolean>;
   reorderDeliveryMethods(methods: { id: string; sortOrder: number }[]): Promise<void>;
   
+  // User tracking operations
+  trackUser(chatId: string, userData: any): Promise<void>;
+  getTrackedUsers(): Promise<any[]>;
+  
   // Broadcast operations
   getAllUsers(): Promise<any[]>;
   saveBroadcast(broadcast: any): Promise<void>;
@@ -788,14 +792,29 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // User tracking implementation
+  private trackedUsers: Map<string, any> = new Map();
+
+  async trackUser(chatId: string, userData: any): Promise<void> {
+    const user = {
+      chatId,
+      username: userData.username || null,
+      firstName: userData.first_name || null,
+      lastName: userData.last_name || null,
+      lastSeen: new Date().toISOString()
+    };
+    this.trackedUsers.set(chatId, user);
+    console.log(`[USER TRACKING] User ${chatId} tracked:`, user);
+  }
+
+  async getTrackedUsers(): Promise<any[]> {
+    return Array.from(this.trackedUsers.values());
+  }
+
   // Broadcast operations implementation
   async getAllUsers(): Promise<any[]> {
-    // For now, return a mock user list since we don't have a users table yet
-    // In a real implementation, this would query your users table
-    return [
-      { chatId: '123456789', username: 'user1' },
-      // Add more mock users as needed for testing
-    ];
+    // Return tracked users for broadcast
+    return this.getTrackedUsers();
   }
 
   async saveBroadcast(broadcast: any): Promise<void> {
