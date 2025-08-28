@@ -29,7 +29,7 @@ export default function Sidebar() {
           </div>
           <div>
             <h1 className="text-lg font-semibold text-gray-900">TeleShop Bot</h1>
-            <p className="text-sm text-gray-500">Admin Panel</p>
+            <p className="text-sm text-gray-500">Admin Panel v2.0</p>
           </div>
         </div>
       </div>
