@@ -15,6 +15,7 @@ import {
   insertCartSchema,
   insertCategorySchema,
   insertPaymentMethodSchema,
+  insertOperatorSchema,
   type PaymentMethod
 } from "@shared/schema";
 
@@ -1241,6 +1242,96 @@ function registerAllRoutes(app: Express): void {
     } catch (error) {
       console.error("Error reordering delivery methods:", error);
       res.status(500).json({ message: "Failed to reorder delivery methods" });
+    }
+  });
+
+  // Operators routes
+  app.get("/api/operators", async (req, res) => {
+    try {
+      const operators = await storage.getOperators();
+      res.json(operators);
+    } catch (error) {
+      console.error("Error fetching operators:", error);
+      res.status(500).json({ message: "Failed to fetch operators" });
+    }
+  });
+
+  app.get("/api/operators/active", async (req, res) => {
+    try {
+      const operators = await storage.getActiveOperators();
+      res.json(operators);
+    } catch (error) {
+      console.error("Error fetching active operators:", error);
+      res.status(500).json({ message: "Failed to fetch active operators" });
+    }
+  });
+
+  app.post("/api/operators", async (req, res) => {
+    try {
+      const validatedData = insertOperatorSchema.parse(req.body);
+      const operator = await storage.createOperator(validatedData);
+      res.status(201).json(operator);
+    } catch (error: any) {
+      console.error("Error creating operator:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid data", details: error.errors });
+      }
+      if (error.message && error.message.includes('unique')) {
+        return res.status(400).json({ error: "Telegram username already exists" });
+      }
+      res.status(500).json({ error: "Failed to create operator" });
+    }
+  });
+
+  app.put("/api/operators/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertOperatorSchema.partial().parse(req.body);
+      const operator = await storage.updateOperator(id, validatedData);
+      
+      if (!operator) {
+        return res.status(404).json({ message: "Operator not found" });
+      }
+
+      res.json(operator);
+    } catch (error: any) {
+      console.error("Error updating operator:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid data", details: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update operator" });
+    }
+  });
+
+  app.put("/api/operators/:id/toggle", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const operator = await storage.toggleOperatorStatus(id);
+      
+      if (!operator) {
+        return res.status(404).json({ message: "Operator not found" });
+      }
+
+      res.json(operator);
+    } catch (error) {
+      console.error("Error toggling operator status:", error);
+      res.status(500).json({ message: "Failed to toggle operator status" });
+    }
+  });
+
+  app.delete("/api/operators/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteOperator(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Operator not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting operator:", error);
+      res.status(500).json({ message: "Failed to delete operator" });
     }
   });
 

@@ -68,6 +68,18 @@ export const deliveryMethods = pgTable("delivery_methods", {
   updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
 });
 
+// Bot operators table for managing support staff
+export const operators = pgTable("operators", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  telegramUsername: text("telegram_username").notNull().unique(),
+  email: text("email"),
+  role: text("role"),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+});
+
 // Operator support sessions table for live customer support
 export const operatorSessions = pgTable("operator_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -277,6 +289,14 @@ export type InsertProductRating = z.infer<typeof insertProductRatingSchema>;
 export type PricingTier = typeof pricingTiers.$inferSelect;
 export type InsertPricingTier = z.infer<typeof insertPricingTierSchema>;
 export type OrderItem = z.infer<typeof orderItemSchema>;
+
+export const insertOperatorSchema = createInsertSchema(operators).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type Operator = typeof operators.$inferSelect;
+export type InsertOperator = z.infer<typeof insertOperatorSchema>;
 
 export const insertOperatorSessionSchema = createInsertSchema(operatorSessions).omit({
   id: true,

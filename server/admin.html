@@ -639,55 +639,20 @@
             <div id="support-section" style="display: none;">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Operator Support Management</h2>
                 
-                <!-- Bot Support Configuration Management -->
+                <!-- Bot Operators Management -->
                 <div class="bg-white shadow rounded-lg mb-6">
                     <div class="px-4 py-5 sm:p-6">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">Bot Support Configuration</h3>
-                            <button onclick="toggleSupportConfigEdit()" id="edit-support-config-btn" class="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                Edit Configuration
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Bot Operators & Contact Information</h3>
+                            <button onclick="showAddOperatorModal()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                Add Operator
                             </button>
                         </div>
                         
-                        <!-- Read-only display -->
-                        <div id="support-config-display" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <!-- Support info will be loaded here -->
-                            <div class="text-center py-4">
-                                <div class="text-sm text-gray-500">Loading support configuration...</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Edit form -->
-                        <div id="support-config-edit" class="space-y-4" style="display: none;">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Operator Username</label>
-                                    <input type="text" id="edit-operator-username" placeholder="@username" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <p class="text-xs text-gray-500 mt-1">Telegram username for direct operator contact</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Support Email</label>
-                                    <input type="email" id="edit-support-email" placeholder="support@company.com" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <p class="text-xs text-gray-500 mt-1">Email address for customer support</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Response Time</label>
-                                    <input type="text" id="edit-response-time" placeholder="2-4 hours" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <p class="text-xs text-gray-500 mt-1">Expected response time for customer inquiries</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Support Hours</label>
-                                    <textarea id="edit-support-hours" rows="3" placeholder="Monday - Friday: 9:00 AM - 6:00 PM&#10;Saturday: 10:00 AM - 4:00 PM&#10;Sunday: Closed" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                                    <p class="text-xs text-gray-500 mt-1">Business hours when support is available</p>
-                                </div>
-                            </div>
-                            <div class="flex justify-end space-x-3 pt-4 border-t">
-                                <button onclick="cancelSupportConfigEdit()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    Cancel
-                                </button>
-                                <button onclick="saveSupportConfig()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    Save Configuration
-                                </button>
+                        <!-- Operators list -->
+                        <div id="operators-list" class="space-y-3">
+                            <div class="text-center py-8">
+                                <div class="text-sm text-gray-500">Loading operators...</div>
                             </div>
                         </div>
                     </div>
@@ -2557,141 +2522,176 @@
             document.getElementById('session-modal').style.display = 'none';
         }
 
-        // Load bot support configuration
-        async function loadBotSupportInfo() {
+        // Load bot operators
+        async function loadOperators() {
             try {
-                const response = await fetch('/api/bot/settings');
-                const settings = await response.json();
-                
-                // Extract support-related settings
-                const supportSettings = {
-                    operatorUsername: settings.find(s => s.key === 'operator_username')?.value || 'Not configured',
-                    supportEmail: settings.find(s => s.key === 'support_email')?.value || 'Not configured',
-                    responseTime: settings.find(s => s.key === 'response_time')?.value || 'Not set',
-                    supportHours: settings.find(s => s.key === 'support_hours')?.value || 'Not set'
-                };
-                
-                renderBotSupportInfo(supportSettings);
+                const response = await fetch('/api/operators');
+                const operators = await response.json();
+                renderOperators(operators);
             } catch (error) {
-                console.error('Error loading bot support info:', error);
-                document.getElementById('support-config-display').innerHTML = 
-                    '<div class="text-center py-4"><div class="text-sm text-red-500">Failed to load support configuration</div></div>';
+                console.error('Error loading operators:', error);
+                document.getElementById('operators-list').innerHTML = 
+                    '<div class="text-center py-8"><div class="text-sm text-red-500">Failed to load operators</div></div>';
             }
         }
 
-        function renderBotSupportInfo(settings) {
-            const container = document.getElementById('support-config-display');
+        function renderOperators(operators) {
+            const container = document.getElementById('operators-list');
             
-            container.innerHTML = `
-                <div class="text-center">
-                    <div class="text-sm font-medium text-gray-900">Operator Contact</div>
-                    <div class="text-sm text-gray-600 mt-1">${settings.operatorUsername}</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-sm font-medium text-gray-900">Support Email</div>
-                    <div class="text-sm text-gray-600 mt-1">${settings.supportEmail}</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-sm font-medium text-gray-900">Response Time</div>
-                    <div class="text-sm text-gray-600 mt-1">${settings.responseTime}</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-sm font-medium text-gray-900">Support Hours</div>
-                    <div class="text-sm text-gray-600 mt-1 whitespace-pre-line">${settings.supportHours.replace(/\\n/g, '\n')}</div>
-                </div>
-            `;
+            if (operators.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="text-sm text-gray-500">No operators added yet</div>
+                        <p class="text-xs text-gray-400 mt-1">Add operators to manage customer support</p>
+                    </div>
+                `;
+                return;
+            }
             
-            // Store current settings for editing
-            window.currentSupportSettings = settings;
+            container.innerHTML = operators.map(operator => `
+                <div class="border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <span class="text-indigo-600 font-semibold">${operator.name.charAt(0).toUpperCase()}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h4 class="text-sm font-medium text-gray-900">${operator.name}</h4>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                    operator.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                }">
+                                    ${operator.active ? 'Active' : 'Inactive'}
+                                </span>
+                            </div>
+                            <div class="text-xs text-gray-500 space-y-1">
+                                <div><strong>Username:</strong> ${operator.telegramUsername}</div>
+                                ${operator.email ? `<div><strong>Email:</strong> ${operator.email}</div>` : ''}
+                                ${operator.role ? `<div><strong>Role:</strong> ${operator.role}</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="toggleOperatorStatus(${operator.id})" class="px-3 py-1 text-xs font-medium ${
+                            operator.active 
+                                ? 'text-gray-700 bg-gray-100 hover:bg-gray-200' 
+                                : 'text-green-700 bg-green-100 hover:bg-green-200'
+                        } border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            ${operator.active ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button onclick="deleteOperator(${operator.id})" class="px-3 py-1 text-xs font-medium text-red-700 bg-red-100 border border-transparent rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        // Support configuration editing functions
-        function toggleSupportConfigEdit() {
-            const displayDiv = document.getElementById('support-config-display');
-            const editDiv = document.getElementById('support-config-edit');
-            const editBtn = document.getElementById('edit-support-config-btn');
+        // Operator management functions
+        function showAddOperatorModal() {
+            document.getElementById('add-operator-modal').style.display = 'block';
+        }
+
+        function closeAddOperatorModal() {
+            document.getElementById('add-operator-modal').style.display = 'none';
+            // Reset form
+            document.getElementById('operator-name').value = '';
+            document.getElementById('operator-username').value = '';
+            document.getElementById('operator-email').value = '';
+            document.getElementById('operator-role').value = '';
+            document.getElementById('operator-active').checked = true;
+        }
+
+        async function saveOperator(event) {
+            event.preventDefault();
             
-            if (editDiv.style.display === 'none') {
-                // Switch to edit mode
-                populateEditForm();
-                displayDiv.style.display = 'none';
-                editDiv.style.display = 'block';
-                editBtn.textContent = 'Cancel Edit';
-                editBtn.className = 'px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500';
-            } else {
-                // Switch to display mode
-                cancelSupportConfigEdit();
+            const name = document.getElementById('operator-name').value.trim();
+            const username = document.getElementById('operator-username').value.trim();
+            const email = document.getElementById('operator-email').value.trim();
+            const role = document.getElementById('operator-role').value.trim();
+            const active = document.getElementById('operator-active').checked;
+
+            if (!name || !username) {
+                alert('Name and Telegram username are required');
+                return;
+            }
+
+            // Ensure username starts with @
+            const telegramUsername = username.startsWith('@') ? username : `@${username}`;
+
+            try {
+                const response = await fetch('/api/operators', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name,
+                        telegramUsername,
+                        email: email || null,
+                        role: role || null,
+                        active
+                    })
+                });
+
+                if (response.ok) {
+                    await loadOperators();
+                    closeAddOperatorModal();
+                    showNotification('Operator added successfully!', 'success');
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Failed to add operator');
+                }
+            } catch (error) {
+                console.error('Error adding operator:', error);
+                alert('Failed to add operator');
             }
         }
 
-        function populateEditForm() {
-            if (window.currentSupportSettings) {
-                document.getElementById('edit-operator-username').value = window.currentSupportSettings.operatorUsername === 'Not configured' ? '' : window.currentSupportSettings.operatorUsername;
-                document.getElementById('edit-support-email').value = window.currentSupportSettings.supportEmail === 'Not configured' ? '' : window.currentSupportSettings.supportEmail;
-                document.getElementById('edit-response-time').value = window.currentSupportSettings.responseTime === 'Not set' ? '' : window.currentSupportSettings.responseTime;
-                document.getElementById('edit-support-hours').value = window.currentSupportSettings.supportHours === 'Not set' ? '' : window.currentSupportSettings.supportHours.replace(/\\n/g, '\n');
+        async function toggleOperatorStatus(operatorId) {
+            try {
+                const response = await fetch(`/api/operators/${operatorId}/toggle`, {
+                    method: 'PUT'
+                });
+
+                if (response.ok) {
+                    await loadOperators();
+                    showNotification('Operator status updated!', 'success');
+                } else {
+                    alert('Failed to update operator status');
+                }
+            } catch (error) {
+                console.error('Error updating operator status:', error);
+                alert('Failed to update operator status');
             }
         }
 
-        function cancelSupportConfigEdit() {
-            const displayDiv = document.getElementById('support-config-display');
-            const editDiv = document.getElementById('support-config-edit');
-            const editBtn = document.getElementById('edit-support-config-btn');
-            
-            displayDiv.style.display = 'grid';
-            editDiv.style.display = 'none';
-            editBtn.textContent = 'Edit Configuration';
-            editBtn.className = 'px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500';
-        }
-
-        async function saveSupportConfig() {
-            const operatorUsername = document.getElementById('edit-operator-username').value.trim();
-            const supportEmail = document.getElementById('edit-support-email').value.trim();
-            const responseTime = document.getElementById('edit-response-time').value.trim();
-            const supportHours = document.getElementById('edit-support-hours').value.trim();
-
-            // Validate required fields
-            if (!operatorUsername && !supportEmail) {
-                alert('Please provide at least an operator username or support email');
+        async function deleteOperator(operatorId) {
+            if (!confirm('Are you sure you want to delete this operator?')) {
                 return;
             }
 
             try {
-                // Update each setting
-                const updates = [
-                    { key: 'operator_username', value: operatorUsername || 'Not configured' },
-                    { key: 'support_email', value: supportEmail || 'Not configured' },
-                    { key: 'response_time', value: responseTime || 'Not set' },
-                    { key: 'support_hours', value: supportHours || 'Not set' }
-                ];
+                const response = await fetch(`/api/operators/${operatorId}`, {
+                    method: 'DELETE'
+                });
 
-                // Save all settings
-                for (const setting of updates) {
-                    await fetch('/api/bot/settings', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(setting)
-                    });
+                if (response.ok) {
+                    await loadOperators();
+                    showNotification('Operator deleted successfully!', 'success');
+                } else {
+                    alert('Failed to delete operator');
                 }
-
-                // Refresh the display
-                await loadBotSupportInfo();
-                cancelSupportConfigEdit();
-                
-                // Show success notification
-                showNotification('Support configuration updated successfully!', 'success');
-
             } catch (error) {
-                console.error('Error saving support configuration:', error);
-                showNotification('Failed to save support configuration', 'error');
+                console.error('Error deleting operator:', error);
+                alert('Failed to delete operator');
             }
         }
 
         // Initialize support section when it's shown
         function initSupportSection() {
-            loadBotSupportInfo();
+            loadOperators();
             loadSupportSessions();
         }
 
@@ -2705,5 +2705,46 @@
         };
 
     </script>
+
+    <!-- Add Operator Modal -->
+    <div id="add-operator-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" style="display: none;">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Add Bot Operator</h3>
+                <form onsubmit="saveOperator(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Operator Name</label>
+                        <input type="text" id="operator-name" required placeholder="John Smith" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Telegram Username</label>
+                        <input type="text" id="operator-username" required placeholder="@johnsmith" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <p class="text-xs text-gray-500 mt-1">Include @ symbol</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Contact Email</label>
+                        <input type="email" id="operator-email" placeholder="john@company.com" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Role/Department</label>
+                        <input type="text" id="operator-role" placeholder="Customer Support" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="operator-active" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <label for="operator-active" class="ml-2 block text-sm text-gray-700">Active (available for customer support)</label>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4 border-t">
+                        <button type="button" onclick="closeAddOperatorModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            Add Operator
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

@@ -14,6 +14,7 @@ import type {
   PricingTier,
   PaymentMethod,
   DeliveryMethod,
+  Operator,
   OperatorSession,
   SupportMessage,
   InsertCart,
@@ -28,6 +29,7 @@ import type {
   InsertPricingTier,
   InsertPaymentMethod,
   InsertDeliveryMethod,
+  InsertOperator,
   InsertOperatorSession,
   InsertSupportMessage,
 } from "@shared/schema";
@@ -44,6 +46,7 @@ import {
   pricingTiers,
   paymentMethods,
   deliveryMethods,
+  operators,
   operatorSessions,
   supportMessages,
 } from "@shared/schema";
@@ -151,6 +154,15 @@ export interface IStorage {
   updateDeliveryMethod(id: string, method: Partial<InsertDeliveryMethod>): Promise<DeliveryMethod | undefined>;
   deleteDeliveryMethod(id: string): Promise<boolean>;
   reorderDeliveryMethods(methods: { id: string; sortOrder: number }[]): Promise<void>;
+
+  // Operators
+  getOperators(): Promise<Operator[]>;
+  getActiveOperators(): Promise<Operator[]>;
+  getOperator(id: string): Promise<Operator | undefined>;
+  createOperator(operator: InsertOperator): Promise<Operator>;
+  updateOperator(id: string, operator: Partial<InsertOperator>): Promise<Operator | undefined>;
+  deleteOperator(id: string): Promise<boolean>;
+  toggleOperatorStatus(id: string): Promise<Operator | undefined>;
   
   // User tracking operations
   trackUser(chatId: string, userData: any): Promise<void>;
@@ -811,6 +823,51 @@ export class DatabaseStorage implements IStorage {
         .set({ sortOrder: method.sortOrder })
         .where(eq(deliveryMethods.id, method.id));
     }
+  }
+
+  // Operators implementation
+  async getOperators(): Promise<Operator[]> {
+    return await db.select().from(operators).orderBy(asc(operators.name));
+  }
+
+  async getActiveOperators(): Promise<Operator[]> {
+    return await db.select().from(operators)
+      .where(eq(operators.active, true))
+      .orderBy(asc(operators.name));
+  }
+
+  async getOperator(id: string): Promise<Operator | undefined> {
+    const result = await db.select().from(operators).where(eq(operators.id, id));
+    return result[0];
+  }
+
+  async createOperator(operator: InsertOperator): Promise<Operator> {
+    const result = await db.insert(operators).values(operator).returning();
+    return result[0];
+  }
+
+  async updateOperator(id: string, operator: Partial<InsertOperator>): Promise<Operator | undefined> {
+    const result = await db.update(operators)
+      .set({ ...operator, updatedAt: sql`now()` })
+      .where(eq(operators.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteOperator(id: string): Promise<boolean> {
+    const result = await db.delete(operators).where(eq(operators.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async toggleOperatorStatus(id: string): Promise<Operator | undefined> {
+    const operator = await this.getOperator(id);
+    if (!operator) return undefined;
+    
+    const result = await db.update(operators)
+      .set({ active: !operator.active, updatedAt: sql`now()` })
+      .where(eq(operators.id, id))
+      .returning();
+    return result[0];
   }
 
   // User tracking implementation
