@@ -32,8 +32,12 @@ function App() {
             <Route path="/categories" component={Categories} />
             <Route path="/orders" component={Orders} />
             <Route path="/inquiries" component={Inquiries} />
-            <Route path="/payment-methods" component={TestPage} />
-            <Route path="/test" component={TestPage} />
+            <Route path="/payment-methods">
+              <TestPage />
+            </Route>
+            <Route path="/test">
+              <TestPage />
+            </Route>
             <Route path="/delivery-methods" component={DeliveryMethods} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/broadcast" component={Broadcast} />
