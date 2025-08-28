@@ -490,6 +490,36 @@
                     </div>
                 </div>
 
+                <!-- Edit Payment Method Form -->
+                <div id="edit-payment-form" class="bg-white shadow rounded-lg p-6 mb-6" style="display: none;">
+                    <h3 class="text-lg font-semibold mb-4">Edit Payment Method</h3>
+                    <input type="hidden" id="edit-payment-id">
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method Name</label>
+                            <input type="text" id="edit-payment-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea id="edit-payment-description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Payment Instructions</label>
+                            <textarea id="edit-payment-info" rows="3" placeholder="e.g., Bank account: 1234567890, Sort code: 12-34-56" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="edit-payment-active" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <span class="ml-2 text-sm text-gray-700">Payment method is active</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" onclick="hideEditPaymentForm()">Cancel</button>
+                        <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="updatePaymentMethod()">Update Payment Method</button>
+                    </div>
+                </div>
+
                 <!-- Payment Methods List -->
                 <div class="bg-white shadow rounded-lg">
                     <div class="px-4 py-5 sm:p-6">
@@ -537,6 +567,40 @@
                     <div class="flex justify-end space-x-3 mt-6">
                         <button class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" onclick="hideAddDeliveryForm()">Cancel</button>
                         <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="addDeliveryMethod()">Add Option</button>
+                    </div>
+                </div>
+
+                <!-- Edit Delivery Method Form -->
+                <div id="edit-delivery-form" class="bg-white shadow rounded-lg p-6 mb-6" style="display: none;">
+                    <h3 class="text-lg font-semibold mb-4">Edit Delivery Method</h3>
+                    <input type="hidden" id="edit-delivery-id">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Method Name</label>
+                            <input type="text" id="edit-delivery-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                            <input type="number" id="edit-delivery-price" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estimated Delivery Days</label>
+                            <input type="number" id="edit-delivery-days" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="flex items-center">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="edit-delivery-active" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <span class="ml-2 text-sm text-gray-700">Delivery method is active</span>
+                            </label>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea id="edit-delivery-description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" onclick="hideEditDeliveryForm()">Cancel</button>
+                        <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="updateDeliveryMethod()">Update Delivery Method</button>
                     </div>
                 </div>
 
@@ -805,12 +869,30 @@
             document.getElementById('add-payment-form').style.display = 'none';
             clearPaymentForm();
         }
+        
+        function showEditPaymentForm() {
+            document.getElementById('edit-payment-form').style.display = 'block';
+        }
+        
+        function hideEditPaymentForm() {
+            document.getElementById('edit-payment-form').style.display = 'none';
+            clearEditPaymentForm();
+        }
         function showAddDeliveryForm() {
             document.getElementById('add-delivery-form').style.display = 'block';
         }
         function hideAddDeliveryForm() {
             document.getElementById('add-delivery-form').style.display = 'none';
             clearDeliveryForm();
+        }
+        
+        function showEditDeliveryForm() {
+            document.getElementById('edit-delivery-form').style.display = 'block';
+        }
+        
+        function hideEditDeliveryForm() {
+            document.getElementById('edit-delivery-form').style.display = 'none';
+            clearEditDeliveryForm();
         }
 
         async function loadDashboardData() {
@@ -894,10 +976,16 @@
 
                 let html = '';
                 methods.forEach(method => {
+                    // Action buttons
+                    const actionButtons = '<div class="flex space-x-2 mt-2">' +
+                        '<button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium" onclick="editPaymentMethod(\'' + method.id + '\')">Edit</button>' +
+                        '<button class="text-red-600 hover:text-red-900 text-sm font-medium" onclick="deletePaymentMethod(\'' + method.id + '\')">Delete</button>' +
+                        '</div>';
+                    
                     html += '<div class="border rounded-lg p-4 mb-4"><div class="flex justify-between items-start"><div><h4 class="font-semibold text-lg">' + method.name + '</h4>';
                     if (method.description) html += '<p class="text-gray-600 text-sm">' + method.description + '</p>';
                     if (method.paymentInfo) html += '<div class="mt-2"><strong>Payment Info:</strong><br><div class="bg-gray-50 p-2 rounded text-sm">' + method.paymentInfo + '</div></div>';
-                    html += '</div><span class="px-2 py-1 text-xs font-semibold rounded-full ' + (method.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') + '">' + (method.isActive ? 'Active' : 'Inactive') + '</span></div></div>';
+                    html += actionButtons + '</div><span class="px-2 py-1 text-xs font-semibold rounded-full ' + (method.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') + '">' + (method.isActive ? 'Active' : 'Inactive') + '</span></div></div>';
                 });
                 
                 methodsList.innerHTML = html;
@@ -1245,10 +1333,25 @@
                     return;
                 }
 
-                let tableHTML = '<table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Est. Days</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th></tr></thead><tbody>';
+                let tableHTML = '<table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Est. Days</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th></tr></thead><tbody>';
                 
                 methods.forEach(method => {
-                    tableHTML += '<tr><td class="px-6 py-4 text-sm font-medium text-gray-900">' + method.name + '</td><td class="px-6 py-4 text-sm text-gray-500">$' + method.price + '</td><td class="px-6 py-4 text-sm text-gray-500">' + method.estimatedDays + ' days</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ' + (method.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') + '">' + (method.isActive ? 'Active' : 'Inactive') + '</span></td></tr>';
+                    // Status display
+                    const statusBadge = '<span class="px-2 py-1 text-xs font-semibold rounded-full ' + (method.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') + '">' + (method.isActive ? 'Active' : 'Inactive') + '</span>';
+                    
+                    // Action buttons
+                    const actionButtons = '<div class="flex space-x-2">' +
+                        '<button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium" onclick="editDeliveryMethod(\'' + method.id + '\')">Edit</button>' +
+                        '<button class="text-red-600 hover:text-red-900 text-sm font-medium" onclick="deleteDeliveryMethod(\'' + method.id + '\')">Delete</button>' +
+                        '</div>';
+                    
+                    tableHTML += '<tr>' +
+                        '<td class="px-6 py-4 text-sm font-medium text-gray-900">' + method.name + '</td>' +
+                        '<td class="px-6 py-4 text-sm text-gray-500">$' + method.price + '</td>' +
+                        '<td class="px-6 py-4 text-sm text-gray-500">' + method.estimatedDays + ' days</td>' +
+                        '<td class="px-6 py-4">' + statusBadge + '</td>' +
+                        '<td class="px-6 py-4">' + actionButtons + '</td>' +
+                        '</tr>';
                 });
                 
                 tableHTML += '</tbody></table>';
@@ -1830,6 +1933,195 @@
             document.getElementById('edit-category-name').value = '';
             document.getElementById('edit-category-display-order').value = '';
             document.getElementById('edit-category-active').checked = false;
+        }
+
+        // Edit payment method functions
+        async function editPaymentMethod(paymentId) {
+            try {
+                // Fetch payment method details
+                const response = await fetch(`/api/payment-methods/${paymentId}`);
+                const payment = await response.json();
+                
+                // Populate the edit form
+                document.getElementById('edit-payment-id').value = payment.id;
+                document.getElementById('edit-payment-name').value = payment.name || '';
+                document.getElementById('edit-payment-description').value = payment.description || '';
+                document.getElementById('edit-payment-info').value = payment.paymentInfo || '';
+                document.getElementById('edit-payment-active').checked = payment.isActive || false;
+                
+                showEditPaymentForm();
+            } catch (error) {
+                console.error('Error loading payment method for edit:', error);
+                showNotification('Error loading payment method details', 'error');
+            }
+        }
+
+        async function updatePaymentMethod() {
+            const paymentId = document.getElementById('edit-payment-id').value;
+            
+            // Collect updated payment method data
+            const paymentData = {
+                name: document.getElementById('edit-payment-name').value,
+                description: document.getElementById('edit-payment-description').value,
+                paymentInfo: document.getElementById('edit-payment-info').value,
+                isActive: document.getElementById('edit-payment-active').checked
+            };
+
+            // Validate required fields
+            if (!paymentData.name) {
+                showNotification('Please enter a payment method name', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/payment-methods/${paymentId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(paymentData)
+                });
+                
+                if (response.ok) {
+                    hideEditPaymentForm();
+                    loadPaymentMethods();
+                    loadDashboardData();
+                    showNotification('Payment method updated successfully!', 'success');
+                } else {
+                    const errorData = await response.json();
+                    showNotification(`Error updating payment method: ${errorData.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error updating payment method:', error);
+                showNotification('Error updating payment method', 'error');
+            }
+        }
+
+        async function deletePaymentMethod(paymentId) {
+            if (!confirm('Are you sure you want to delete this payment method? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/payment-methods/${paymentId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadPaymentMethods();
+                    loadDashboardData();
+                    showNotification('Payment method deleted successfully!', 'success');
+                } else {
+                    const errorData = await response.json();
+                    showNotification(`Error deleting payment method: ${errorData.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting payment method:', error);
+                showNotification('Error deleting payment method', 'error');
+            }
+        }
+
+        function clearEditPaymentForm() {
+            // Clear all edit form fields
+            document.getElementById('edit-payment-id').value = '';
+            document.getElementById('edit-payment-name').value = '';
+            document.getElementById('edit-payment-description').value = '';
+            document.getElementById('edit-payment-info').value = '';
+            document.getElementById('edit-payment-active').checked = false;
+        }
+
+        // Edit delivery method functions
+        async function editDeliveryMethod(deliveryId) {
+            try {
+                // Fetch delivery method details
+                const response = await fetch(`/api/delivery-methods/${deliveryId}`);
+                const delivery = await response.json();
+                
+                // Populate the edit form
+                document.getElementById('edit-delivery-id').value = delivery.id;
+                document.getElementById('edit-delivery-name').value = delivery.name || '';
+                document.getElementById('edit-delivery-description').value = delivery.description || '';
+                document.getElementById('edit-delivery-price').value = delivery.price || '';
+                document.getElementById('edit-delivery-days').value = delivery.estimatedDays || '';
+                document.getElementById('edit-delivery-active').checked = delivery.isActive || false;
+                
+                showEditDeliveryForm();
+            } catch (error) {
+                console.error('Error loading delivery method for edit:', error);
+                showNotification('Error loading delivery method details', 'error');
+            }
+        }
+
+        async function updateDeliveryMethod() {
+            const deliveryId = document.getElementById('edit-delivery-id').value;
+            
+            // Collect updated delivery method data
+            const deliveryData = {
+                name: document.getElementById('edit-delivery-name').value,
+                description: document.getElementById('edit-delivery-description').value,
+                price: parseFloat(document.getElementById('edit-delivery-price').value),
+                estimatedDays: parseInt(document.getElementById('edit-delivery-days').value),
+                isActive: document.getElementById('edit-delivery-active').checked
+            };
+
+            // Validate required fields
+            if (!deliveryData.name || isNaN(deliveryData.price) || isNaN(deliveryData.estimatedDays)) {
+                showNotification('Please fill in all required fields with valid values', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/delivery-methods/${deliveryId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(deliveryData)
+                });
+                
+                if (response.ok) {
+                    hideEditDeliveryForm();
+                    loadDeliveryMethods();
+                    loadDashboardData();
+                    showNotification('Delivery method updated successfully!', 'success');
+                } else {
+                    const errorData = await response.json();
+                    showNotification(`Error updating delivery method: ${errorData.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error updating delivery method:', error);
+                showNotification('Error updating delivery method', 'error');
+            }
+        }
+
+        async function deleteDeliveryMethod(deliveryId) {
+            if (!confirm('Are you sure you want to delete this delivery method? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/delivery-methods/${deliveryId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadDeliveryMethods();
+                    loadDashboardData();
+                    showNotification('Delivery method deleted successfully!', 'success');
+                } else {
+                    const errorData = await response.json();
+                    showNotification(`Error deleting delivery method: ${errorData.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting delivery method:', error);
+                showNotification('Error deleting delivery method', 'error');
+            }
+        }
+
+        function clearEditDeliveryForm() {
+            // Clear all edit form fields
+            document.getElementById('edit-delivery-id').value = '';
+            document.getElementById('edit-delivery-name').value = '';
+            document.getElementById('edit-delivery-description').value = '';
+            document.getElementById('edit-delivery-price').value = '';
+            document.getElementById('edit-delivery-days').value = '';
+            document.getElementById('edit-delivery-active').checked = false;
         }
 
         window.onload = function() {
