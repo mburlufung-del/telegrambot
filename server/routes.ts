@@ -6,6 +6,7 @@ import { SimpleObjectStorageService } from "./simpleObjectStorage";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import multer from "multer";
 import { 
   insertProductSchema, 
   insertInquirySchema, 
@@ -31,6 +32,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   return httpServer;
 }
+
+// Setup multer for file uploads
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  }
+});
 
 // Helper function with all route definitions
 function registerAllRoutes(app: Express): void {
@@ -733,7 +742,80 @@ function registerAllRoutes(app: Express): void {
     }
   });
 
-  // Broadcast message route with proper implementation
+  // User count for broadcasts
+  app.get('/api/users/count', async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json({ count: users.length });
+    } catch (error) {
+      res.status(500).json({ message: 'Error getting user count' });
+    }
+  });
+
+  // Broadcast endpoints
+  app.post('/api/broadcast', upload.single('image'), async (req, res) => {
+    try {
+      const { message } = req.body;
+      const imageFile = req.file;
+      
+      if (!message) {
+        return res.status(400).json({ message: 'Message is required' });
+      }
+
+      // Get all users
+      const users = await storage.getAllUsers();
+      
+      let sentCount = 0;
+      const broadcastRecord = {
+        message,
+        hasImage: !!imageFile,
+        recipientCount: users.length,
+        createdAt: new Date()
+      };
+
+      // Send to all users
+      for (const user of users) {
+        try {
+          if (imageFile) {
+            await teleShopBot.bot.sendPhoto(user.chatId, imageFile.buffer, {
+              caption: message,
+              parse_mode: 'HTML'
+            });
+          } else {
+            await teleShopBot.bot.sendMessage(user.chatId, message, {
+              parse_mode: 'HTML'
+            });
+          }
+          sentCount++;
+        } catch (error) {
+          console.log(`Failed to send broadcast to user ${user.chatId}:`, error.message);
+        }
+      }
+
+      // Save broadcast record
+      await storage.saveBroadcast(broadcastRecord);
+
+      res.json({ 
+        sentCount,
+        totalUsers: users.length,
+        message: 'Broadcast sent successfully'
+      });
+    } catch (error) {
+      console.error('Broadcast error:', error);
+      res.status(500).json({ message: 'Error sending broadcast' });
+    }
+  });
+
+  app.get('/api/broadcast/history', async (req, res) => {
+    try {
+      const broadcasts = await storage.getBroadcastHistory();
+      res.json(broadcasts);
+    } catch (error) {
+      res.status(500).json({ message: 'Error getting broadcast history' });
+    }
+  });
+
+  // Legacy broadcast route for backward compatibility
   app.post("/api/bot/broadcast", async (req, res) => {
     try {
       const { message, imageUrl, targetType, customUsers } = req.body;

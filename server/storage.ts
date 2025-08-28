@@ -145,6 +145,11 @@ export interface IStorage {
   updateDeliveryMethod(id: string, method: Partial<InsertDeliveryMethod>): Promise<DeliveryMethod | undefined>;
   deleteDeliveryMethod(id: string): Promise<boolean>;
   reorderDeliveryMethods(methods: { id: string; sortOrder: number }[]): Promise<void>;
+  
+  // Broadcast operations
+  getAllUsers(): Promise<any[]>;
+  saveBroadcast(broadcast: any): Promise<void>;
+  getBroadcastHistory(): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -781,6 +786,28 @@ export class DatabaseStorage implements IStorage {
         .set({ sortOrder: method.sortOrder })
         .where(eq(deliveryMethods.id, method.id));
     }
+  }
+
+  // Broadcast operations implementation
+  async getAllUsers(): Promise<any[]> {
+    // For now, return a mock user list since we don't have a users table yet
+    // In a real implementation, this would query your users table
+    return [
+      { chatId: '123456789', username: 'user1' },
+      // Add more mock users as needed for testing
+    ];
+  }
+
+  async saveBroadcast(broadcast: any): Promise<void> {
+    // For now, just log the broadcast
+    // In a real implementation, this would save to a broadcasts table
+    console.log('Broadcast saved:', broadcast);
+  }
+
+  async getBroadcastHistory(): Promise<any[]> {
+    // For now, return empty array
+    // In a real implementation, this would query a broadcasts table
+    return [];
   }
 }
 
