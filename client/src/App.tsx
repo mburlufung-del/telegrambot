@@ -13,6 +13,7 @@ import Analytics from './pages/analytics-simple'
 import Broadcast from './pages/broadcast'
 import PaymentMethods from './pages/payment-methods'
 import DeliveryMethods from './pages/delivery-methods'
+import OperatorSupport from './pages/operator-support'
 import NotFound from './pages/not-found'
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
             <Route path="/analytics" component={Analytics} />
             <Route path="/broadcast" component={Broadcast} />
             <Route path="/bot-settings" component={BotSettings} />
+            <Route path="/operator-support" component={OperatorSupport} />
             <Route component={NotFound} />
           </Switch>
         </main>
