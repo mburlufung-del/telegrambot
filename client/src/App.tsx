@@ -9,7 +9,7 @@ import Inquiries from './pages/inquiries'
 import BotSettings from './pages/bot-settings'
 import Analytics from './pages/analytics-simple'
 import Broadcast from './pages/broadcast'
-import SimpleTest from './pages/simple-test'
+import PaymentMethods from './pages/payment-methods'
 import DeliveryMethods from './pages/delivery-methods'
 import OperatorSupport from './pages/operator-support'
 import NotFound from './pages/not-found'
@@ -29,7 +29,7 @@ function App() {
             <Route path="/categories" component={Categories} />
             <Route path="/orders" component={Orders} />
             <Route path="/inquiries" component={Inquiries} />
-            <Route path="/payment-methods" component={SimpleTest} />
+            <Route path="/payment-methods" component={PaymentMethods} />
             <Route path="/delivery-methods" component={DeliveryMethods} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/broadcast" component={Broadcast} />

@@ -23,7 +23,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Essential bot API endpoints only
+// We'll register routes in the startup function
+
+// Essential bot API endpoints
 app.post('/api/bot/restart', async (req, res) => {
   try {
     log('Restarting bot...');
@@ -82,7 +84,7 @@ app.get('/health', (req, res) => {
 // Simple root endpoint explaining bot-only mode
 app.get('/', (req, res) => {
   res.json({
-    message: 'TeleShop Bot Server - Bot Only Mode',
+    message: 'TeleShop Bot Server - Bot + Admin Dashboard',
     status: 'running',
     bot_active: true,
     endpoints: {
@@ -94,13 +96,8 @@ app.get('/', (req, res) => {
   });
 });
 
-// 404 for any other routes
-app.use('*', (req, res) => {
-  res.status(404).json({ 
-    error: 'Dashboard removed - Bot-only mode active',
-    available_endpoints: ['/health', '/api/bot/status', '/api/bot/restart', '/api/bot/stop']
-  });
-});
+// Import Vite setup
+import { setupVite } from "./vite";
 
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   const status = err.status || err.statusCode || 500;
@@ -143,7 +140,7 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`🤖 TeleShop Bot Server (Bot-Only Mode) running on port ${port}`);
+    log(`🤖 TeleShop Bot Server (Bot + Admin Dashboard) running on port ${port}`);
     log(`📱 Telegram bot will be initialized automatically`);
     log(`🔍 Health check: http://localhost:${port}/health`);
   });
@@ -162,9 +159,23 @@ async function autoInitializeBot() {
       log('✅ Bot token auto-configured from environment');
     }
     
+    // Register all routes for admin dashboard (without creating server)
+    const { registerApiRoutes } = await import("./routes");
+    await registerApiRoutes(app);
+    log('✅ Admin dashboard API routes registered');
+
     // Initialize the bot
     await teleShopBot.initialize();
-    log('🚀 Telegram bot initialized and running in bot-only mode');
+    log('🚀 Telegram bot initialized and running with admin dashboard');
+    
+    // Setup Vite middleware for admin dashboard development  
+    try {
+      const httpServer = require('http').createServer(app);
+      await setupVite(app, httpServer);
+      log('🖥️  Admin dashboard frontend ready');
+    } catch (error) {
+      log(`⚠️  Frontend setup: ${error}`);
+    }
     
   } catch (error) {
     log(`❌ Bot initialization failed: ${error}`);

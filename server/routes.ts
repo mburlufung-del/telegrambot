@@ -17,9 +17,23 @@ import {
   type PaymentMethod
 } from "@shared/schema";
 
+// Register only API routes for admin dashboard
+export async function registerApiRoutes(app: Express): Promise<void> {
+  registerAllRoutes(app);
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize Telegram bot
   await teleShopBot.initialize();
+  
+  registerAllRoutes(app);
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
+
+// Helper function with all route definitions
+function registerAllRoutes(app: Express): void {
 
   // Products routes
   app.get("/api/products", async (req, res) => {
@@ -1880,9 +1894,6 @@ railway run npm run db:push</pre>
       res.status(500).send('Error downloading environment template');
     }
   });
-
-  const httpServer = createServer(app);
-  return httpServer;
 }
 
 // Helper function to sync bot information from Telegram API
