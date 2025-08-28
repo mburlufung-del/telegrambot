@@ -51,7 +51,7 @@ export default function PaymentMethods() {
       
       const data = await response.json();
       console.log('✅ Payment methods loaded:', data.length, 'methods');
-      console.log('📋 Methods:', data.map(m => `${m.name} (${m.id})`));
+      console.log('📋 Methods:', data.map((m: PaymentMethod) => `${m.name} (${m.id})`));
       return data;
     },
     staleTime: 0,
