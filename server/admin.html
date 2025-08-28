@@ -14,9 +14,13 @@
                     <div class="flex items-center">
                         <h1 class="text-xl font-bold text-gray-900">🤖 TeleShop Admin</h1>
                         <div class="ml-6 flex space-x-8">
-                            <a href="#" onclick="showSection('dashboard')" class="text-gray-900 px-3 py-2 text-sm font-medium">Dashboard</a>
-                            <a href="#" onclick="showSection('products')" class="text-gray-500 px-3 py-2 text-sm font-medium">Products</a>
-                            <a href="#" onclick="showSection('payments')" class="text-gray-500 px-3 py-2 text-sm font-medium">Payment Methods</a>
+                            <a href="#" onclick="showSection('dashboard')" class="text-gray-900 px-3 py-2 text-sm font-medium border-b-2 border-indigo-500">Dashboard</a>
+                            <a href="#" onclick="showSection('products')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Products</a>
+                            <a href="#" onclick="showSection('categories')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Categories</a>
+                            <a href="#" onclick="showSection('payments')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Payment Methods</a>
+                            <a href="#" onclick="showSection('delivery')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Delivery Options</a>
+                            <a href="#" onclick="showSection('orders')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Orders</a>
+                            <a href="#" onclick="showSection('settings')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Bot Settings</a>
                         </div>
                     </div>
                     <div class="flex items-center">
@@ -86,12 +90,56 @@
             </div>
 
             <div id="products-section" style="display: none;">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Product Management</h2>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Product Management</h2>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium" onclick="showAddProductForm()">
+                        + Add New Product
+                    </button>
+                </div>
+                
+                <!-- Add Product Form -->
+                <div id="add-product-form" class="bg-white shadow rounded-lg p-6 mb-6" style="display: none;">
+                    <h3 class="text-lg font-semibold mb-4">Add New Product</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                            <input type="text" id="product-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                            <input type="number" id="product-price" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
+                            <input type="number" id="product-stock" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <select id="product-category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">Select Category</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea id="product-description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Specifications (JSON format)</label>
+                            <textarea id="product-specs" rows="2" placeholder='{"weight": "1kg", "color": "red"}' class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" onclick="hideAddProductForm()">Cancel</button>
+                        <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="addProduct()">Add Product</button>
+                    </div>
+                </div>
+
+                <!-- Products List -->
                 <div class="bg-white shadow rounded-lg">
                     <div class="px-4 py-5 sm:p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-medium text-gray-900">Products</h3>
-                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded" onclick="loadProducts()">
+                            <button class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded" onclick="loadProducts()">
                                 Refresh
                             </button>
                         </div>
@@ -100,17 +148,208 @@
                 </div>
             </div>
 
+            <!-- Categories Section -->
+            <div id="categories-section" style="display: none;">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Category Management</h2>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium" onclick="showAddCategoryForm()">
+                        + Add New Category
+                    </button>
+                </div>
+                
+                <!-- Add Category Form -->
+                <div id="add-category-form" class="bg-white shadow rounded-lg p-6 mb-6" style="display: none;">
+                    <h3 class="text-lg font-semibold mb-4">Add New Category</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
+                            <input type="text" id="category-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+                            <input type="number" id="category-order" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea id="category-description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" onclick="hideAddCategoryForm()">Cancel</button>
+                        <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="addCategory()">Add Category</button>
+                    </div>
+                </div>
+
+                <!-- Categories List -->
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Categories</h3>
+                            <button class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded" onclick="loadCategories()">
+                                Refresh
+                            </button>
+                        </div>
+                        <div id="categories-list">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
             <div id="payments-section" style="display: none;">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Payment Methods</h2>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Payment Methods</h2>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium" onclick="showAddPaymentForm()">
+                        + Add Payment Method
+                    </button>
+                </div>
+                
+                <!-- Add Payment Method Form -->
+                <div id="add-payment-form" class="bg-white shadow rounded-lg p-6 mb-6" style="display: none;">
+                    <h3 class="text-lg font-semibold mb-4">Add Payment Method</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Method Name</label>
+                            <input type="text" id="payment-name" placeholder="e.g., Credit Card, PayPal" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <select id="payment-active" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea id="payment-description" rows="2" placeholder="Brief description of this payment method" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Payment Instructions</label>
+                            <textarea id="payment-info" rows="3" placeholder="Detailed instructions for customers on how to pay using this method" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" onclick="hideAddPaymentForm()">Cancel</button>
+                        <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="addPaymentMethod()">Add Method</button>
+                    </div>
+                </div>
+
+                <!-- Payment Methods List -->
                 <div class="bg-white shadow rounded-lg">
                     <div class="px-4 py-5 sm:p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-medium text-gray-900">Available Payment Methods</h3>
-                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded" onclick="loadPaymentMethods()">
+                            <button class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded" onclick="loadPaymentMethods()">
                                 Refresh
                             </button>
                         </div>
                         <div id="payment-methods-list">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Options Section -->
+            <div id="delivery-section" style="display: none;">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Delivery Options</h2>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium" onclick="showAddDeliveryForm()">
+                        + Add Delivery Option
+                    </button>
+                </div>
+                
+                <!-- Add Delivery Method Form -->
+                <div id="add-delivery-form" class="bg-white shadow rounded-lg p-6 mb-6" style="display: none;">
+                    <h3 class="text-lg font-semibold mb-4">Add Delivery Option</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Method Name</label>
+                            <input type="text" id="delivery-name" placeholder="e.g., Standard Shipping" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                            <input type="number" id="delivery-price" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estimated Days</label>
+                            <input type="number" id="delivery-days" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea id="delivery-description" rows="2" placeholder="Description of this delivery option" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" onclick="hideAddDeliveryForm()">Cancel</button>
+                        <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="addDeliveryMethod()">Add Option</button>
+                    </div>
+                </div>
+
+                <!-- Delivery Methods List -->
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Delivery Options</h3>
+                            <button class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded" onclick="loadDeliveryMethods()">
+                                Refresh
+                            </button>
+                        </div>
+                        <div id="delivery-methods-list">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Section -->
+            <div id="orders-section" style="display: none;">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Order Management</h2>
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Recent Orders</h3>
+                            <button class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded" onclick="loadOrders()">
+                                Refresh
+                            </button>
+                        </div>
+                        <div id="orders-list">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bot Settings Section -->
+            <div id="settings-section" style="display: none;">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Bot Settings</h2>
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="space-y-6">
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Bot Configuration</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Welcome Message</label>
+                                        <textarea id="welcome-message" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Store Name</label>
+                                        <input type="text" id="store-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded" onclick="updateBotSettings()">
+                                        Update Settings
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t pt-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Bot Status</h3>
+                                <div class="flex space-x-3">
+                                    <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded" onclick="checkBotStatus()">
+                                        Check Status
+                                    </button>
+                                    <button class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded" onclick="restartBot()">
+                                        Restart Bot
+                                    </button>
+                                </div>
+                                <div id="bot-status-info" class="mt-4"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -119,18 +358,73 @@
 
     <script>
         function showSection(section) {
-            const sections = ['dashboard', 'products', 'payments'];
+            const sections = ['dashboard', 'products', 'categories', 'payments', 'delivery', 'orders', 'settings'];
             sections.forEach(s => {
                 const element = document.getElementById(s + '-section');
                 if (element) element.style.display = 'none';
+                // Update nav styling
+                const navLink = document.querySelector(`a[onclick="showSection('${s}')"]`);
+                if (navLink) {
+                    navLink.className = 'text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium';
+                }
             });
             
             const targetSection = document.getElementById(section + '-section');
             if (targetSection) {
                 targetSection.style.display = 'block';
-                if (section === 'products') loadProducts();
-                else if (section === 'payments') loadPaymentMethods();
+                // Update active nav styling
+                const activeLink = document.querySelector(`a[onclick="showSection('${section}')"]`);
+                if (activeLink) {
+                    activeLink.className = 'text-gray-900 px-3 py-2 text-sm font-medium border-b-2 border-indigo-500';
+                }
+                
+                // Load data for the section
+                if (section === 'products') {
+                    loadProducts();
+                    loadCategoriesForDropdown();
+                } else if (section === 'categories') {
+                    loadCategories();
+                } else if (section === 'payments') {
+                    loadPaymentMethods();
+                } else if (section === 'delivery') {
+                    loadDeliveryMethods();
+                } else if (section === 'orders') {
+                    loadOrders();
+                } else if (section === 'settings') {
+                    loadBotSettings();
+                }
             }
+        }
+
+        // Form visibility functions
+        function showAddProductForm() {
+            document.getElementById('add-product-form').style.display = 'block';
+            loadCategoriesForDropdown();
+        }
+        function hideAddProductForm() {
+            document.getElementById('add-product-form').style.display = 'none';
+            clearProductForm();
+        }
+        function showAddCategoryForm() {
+            document.getElementById('add-category-form').style.display = 'block';
+        }
+        function hideAddCategoryForm() {
+            document.getElementById('add-category-form').style.display = 'none';
+            clearCategoryForm();
+        }
+        function showAddPaymentForm() {
+            document.getElementById('add-payment-form').style.display = 'block';
+        }
+        function hideAddPaymentForm() {
+            document.getElementById('add-payment-form').style.display = 'none';
+            clearPaymentForm();
+        }
+        function showAddDeliveryForm() {
+            document.getElementById('add-delivery-form').style.display = 'block';
+        }
+        function hideAddDeliveryForm() {
+            document.getElementById('add-delivery-form').style.display = 'none';
+            clearDeliveryForm();
         }
 
         async function loadDashboardData() {
@@ -198,6 +492,320 @@
             } catch (error) {
                 document.getElementById('payment-methods-list').innerHTML = '<p class="text-red-500">Error loading payment methods</p>';
             }
+        }
+
+        // Add new items functions
+        async function addProduct() {
+            const productData = {
+                name: document.getElementById('product-name').value,
+                price: parseFloat(document.getElementById('product-price').value),
+                stock: parseInt(document.getElementById('product-stock').value),
+                categoryId: document.getElementById('product-category').value || null,
+                description: document.getElementById('product-description').value,
+                specifications: document.getElementById('product-specs').value || '{}'
+            };
+
+            try {
+                JSON.parse(productData.specifications); // Validate JSON
+                const response = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(productData)
+                });
+                
+                if (response.ok) {
+                    hideAddProductForm();
+                    loadProducts();
+                    loadDashboardData();
+                    showNotification('Product added successfully!', 'success');
+                } else {
+                    showNotification('Error adding product', 'error');
+                }
+            } catch (error) {
+                showNotification('Invalid JSON in specifications', 'error');
+            }
+        }
+
+        async function addCategory() {
+            const categoryData = {
+                name: document.getElementById('category-name').value,
+                description: document.getElementById('category-description').value,
+                displayOrder: parseInt(document.getElementById('category-order').value) || 0
+            };
+
+            try {
+                const response = await fetch('/api/categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(categoryData)
+                });
+                
+                if (response.ok) {
+                    hideAddCategoryForm();
+                    loadCategories();
+                    loadDashboardData();
+                    showNotification('Category added successfully!', 'success');
+                } else {
+                    showNotification('Error adding category', 'error');
+                }
+            } catch (error) {
+                showNotification('Error adding category', 'error');
+            }
+        }
+
+        async function addPaymentMethod() {
+            const paymentData = {
+                name: document.getElementById('payment-name').value,
+                description: document.getElementById('payment-description').value,
+                paymentInfo: document.getElementById('payment-info').value,
+                isActive: document.getElementById('payment-active').value === 'true'
+            };
+
+            try {
+                const response = await fetch('/api/payment-methods', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(paymentData)
+                });
+                
+                if (response.ok) {
+                    hideAddPaymentForm();
+                    loadPaymentMethods();
+                    loadDashboardData();
+                    showNotification('Payment method added successfully!', 'success');
+                } else {
+                    showNotification('Error adding payment method', 'error');
+                }
+            } catch (error) {
+                showNotification('Error adding payment method', 'error');
+            }
+        }
+
+        async function addDeliveryMethod() {
+            const deliveryData = {
+                name: document.getElementById('delivery-name').value,
+                price: parseFloat(document.getElementById('delivery-price').value),
+                estimatedDays: parseInt(document.getElementById('delivery-days').value),
+                description: document.getElementById('delivery-description').value
+            };
+
+            try {
+                const response = await fetch('/api/delivery-methods', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(deliveryData)
+                });
+                
+                if (response.ok) {
+                    hideAddDeliveryForm();
+                    loadDeliveryMethods();
+                    showNotification('Delivery option added successfully!', 'success');
+                } else {
+                    showNotification('Error adding delivery option', 'error');
+                }
+            } catch (error) {
+                showNotification('Error adding delivery option', 'error');
+            }
+        }
+
+        // Load additional data functions
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                const categories = await response.json();
+                const categoriesList = document.getElementById('categories-list');
+                
+                if (categories.length === 0) {
+                    categoriesList.innerHTML = '<p class="text-gray-500">No categories found</p>';
+                    return;
+                }
+
+                let tableHTML = '<table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Products</th></tr></thead><tbody>';
+                
+                categories.forEach(category => {
+                    tableHTML += '<tr><td class="px-6 py-4 text-sm font-medium text-gray-900">' + category.name + '</td><td class="px-6 py-4 text-sm text-gray-500">' + category.displayOrder + '</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ' + (category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') + '">' + (category.isActive ? 'Active' : 'Inactive') + '</span></td><td class="px-6 py-4 text-sm text-gray-500">' + (category.products || 0) + '</td></tr>';
+                });
+                
+                tableHTML += '</tbody></table>';
+                categoriesList.innerHTML = tableHTML;
+            } catch (error) {
+                document.getElementById('categories-list').innerHTML = '<p class="text-red-500">Error loading categories</p>';
+            }
+        }
+
+        async function loadCategoriesForDropdown() {
+            try {
+                const response = await fetch('/api/categories');
+                const categories = await response.json();
+                const categorySelect = document.getElementById('product-category');
+                
+                categorySelect.innerHTML = '<option value="">Select Category</option>';
+                categories.forEach(category => {
+                    if (category.isActive) {
+                        categorySelect.innerHTML += '<option value="' + category.id + '">' + category.name + '</option>';
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading categories for dropdown:', error);
+            }
+        }
+
+        async function loadDeliveryMethods() {
+            try {
+                const response = await fetch('/api/delivery-methods');
+                const methods = await response.json();
+                const methodsList = document.getElementById('delivery-methods-list');
+                
+                if (methods.length === 0) {
+                    methodsList.innerHTML = '<p class="text-gray-500">No delivery options configured</p>';
+                    return;
+                }
+
+                let tableHTML = '<table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Est. Days</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th></tr></thead><tbody>';
+                
+                methods.forEach(method => {
+                    tableHTML += '<tr><td class="px-6 py-4 text-sm font-medium text-gray-900">' + method.name + '</td><td class="px-6 py-4 text-sm text-gray-500">$' + method.price + '</td><td class="px-6 py-4 text-sm text-gray-500">' + method.estimatedDays + ' days</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ' + (method.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') + '">' + (method.isActive ? 'Active' : 'Inactive') + '</span></td></tr>';
+                });
+                
+                tableHTML += '</tbody></table>';
+                methodsList.innerHTML = tableHTML;
+            } catch (error) {
+                document.getElementById('delivery-methods-list').innerHTML = '<p class="text-red-500">Error loading delivery methods</p>';
+            }
+        }
+
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/orders');
+                const orders = await response.json();
+                const ordersList = document.getElementById('orders-list');
+                
+                if (orders.length === 0) {
+                    ordersList.innerHTML = '<p class="text-gray-500">No orders found</p>';
+                    return;
+                }
+
+                let tableHTML = '<table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th></tr></thead><tbody>';
+                
+                orders.forEach(order => {
+                    const date = new Date(order.createdAt).toLocaleDateString();
+                    tableHTML += '<tr><td class="px-6 py-4 text-sm font-medium text-gray-900">#' + order.id + '</td><td class="px-6 py-4 text-sm text-gray-500">' + order.customerName + '</td><td class="px-6 py-4 text-sm text-gray-500">$' + order.totalAmount + '</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">' + order.status + '</span></td><td class="px-6 py-4 text-sm text-gray-500">' + date + '</td></tr>';
+                });
+                
+                tableHTML += '</tbody></table>';
+                ordersList.innerHTML = tableHTML;
+            } catch (error) {
+                document.getElementById('orders-list').innerHTML = '<p class="text-red-500">Error loading orders</p>';
+            }
+        }
+
+        async function loadBotSettings() {
+            try {
+                const response = await fetch('/api/bot/settings');
+                const settings = await response.json();
+                
+                const welcomeSetting = settings.find(s => s.key === 'welcome_message');
+                const storeSetting = settings.find(s => s.key === 'store_name');
+                
+                if (welcomeSetting) {
+                    document.getElementById('welcome-message').value = welcomeSetting.value;
+                }
+                if (storeSetting) {
+                    document.getElementById('store-name').value = storeSetting.value;
+                }
+            } catch (error) {
+                console.error('Error loading bot settings:', error);
+            }
+        }
+
+        async function updateBotSettings() {
+            const welcomeMessage = document.getElementById('welcome-message').value;
+            const storeName = document.getElementById('store-name').value;
+
+            try {
+                await Promise.all([
+                    fetch('/api/bot/settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: 'welcome_message', value: welcomeMessage })
+                    }),
+                    fetch('/api/bot/settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: 'store_name', value: storeName })
+                    })
+                ]);
+                
+                showNotification('Bot settings updated successfully!', 'success');
+            } catch (error) {
+                showNotification('Error updating bot settings', 'error');
+            }
+        }
+
+        async function checkBotStatus() {
+            try {
+                const response = await fetch('/api/bot/status');
+                const status = await response.json();
+                document.getElementById('bot-status-info').innerHTML = 
+                    '<div class="bg-gray-50 p-3 rounded"><strong>Bot Status:</strong> <span class="text-green-600">' + status.status + '</span></div>';
+            } catch (error) {
+                document.getElementById('bot-status-info').innerHTML = '<p class="text-red-500">Error checking bot status</p>';
+            }
+        }
+
+        async function restartBot() {
+            try {
+                const response = await fetch('/api/bot/restart', { method: 'POST' });
+                const result = await response.json();
+                document.getElementById('bot-status-info').innerHTML = 
+                    '<div class="bg-green-50 p-3 rounded"><strong>Success:</strong> ' + result.message + '</div>';
+            } catch (error) {
+                document.getElementById('bot-status-info').innerHTML = '<p class="text-red-500">Error restarting bot</p>';
+            }
+        }
+
+        // Form clearing functions
+        function clearProductForm() {
+            ['product-name', 'product-price', 'product-stock', 'product-category', 'product-description', 'product-specs'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.value = '';
+            });
+        }
+
+        function clearCategoryForm() {
+            ['category-name', 'category-description', 'category-order'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.value = '';
+            });
+        }
+
+        function clearPaymentForm() {
+            ['payment-name', 'payment-description', 'payment-info'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.value = '';
+            });
+            document.getElementById('payment-active').value = 'true';
+        }
+
+        function clearDeliveryForm() {
+            ['delivery-name', 'delivery-price', 'delivery-days', 'delivery-description'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.value = '';
+            });
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ' + 
+                (type === 'success' ? 'bg-green-500 text-white' : 
+                 type === 'error' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white');
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
         }
 
         window.onload = function() {
