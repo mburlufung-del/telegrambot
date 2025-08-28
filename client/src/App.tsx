@@ -1,5 +1,5 @@
 import { Switch, Route } from 'wouter'
-import Sidebar from './components/layout/sidebar'
+import { Sidebar } from './components/ui/sidebar'
 import Header from './components/layout/header'
 import Dashboard from './pages/dashboard'
 import AdminDashboard from './pages/admin-dashboard'
@@ -19,7 +19,9 @@ import NotFound from './pages/not-found'
 function App() {
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
+      <div className="w-64 bg-white shadow-lg border-r border-gray-200">
+        <Sidebar />
+      </div>
       
       <div className="flex-1 flex flex-col">
         <Header />
