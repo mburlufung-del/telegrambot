@@ -1,5 +1,5 @@
 import { Switch, Route } from 'wouter'
-import { Sidebar } from './components/ui/sidebar'
+import Sidebar from './components/layout/sidebar'
 import Header from './components/layout/header'
 import AdminDashboard from './pages/admin-dashboard'
 import Products from './pages/products'
@@ -10,7 +10,6 @@ import BotSettings from './pages/bot-settings'
 import Analytics from './pages/analytics-simple'
 import Broadcast from './pages/broadcast'
 import PaymentMethodsSimple from './pages/payment-methods-simple'
-import TestPage from './pages/test-page'
 import DeliveryMethods from './pages/delivery-methods'
 import OperatorSupport from './pages/operator-support'
 import NotFound from './pages/not-found'
@@ -18,9 +17,7 @@ import NotFound from './pages/not-found'
 function App() {
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <div className="w-64 bg-white shadow-lg border-r border-gray-200">
-        <Sidebar />
-      </div>
+      <Sidebar />
       
       <div className="flex-1 flex flex-col">
         <Header />
@@ -32,12 +29,7 @@ function App() {
             <Route path="/categories" component={Categories} />
             <Route path="/orders" component={Orders} />
             <Route path="/inquiries" component={Inquiries} />
-            <Route path="/payment-methods">
-              <TestPage />
-            </Route>
-            <Route path="/test">
-              <TestPage />
-            </Route>
+            <Route path="/payment-methods" component={PaymentMethodsSimple} />
             <Route path="/delivery-methods" component={DeliveryMethods} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/broadcast" component={Broadcast} />
