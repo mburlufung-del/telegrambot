@@ -639,6 +639,19 @@
             <div id="support-section" style="display: none;">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Operator Support Management</h2>
                 
+                <!-- Current Support Configuration -->
+                <div class="bg-white shadow rounded-lg mb-6">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Current Bot Support Configuration</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="bot-support-info">
+                            <!-- Support info will be loaded here -->
+                            <div class="text-center py-4">
+                                <div class="text-sm text-gray-500">Loading support configuration...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Support Stats -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
                     <div class="bg-white overflow-hidden shadow rounded-lg">
@@ -2503,8 +2516,54 @@
             document.getElementById('session-modal').style.display = 'none';
         }
 
+        // Load bot support configuration
+        async function loadBotSupportInfo() {
+            try {
+                const response = await fetch('/api/bot/settings');
+                const settings = await response.json();
+                
+                // Extract support-related settings
+                const supportSettings = {
+                    operatorUsername: settings.find(s => s.key === 'operator_username')?.value || 'Not configured',
+                    supportEmail: settings.find(s => s.key === 'support_email')?.value || 'Not configured',
+                    responseTime: settings.find(s => s.key === 'response_time')?.value || 'Not set',
+                    supportHours: settings.find(s => s.key === 'support_hours')?.value || 'Not set'
+                };
+                
+                renderBotSupportInfo(supportSettings);
+            } catch (error) {
+                console.error('Error loading bot support info:', error);
+                document.getElementById('bot-support-info').innerHTML = 
+                    '<div class="text-center py-4"><div class="text-sm text-red-500">Failed to load support configuration</div></div>';
+            }
+        }
+
+        function renderBotSupportInfo(settings) {
+            const container = document.getElementById('bot-support-info');
+            
+            container.innerHTML = `
+                <div class="text-center">
+                    <div class="text-sm font-medium text-gray-900">Operator Contact</div>
+                    <div class="text-sm text-gray-600 mt-1">${settings.operatorUsername}</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-sm font-medium text-gray-900">Support Email</div>
+                    <div class="text-sm text-gray-600 mt-1">${settings.supportEmail}</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-sm font-medium text-gray-900">Response Time</div>
+                    <div class="text-sm text-gray-600 mt-1">${settings.responseTime}</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-sm font-medium text-gray-900">Support Hours</div>
+                    <div class="text-sm text-gray-600 mt-1 whitespace-pre-line">${settings.supportHours.replace(/\\n/g, '\n')}</div>
+                </div>
+            `;
+        }
+
         // Initialize support section when it's shown
         function initSupportSection() {
+            loadBotSupportInfo();
             loadSupportSessions();
         }
 
