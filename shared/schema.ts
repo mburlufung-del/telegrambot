@@ -68,6 +68,35 @@ export const deliveryMethods = pgTable("delivery_methods", {
   updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
 });
 
+// Operator support sessions table for live customer support
+export const operatorSessions = pgTable("operator_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  telegramUserId: text("telegram_user_id").notNull(),
+  customerName: text("customer_name").notNull(),
+  operatorName: text("operator_name"),
+  status: text("status").notNull().default("waiting"), // waiting, active, resolved, closed
+  priority: text("priority").notNull().default("normal"), // low, normal, high, urgent
+  category: text("category"), // general, order, product, payment, delivery
+  initialMessage: text("initial_message").notNull(),
+  lastMessage: text("last_message"),
+  lastActivityAt: timestamp("last_activity_at").notNull().default(sql`now()`),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+});
+
+// Support messages for operator chat history
+export const supportMessages = pgTable("support_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => operatorSessions.id),
+  senderType: text("sender_type").notNull(), // customer, operator, system
+  senderName: text("sender_name").notNull(),
+  message: text("message").notNull(),
+  messageType: text("message_type").default("text"), // text, image, file, system
+  metadata: text("metadata"), // JSON for additional data
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
 export const orders = pgTable("orders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   orderNumber: varchar("order_number").unique(), // User-visible order number
@@ -248,3 +277,20 @@ export type InsertProductRating = z.infer<typeof insertProductRatingSchema>;
 export type PricingTier = typeof pricingTiers.$inferSelect;
 export type InsertPricingTier = z.infer<typeof insertPricingTierSchema>;
 export type OrderItem = z.infer<typeof orderItemSchema>;
+
+export const insertOperatorSessionSchema = createInsertSchema(operatorSessions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastActivityAt: true,
+});
+
+export const insertSupportMessageSchema = createInsertSchema(supportMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type OperatorSession = typeof operatorSessions.$inferSelect;
+export type InsertOperatorSession = z.infer<typeof insertOperatorSessionSchema>;
+export type SupportMessage = typeof supportMessages.$inferSelect;
+export type InsertSupportMessage = z.infer<typeof insertSupportMessageSchema>;

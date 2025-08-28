@@ -14,6 +14,8 @@ import type {
   PricingTier,
   PaymentMethod,
   DeliveryMethod,
+  OperatorSession,
+  SupportMessage,
   InsertCart,
   InsertCategory,
   InsertOrder,
@@ -26,6 +28,8 @@ import type {
   InsertPricingTier,
   InsertPaymentMethod,
   InsertDeliveryMethod,
+  InsertOperatorSession,
+  InsertSupportMessage,
 } from "@shared/schema";
 import {
   categories,
@@ -40,6 +44,8 @@ import {
   pricingTiers,
   paymentMethods,
   deliveryMethods,
+  operatorSessions,
+  supportMessages,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -154,6 +160,21 @@ export interface IStorage {
   getAllUsers(): Promise<any[]>;
   saveBroadcast(broadcast: any): Promise<void>;
   getBroadcastHistory(): Promise<any[]>;
+  
+  // Operator Support
+  createOperatorSession(session: InsertOperatorSession): Promise<OperatorSession>;
+  getOperatorSessions(status?: string): Promise<OperatorSession[]>;
+  getOperatorSession(id: string): Promise<OperatorSession | undefined>;
+  getUserActiveSession(telegramUserId: string): Promise<OperatorSession | undefined>;
+  updateOperatorSession(id: string, updates: Partial<InsertOperatorSession>): Promise<OperatorSession | undefined>;
+  
+  // Support Messages
+  addSupportMessage(message: InsertSupportMessage): Promise<SupportMessage>;
+  getSupportMessages(sessionId: string): Promise<SupportMessage[]>;
+  
+  // Operator Management
+  assignOperator(sessionId: string, operatorName: string): Promise<boolean>;
+  closeOperatorSession(sessionId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -827,6 +848,104 @@ export class DatabaseStorage implements IStorage {
     // For now, return empty array
     // In a real implementation, this would query a broadcasts table
     return [];
+  }
+
+  // Operator Support implementation
+  async createOperatorSession(session: InsertOperatorSession): Promise<OperatorSession> {
+    const result = await db.insert(operatorSessions)
+      .values({
+        ...session,
+        lastActivityAt: new Date(),
+      })
+      .returning();
+    return result[0];
+  }
+
+  async getOperatorSessions(status?: string): Promise<OperatorSession[]> {
+    if (status) {
+      return await db.select().from(operatorSessions)
+        .where(eq(operatorSessions.status, status))
+        .orderBy(desc(operatorSessions.lastActivityAt));
+    }
+    return await db.select().from(operatorSessions)
+      .orderBy(desc(operatorSessions.lastActivityAt));
+  }
+
+  async getOperatorSession(id: string): Promise<OperatorSession | undefined> {
+    const result = await db.select().from(operatorSessions)
+      .where(eq(operatorSessions.id, id));
+    return result[0];
+  }
+
+  async getUserActiveSession(telegramUserId: string): Promise<OperatorSession | undefined> {
+    const result = await db.select().from(operatorSessions)
+      .where(and(
+        eq(operatorSessions.telegramUserId, telegramUserId),
+        eq(operatorSessions.status, "waiting")
+      ))
+      .orderBy(desc(operatorSessions.createdAt));
+    return result[0];
+  }
+
+  async updateOperatorSession(id: string, updates: Partial<InsertOperatorSession>): Promise<OperatorSession | undefined> {
+    const result = await db.update(operatorSessions)
+      .set({
+        ...updates,
+        lastActivityAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(operatorSessions.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Support Messages implementation
+  async addSupportMessage(message: InsertSupportMessage): Promise<SupportMessage> {
+    const result = await db.insert(supportMessages)
+      .values(message)
+      .returning();
+    
+    // Update session last activity
+    await db.update(operatorSessions)
+      .set({
+        lastMessage: message.message,
+        lastActivityAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(operatorSessions.id, message.sessionId));
+    
+    return result[0];
+  }
+
+  async getSupportMessages(sessionId: string): Promise<SupportMessage[]> {
+    return await db.select().from(supportMessages)
+      .where(eq(supportMessages.sessionId, sessionId))
+      .orderBy(asc(supportMessages.createdAt));
+  }
+
+  // Operator Management implementation
+  async assignOperator(sessionId: string, operatorName: string): Promise<boolean> {
+    const result = await db.update(operatorSessions)
+      .set({
+        operatorName,
+        status: "active",
+        lastActivityAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(operatorSessions.id, sessionId));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async closeOperatorSession(sessionId: string): Promise<boolean> {
+    const result = await db.update(operatorSessions)
+      .set({
+        status: "resolved",
+        resolvedAt: new Date(),
+        lastActivityAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(operatorSessions.id, sessionId));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 }
 

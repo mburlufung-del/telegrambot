@@ -1987,6 +1987,78 @@ railway run npm run db:push</pre>
       res.status(500).send('Error downloading environment template');
     }
   });
+
+  // Operator Support Routes
+  app.get('/api/operator-sessions', async (req, res) => {
+    try {
+      const { status } = req.query;
+      const sessions = await storage.getOperatorSessions(status as string);
+      res.json(sessions);
+    } catch (error) {
+      console.error('Error fetching operator sessions:', error);
+      res.status(500).json({ message: 'Failed to fetch operator sessions' });
+    }
+  });
+
+  app.get('/api/operator-sessions/:id', async (req, res) => {
+    try {
+      const session = await storage.getOperatorSession(req.params.id);
+      if (!session) {
+        return res.status(404).json({ message: 'Session not found' });
+      }
+      res.json(session);
+    } catch (error) {
+      console.error('Error fetching operator session:', error);
+      res.status(500).json({ message: 'Failed to fetch operator session' });
+    }
+  });
+
+  app.put('/api/operator-sessions/:id/assign', async (req, res) => {
+    try {
+      const { operatorName } = req.body;
+      const success = await storage.assignOperator(req.params.id, operatorName);
+      if (!success) {
+        return res.status(404).json({ message: 'Session not found' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error assigning operator:', error);
+      res.status(500).json({ message: 'Failed to assign operator' });
+    }
+  });
+
+  app.put('/api/operator-sessions/:id/close', async (req, res) => {
+    try {
+      const success = await storage.closeOperatorSession(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: 'Session not found' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error closing session:', error);
+      res.status(500).json({ message: 'Failed to close session' });
+    }
+  });
+
+  app.get('/api/support-messages/:sessionId', async (req, res) => {
+    try {
+      const messages = await storage.getSupportMessages(req.params.sessionId);
+      res.json(messages);
+    } catch (error) {
+      console.error('Error fetching support messages:', error);
+      res.status(500).json({ message: 'Failed to fetch support messages' });
+    }
+  });
+
+  app.post('/api/support-messages', async (req, res) => {
+    try {
+      const message = await storage.addSupportMessage(req.body);
+      res.status(201).json(message);
+    } catch (error) {
+      console.error('Error adding support message:', error);
+      res.status(500).json({ message: 'Failed to add support message' });
+    }
+  });
 }
 
 // Helper function to sync bot information from Telegram API

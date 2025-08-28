@@ -559,6 +559,21 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         await this.handleRatingCommand(chatId, userId);
       } else if (data === 'operator') {
         await this.handleOperatorCommand(chatId, userId);
+      } else if (data === 'start_live_support') {
+        await this.handleStartLiveSupport(chatId, userId);
+      } else if (data === 'submit_inquiry') {
+        await this.handleSendSupportMessage(chatId, userId);
+      } else if (data === 'email_support') {
+        await this.handleEmailSupport(chatId, userId);
+      } else if (data.startsWith('continue_session_')) {
+        const sessionId = data.replace('continue_session_', '');
+        await this.handleViewSession(chatId, userId, sessionId);
+      } else if (data.startsWith('end_session_')) {
+        const sessionId = data.replace('end_session_', '');
+        await this.handleEndSession(chatId, userId, sessionId);
+      } else if (data.startsWith('view_session_')) {
+        const sessionId = data.replace('view_session_', '');
+        await this.handleViewSession(chatId, userId, sessionId);
       } else if (data === 'back_to_menu') {
         await this.sendMainMenu(chatId);
       } else if (data.startsWith('category_')) {
@@ -1044,6 +1059,215 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
   }
 
   private async handleOperatorCommand(chatId: number, userId: string) {
+    // Check if user already has an active support session
+    const existingSession = await storage.getUserActiveSession(userId);
+    
+    if (existingSession) {
+      const message = `📞 You already have an active support session!\n\n` +
+        `Session ID: \`${existingSession.id}\`\n` +
+        `Status: ${existingSession.status === 'waiting' ? '⏳ Waiting for operator' : '👨‍💼 Active with operator'}\n` +
+        `Started: ${new Date(existingSession.createdAt).toLocaleString()}\n\n` +
+        `What would you like to do?`;
+        
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '💬 Continue Current Session', callback_data: `continue_session_${existingSession.id}` }],
+          [{ text: '❌ End Current Session', callback_data: `end_session_${existingSession.id}` }],
+          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+      return;
+    }
+    
+    // Show support options for new session
+    const message = `👨‍💼 *Customer Support Options*\n\n` +
+      `Choose how you'd like to get support:`;
+      
+    const keyboard = {
+      inline_keyboard: [
+        [{ text: '💬 Live Chat with Operator', callback_data: 'start_live_support' }],
+        [{ text: '📋 Submit Support Inquiry', callback_data: 'submit_inquiry' }],
+        [{ text: '📧 Email Support', callback_data: 'email_support' }],
+        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+      ]
+    };
+    
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  private async handleStartLiveSupport(chatId: number, userId: string) {
+    const message = `💬 *Start Live Support Session*\n\n` +
+      `Please describe your issue or question. An operator will be assigned to help you.\n\n` +
+      `*Categories:*\n` +
+      `• General questions\n` +
+      `• Order inquiries\n` +
+      `• Product support\n` +
+      `• Payment issues\n` +
+      `• Delivery questions\n\n` +
+      `Type your message below:`;
+      
+    const keyboard = {
+      inline_keyboard: [
+        [{ text: '🔙 Back to Support Options', callback_data: 'operator' }]
+      ]
+    };
+    
+    await this.sendAutoVanishMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+    
+    // Set up one-time message listener for the support request
+    this.bot?.once('message', async (msg) => {
+      if (msg.chat.id === chatId && msg.text && !msg.text.startsWith('/')) {
+        await this.createLiveSupportSession(chatId, userId, msg.text, msg.from?.username);
+      }
+    });
+  }
+
+  private async createLiveSupportSession(chatId: number, userId: string, message: string, username?: string) {
+    try {
+      // Create new operator session
+      const session = await storage.createOperatorSession({
+        telegramUserId: userId,
+        customerName: username || `User ${userId}`,
+        status: 'waiting',
+        priority: 'normal',
+        category: 'general',
+        initialMessage: message
+      });
+
+      // Add the initial message to support messages
+      await storage.addSupportMessage({
+        sessionId: session.id,
+        senderType: 'customer',
+        senderName: username || `User ${userId}`,
+        message: message,
+        messageType: 'text'
+      });
+
+      const confirmationMessage = `✅ *Support Session Created*\n\n` +
+        `Session ID: \`${session.id}\`\n` +
+        `Status: ⏳ Waiting for operator\n` +
+        `Priority: ${session.priority}\n\n` +
+        `Your request: "${message}"\n\n` +
+        `You will be notified when an operator is assigned to your session.`;
+        
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '💬 View Session', callback_data: `view_session_${session.id}` }],
+          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, confirmationMessage, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+
+      // Log session creation
+      console.log(`[SUPPORT] Created session ${session.id} for user ${userId}`);
+      
+    } catch (error) {
+      console.error('Error creating support session:', error);
+      await this.sendAutoVanishMessage(chatId, '❌ Failed to create support session. Please try again later.');
+    }
+  }
+
+  private async handleViewSession(chatId: number, userId: string, sessionId: string) {
+    try {
+      const session = await storage.getOperatorSession(sessionId);
+      if (!session) {
+        await this.sendAutoVanishMessage(chatId, '❌ Session not found.');
+        return;
+      }
+
+      // Get recent messages for this session
+      const messages = await storage.getSupportMessages(sessionId);
+      const recentMessages = messages.slice(-5); // Show last 5 messages
+      
+      let messageHistory = '';
+      if (recentMessages.length > 0) {
+        messageHistory = '\n\n*Recent Messages:*\n';
+        recentMessages.forEach(msg => {
+          const time = new Date(msg.createdAt).toLocaleTimeString();
+          const sender = msg.senderType === 'customer' ? 'You' : `${msg.senderName}`;
+          messageHistory += `${time} - ${sender}: ${msg.message}\n`;
+        });
+      }
+
+      const statusText = session.status === 'waiting' ? '⏳ Waiting for operator' 
+                       : session.status === 'active' ? '👨‍💼 Active with operator'
+                       : '✅ Resolved';
+
+      const message = `💬 *Support Session Details*\n\n` +
+        `Session ID: \`${session.id}\`\n` +
+        `Status: ${statusText}\n` +
+        `Priority: ${session.priority}\n` +
+        `Category: ${session.category}\n` +
+        `Started: ${new Date(session.createdAt).toLocaleString()}\n` +
+        `${session.operatorName ? `Operator: ${session.operatorName}\n` : ''}` +
+        messageHistory;
+        
+      const keyboard = {
+        inline_keyboard: [
+          ...(session.status === 'active' ? [[{ text: '💬 Send Message', callback_data: `send_message_${sessionId}` }]] : []),
+          [{ text: '❌ End Session', callback_data: `end_session_${sessionId}` }],
+          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+
+    } catch (error) {
+      console.error('Error viewing session:', error);
+      await this.sendAutoVanishMessage(chatId, '❌ Failed to load session details.');
+    }
+  }
+
+  private async handleEndSession(chatId: number, userId: string, sessionId: string) {
+    try {
+      const success = await storage.closeOperatorSession(sessionId);
+      if (!success) {
+        await this.sendAutoVanishMessage(chatId, '❌ Session not found or already closed.');
+        return;
+      }
+
+      const message = `✅ *Support Session Ended*\n\n` +
+        `Session ID: \`${sessionId}\`\n` +
+        `Status: Resolved\n\n` +
+        `Thank you for using our support service!`;
+        
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '⭐ Rate Support', callback_data: `rate_support_${sessionId}` }],
+          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+
+    } catch (error) {
+      console.error('Error ending session:', error);
+      await this.sendAutoVanishMessage(chatId, '❌ Failed to end session.');
+    }
+  }
+
+  private async handleLegacyOperatorCommand(chatId: number, userId: string) {
     // Dynamically load operator settings from database using correct keys
     const botSettings = await storage.getBotSettings();
     const operatorContactSetting = botSettings.find(s => s.key === 'operator_username');

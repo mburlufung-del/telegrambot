@@ -20,6 +20,7 @@
                             <a href="#" onclick="showSection('payments')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Payment Methods</a>
                             <a href="#" onclick="showSection('delivery')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Delivery Options</a>
                             <a href="#" onclick="showSection('orders')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Orders</a>
+                            <a href="#" onclick="showSection('support')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Operator Support</a>
                             <a href="#" onclick="showSection('broadcast')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Broadcast</a>
                             <a href="#" onclick="showSection('settings')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Bot Settings</a>
                         </div>
@@ -634,6 +635,150 @@
                 </div>
             </div>
 
+            <!-- Operator Support Section -->
+            <div id="support-section" style="display: none;">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Operator Support Management</h2>
+                
+                <!-- Support Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="flex items-center justify-center h-8 w-8 rounded-md bg-yellow-500 text-white">
+                                        <span class="text-sm font-bold" id="waiting-sessions-count">0</span>
+                                    </div>
+                                </div>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">Waiting Sessions</dt>
+                                        <dd class="text-lg font-medium text-gray-900">Queue</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="flex items-center justify-center h-8 w-8 rounded-md bg-green-500 text-white">
+                                        <span class="text-sm font-bold" id="active-sessions-count">0</span>
+                                    </div>
+                                </div>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">Active Sessions</dt>
+                                        <dd class="text-lg font-medium text-gray-900">Live</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="flex items-center justify-center h-8 w-8 rounded-md bg-blue-500 text-white">
+                                        <span class="text-sm font-bold" id="resolved-sessions-count">0</span>
+                                    </div>
+                                </div>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">Resolved Today</dt>
+                                        <dd class="text-lg font-medium text-gray-900">Completed</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="flex items-center justify-center h-8 w-8 rounded-md bg-purple-500 text-white">
+                                        <span class="text-sm font-bold" id="avg-response-time">0m</span>
+                                    </div>
+                                </div>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">Avg Response Time</dt>
+                                        <dd class="text-lg font-medium text-gray-900">Performance</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session Filters -->
+                <div class="bg-white shadow rounded-lg mb-6">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex flex-wrap gap-4 items-center justify-between">
+                            <div class="flex gap-2">
+                                <button onclick="filterSessions('all')" id="filter-all" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    All Sessions
+                                </button>
+                                <button onclick="filterSessions('waiting')" id="filter-waiting" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    Waiting
+                                </button>
+                                <button onclick="filterSessions('active')" id="filter-active" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    Active
+                                </button>
+                                <button onclick="filterSessions('resolved')" id="filter-resolved" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    Resolved
+                                </button>
+                            </div>
+                            <button onclick="refreshSessions()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                ↻ Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sessions List -->
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Support Sessions</h3>
+                        <div id="sessions-list" class="space-y-4">
+                            <!-- Sessions will be loaded here -->
+                            <p class="text-gray-500 text-center py-8">Loading sessions...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session Details Modal -->
+                <div id="session-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" style="display: none;">
+                    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                        <div class="mt-3">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-medium text-gray-900" id="session-modal-title">Session Details</h3>
+                                <button onclick="closeSessionModal()" class="text-gray-400 hover:text-gray-600">
+                                    <span class="sr-only">Close</span>
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div id="session-modal-content" class="space-y-4">
+                                <!-- Session details will be loaded here -->
+                            </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button onclick="closeSessionModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                                    Close
+                                </button>
+                                <div id="session-modal-actions">
+                                    <!-- Action buttons will be added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Broadcast Section -->
             <div id="broadcast-section" style="display: none;">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Broadcast Message</h2>
@@ -763,7 +908,7 @@
 
     <script>
         function showSection(section) {
-            const sections = ['dashboard', 'products', 'categories', 'payments', 'delivery', 'orders', 'broadcast', 'settings'];
+            const sections = ['dashboard', 'products', 'categories', 'payments', 'delivery', 'orders', 'support', 'broadcast', 'settings'];
             sections.forEach(s => {
                 const element = document.getElementById(s + '-section');
                 if (element) element.style.display = 'none';
@@ -2127,6 +2272,251 @@
         window.onload = function() {
             loadDashboardData();
         };
+        // Operator Support Functions
+        let currentFilter = 'all';
+        let supportSessions = [];
+
+        async function loadSupportSessions() {
+            try {
+                const response = await fetch('/api/operator-sessions' + (currentFilter !== 'all' ? `?status=${currentFilter}` : ''));
+                supportSessions = await response.json();
+                renderSessionsList();
+                updateSupportStats();
+            } catch (error) {
+                console.error('Error loading support sessions:', error);
+                document.getElementById('sessions-list').innerHTML = '<p class="text-red-500 text-center py-8">Failed to load sessions</p>';
+            }
+        }
+
+        function renderSessionsList() {
+            const container = document.getElementById('sessions-list');
+            
+            if (supportSessions.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No sessions found</p>';
+                return;
+            }
+
+            const sessionsHtml = supportSessions.map(session => {
+                const statusColors = {
+                    waiting: 'bg-yellow-100 text-yellow-800',
+                    active: 'bg-green-100 text-green-800',
+                    resolved: 'bg-blue-100 text-blue-800'
+                };
+                
+                const priorityColors = {
+                    low: 'bg-gray-100 text-gray-800',
+                    normal: 'bg-blue-100 text-blue-800',
+                    high: 'bg-orange-100 text-orange-800',
+                    urgent: 'bg-red-100 text-red-800'
+                };
+
+                return `
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onclick="viewSession('${session.id}')">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm font-medium text-gray-900">${session.customerName}</span>
+                                <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[session.status]}">${session.status}</span>
+                                <span class="px-2 py-1 text-xs font-medium rounded-full ${priorityColors[session.priority]}">${session.priority}</span>
+                            </div>
+                            <span class="text-sm text-gray-500">${new Date(session.createdAt).toLocaleString()}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">${session.initialMessage}</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span>ID: ${session.id.substring(0, 8)}...</span>
+                            ${session.operatorName ? `<span>Operator: ${session.operatorName}</span>` : '<span>Unassigned</span>'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = sessionsHtml;
+        }
+
+        function updateSupportStats() {
+            const waiting = supportSessions.filter(s => s.status === 'waiting').length;
+            const active = supportSessions.filter(s => s.status === 'active').length;
+            const resolved = supportSessions.filter(s => s.status === 'resolved' && 
+                new Date(s.resolvedAt || s.updatedAt).toDateString() === new Date().toDateString()).length;
+
+            document.getElementById('waiting-sessions-count').textContent = waiting;
+            document.getElementById('active-sessions-count').textContent = active;
+            document.getElementById('resolved-sessions-count').textContent = resolved;
+        }
+
+        function filterSessions(status) {
+            currentFilter = status;
+            
+            // Update button styles
+            document.querySelectorAll('[id^="filter-"]').forEach(btn => {
+                btn.className = 'px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+            });
+            document.getElementById(`filter-${status}`).className = 'px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+            
+            loadSupportSessions();
+        }
+
+        function refreshSessions() {
+            loadSupportSessions();
+        }
+
+        async function viewSession(sessionId) {
+            try {
+                const response = await fetch(`/api/operator-sessions/${sessionId}`);
+                const session = await response.json();
+                
+                const messagesResponse = await fetch(`/api/support-messages/${sessionId}`);
+                const messages = await messagesResponse.json();
+                
+                showSessionModal(session, messages);
+            } catch (error) {
+                console.error('Error loading session details:', error);
+                alert('Failed to load session details');
+            }
+        }
+
+        function showSessionModal(session, messages) {
+            const modal = document.getElementById('session-modal');
+            const title = document.getElementById('session-modal-title');
+            const content = document.getElementById('session-modal-content');
+            const actions = document.getElementById('session-modal-actions');
+            
+            title.textContent = `Session: ${session.customerName}`;
+            
+            const statusColors = {
+                waiting: 'bg-yellow-100 text-yellow-800',
+                active: 'bg-green-100 text-green-800',
+                resolved: 'bg-blue-100 text-blue-800'
+            };
+            
+            // Messages history
+            const messagesHtml = messages.map(msg => `
+                <div class="p-3 rounded-lg ${msg.senderType === 'customer' ? 'bg-blue-50 ml-4' : 'bg-gray-50 mr-4'}">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium">${msg.senderName}</span>
+                        <span class="text-xs text-gray-500">${new Date(msg.createdAt).toLocaleString()}</span>
+                    </div>
+                    <p class="text-sm">${msg.message}</p>
+                </div>
+            `).join('');
+            
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Status</label>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[session.status]}">${session.status}</span>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Priority</label>
+                            <span class="text-sm">${session.priority}</span>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Category</label>
+                            <span class="text-sm">${session.category}</span>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Operator</label>
+                            <span class="text-sm">${session.operatorName || 'Not assigned'}</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Conversation History</label>
+                        <div class="max-h-64 overflow-y-auto space-y-2 border rounded-lg p-3">
+                            ${messagesHtml || '<p class="text-gray-500 text-center">No messages yet</p>'}
+                        </div>
+                    </div>
+                    
+                    ${session.status !== 'resolved' ? `
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Assign Operator</label>
+                            <div class="flex space-x-2">
+                                <input type="text" id="operator-name" placeholder="Operator name" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <button onclick="assignOperator('${session.id}')" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Assign</button>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Action buttons
+            actions.innerHTML = session.status !== 'resolved' 
+                ? `<button onclick="closeSession('${session.id}')" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Close Session</button>`
+                : '';
+            
+            modal.style.display = 'block';
+        }
+
+        async function assignOperator(sessionId) {
+            const operatorName = document.getElementById('operator-name').value.trim();
+            if (!operatorName) {
+                alert('Please enter operator name');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/operator-sessions/${sessionId}/assign`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ operatorName })
+                });
+                
+                if (response.ok) {
+                    closeSessionModal();
+                    loadSupportSessions();
+                    alert('Operator assigned successfully');
+                } else {
+                    alert('Failed to assign operator');
+                }
+            } catch (error) {
+                console.error('Error assigning operator:', error);
+                alert('Failed to assign operator');
+            }
+        }
+
+        async function closeSession(sessionId) {
+            if (!confirm('Are you sure you want to close this session?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/operator-sessions/${sessionId}/close`, {
+                    method: 'PUT'
+                });
+                
+                if (response.ok) {
+                    closeSessionModal();
+                    loadSupportSessions();
+                    alert('Session closed successfully');
+                } else {
+                    alert('Failed to close session');
+                }
+            } catch (error) {
+                console.error('Error closing session:', error);
+                alert('Failed to close session');
+            }
+        }
+
+        function closeSessionModal() {
+            document.getElementById('session-modal').style.display = 'none';
+        }
+
+        // Initialize support section when it's shown
+        function initSupportSection() {
+            loadSupportSessions();
+        }
+
+        // Override showSection to initialize support section
+        const originalShowSection = showSection;
+        showSection = function(section) {
+            originalShowSection(section);
+            if (section === 'support') {
+                initSupportSection();
+            }
+        };
+
     </script>
 </body>
 </html>
