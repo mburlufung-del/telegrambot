@@ -639,14 +639,55 @@
             <div id="support-section" style="display: none;">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Operator Support Management</h2>
                 
-                <!-- Current Support Configuration -->
+                <!-- Bot Support Configuration Management -->
                 <div class="bg-white shadow rounded-lg mb-6">
                     <div class="px-4 py-5 sm:p-6">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Current Bot Support Configuration</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="bot-support-info">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Bot Support Configuration</h3>
+                            <button onclick="toggleSupportConfigEdit()" id="edit-support-config-btn" class="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                Edit Configuration
+                            </button>
+                        </div>
+                        
+                        <!-- Read-only display -->
+                        <div id="support-config-display" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <!-- Support info will be loaded here -->
                             <div class="text-center py-4">
                                 <div class="text-sm text-gray-500">Loading support configuration...</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Edit form -->
+                        <div id="support-config-edit" class="space-y-4" style="display: none;">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Operator Username</label>
+                                    <input type="text" id="edit-operator-username" placeholder="@username" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <p class="text-xs text-gray-500 mt-1">Telegram username for direct operator contact</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Support Email</label>
+                                    <input type="email" id="edit-support-email" placeholder="support@company.com" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <p class="text-xs text-gray-500 mt-1">Email address for customer support</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Response Time</label>
+                                    <input type="text" id="edit-response-time" placeholder="2-4 hours" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <p class="text-xs text-gray-500 mt-1">Expected response time for customer inquiries</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Support Hours</label>
+                                    <textarea id="edit-support-hours" rows="3" placeholder="Monday - Friday: 9:00 AM - 6:00 PM&#10;Saturday: 10:00 AM - 4:00 PM&#10;Sunday: Closed" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                                    <p class="text-xs text-gray-500 mt-1">Business hours when support is available</p>
+                                </div>
+                            </div>
+                            <div class="flex justify-end space-x-3 pt-4 border-t">
+                                <button onclick="cancelSupportConfigEdit()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    Cancel
+                                </button>
+                                <button onclick="saveSupportConfig()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    Save Configuration
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -2533,13 +2574,13 @@
                 renderBotSupportInfo(supportSettings);
             } catch (error) {
                 console.error('Error loading bot support info:', error);
-                document.getElementById('bot-support-info').innerHTML = 
+                document.getElementById('support-config-display').innerHTML = 
                     '<div class="text-center py-4"><div class="text-sm text-red-500">Failed to load support configuration</div></div>';
             }
         }
 
         function renderBotSupportInfo(settings) {
-            const container = document.getElementById('bot-support-info');
+            const container = document.getElementById('support-config-display');
             
             container.innerHTML = `
                 <div class="text-center">
@@ -2559,6 +2600,93 @@
                     <div class="text-sm text-gray-600 mt-1 whitespace-pre-line">${settings.supportHours.replace(/\\n/g, '\n')}</div>
                 </div>
             `;
+            
+            // Store current settings for editing
+            window.currentSupportSettings = settings;
+        }
+
+        // Support configuration editing functions
+        function toggleSupportConfigEdit() {
+            const displayDiv = document.getElementById('support-config-display');
+            const editDiv = document.getElementById('support-config-edit');
+            const editBtn = document.getElementById('edit-support-config-btn');
+            
+            if (editDiv.style.display === 'none') {
+                // Switch to edit mode
+                populateEditForm();
+                displayDiv.style.display = 'none';
+                editDiv.style.display = 'block';
+                editBtn.textContent = 'Cancel Edit';
+                editBtn.className = 'px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+            } else {
+                // Switch to display mode
+                cancelSupportConfigEdit();
+            }
+        }
+
+        function populateEditForm() {
+            if (window.currentSupportSettings) {
+                document.getElementById('edit-operator-username').value = window.currentSupportSettings.operatorUsername === 'Not configured' ? '' : window.currentSupportSettings.operatorUsername;
+                document.getElementById('edit-support-email').value = window.currentSupportSettings.supportEmail === 'Not configured' ? '' : window.currentSupportSettings.supportEmail;
+                document.getElementById('edit-response-time').value = window.currentSupportSettings.responseTime === 'Not set' ? '' : window.currentSupportSettings.responseTime;
+                document.getElementById('edit-support-hours').value = window.currentSupportSettings.supportHours === 'Not set' ? '' : window.currentSupportSettings.supportHours.replace(/\\n/g, '\n');
+            }
+        }
+
+        function cancelSupportConfigEdit() {
+            const displayDiv = document.getElementById('support-config-display');
+            const editDiv = document.getElementById('support-config-edit');
+            const editBtn = document.getElementById('edit-support-config-btn');
+            
+            displayDiv.style.display = 'grid';
+            editDiv.style.display = 'none';
+            editBtn.textContent = 'Edit Configuration';
+            editBtn.className = 'px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+        }
+
+        async function saveSupportConfig() {
+            const operatorUsername = document.getElementById('edit-operator-username').value.trim();
+            const supportEmail = document.getElementById('edit-support-email').value.trim();
+            const responseTime = document.getElementById('edit-response-time').value.trim();
+            const supportHours = document.getElementById('edit-support-hours').value.trim();
+
+            // Validate required fields
+            if (!operatorUsername && !supportEmail) {
+                alert('Please provide at least an operator username or support email');
+                return;
+            }
+
+            try {
+                // Update each setting
+                const updates = [
+                    { key: 'operator_username', value: operatorUsername || 'Not configured' },
+                    { key: 'support_email', value: supportEmail || 'Not configured' },
+                    { key: 'response_time', value: responseTime || 'Not set' },
+                    { key: 'support_hours', value: supportHours || 'Not set' }
+                ];
+
+                // Save all settings
+                for (const setting of updates) {
+                    await fetch('/api/bot/settings', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(setting)
+                    });
+                }
+
+                // Refresh the display
+                await loadBotSupportInfo();
+                cancelSupportConfigEdit();
+                
+                // Show success notification
+                showNotification('Support configuration updated successfully!', 'success');
+
+            } catch (error) {
+                console.error('Error saving support configuration:', error);
+                showNotification('Failed to save support configuration', 'error');
+            }
         }
 
         // Initialize support section when it's shown
