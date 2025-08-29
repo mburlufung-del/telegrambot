@@ -1141,6 +1141,8 @@ function registerAllRoutes(app: Express): void {
       
     } catch (error) {
       console.error("Failed to serve object:", error);
+      console.error("Requested path:", req.path);
+      console.error("Object storage error details:", error instanceof Error ? error.message : error);
       res.status(404).json({ message: "Object not found" });
     }
   });

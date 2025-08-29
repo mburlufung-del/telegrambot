@@ -725,6 +725,12 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     }
 
     if (categoriesWithProducts.length === 0) {
+      console.log('[DEBUG] No categories with products found. Total categories:', allCategories.length);
+      for (const cat of allCategories) {
+        const products = await storage.getProductsByCategory(cat.id);
+        console.log(`[DEBUG] Category "${cat.name}" (${cat.id}): ${products.length} products`);
+      }
+      
       const message = '📋 No products available at the moment.\n\nCome back later for new listings!';
       const backButton = {
         inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
@@ -1533,6 +1539,8 @@ ${businessHours}
         }
       } catch (error) {
         console.log('Image sending failed, continuing with text display:', error);
+        console.log('Failed image URL:', product.imageUrl);
+        console.log('Full constructed URL:', product.imageUrl.startsWith('http') ? product.imageUrl : `${process.env.WEBHOOK_URL || `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}`}${product.imageUrl}`);
       }
     }
     
