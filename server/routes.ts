@@ -1074,17 +1074,71 @@ function registerAllRoutes(app: Express): void {
     }
   });
 
-  // Serve uploaded objects (for images in broadcasts)
+  // Serve uploaded objects (for images in broadcasts) - proxy for Telegram compatibility
   app.get("/objects/*", async (req, res) => {
     try {
       const { SimpleObjectStorageService } = await import("./simpleObjectStorage.js");
       const objectStorageService = new SimpleObjectStorageService();
       
-      // Get the object path from the URL and serve directly
+      // Get the object path from the URL and get download URL
       const downloadURL = await objectStorageService.getObjectDownloadURL(req.path);
+      console.log(`Proxying image from: ${downloadURL}`);
       
-      // Redirect to the signed URL
-      res.redirect(downloadURL);
+      // Fetch the image and proxy it for better Telegram compatibility
+      const response = await fetch(downloadURL);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status}`);
+      }
+      
+      // Set appropriate headers
+      const contentType = response.headers.get('content-type') || 'image/jpeg';
+      const contentLength = response.headers.get('content-length');
+      
+      res.set({
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=3600',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      if (contentLength) {
+        res.set('Content-Length', contentLength);
+      }
+      
+      // Stream the image data - handle modern fetch API
+      if (response.body) {
+        const reader = response.body.getReader();
+        const stream = new ReadableStream({
+          start(controller) {
+            function pump(): any {
+              return reader.read().then(({ done, value }) => {
+                if (done) {
+                  controller.close();
+                  return;
+                }
+                controller.enqueue(value);
+                return pump();
+              });
+            }
+            return pump();
+          }
+        });
+        
+        // Convert to Node.js readable stream
+        const chunks: Uint8Array[] = [];
+        const reader2 = stream.getReader();
+        
+        while (true) {
+          const { done, value } = await reader2.read();
+          if (done) break;
+          chunks.push(value);
+        }
+        
+        const buffer = Buffer.concat(chunks.map(chunk => Buffer.from(chunk)));
+        res.end(buffer);
+      } else {
+        throw new Error('No response body');
+      }
+      
     } catch (error) {
       console.error("Failed to serve object:", error);
       res.status(404).json({ message: "Object not found" });
