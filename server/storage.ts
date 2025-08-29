@@ -18,6 +18,7 @@ import type {
   OperatorSession,
   SupportMessage,
   TrackedUser,
+  Broadcast,
   InsertCart,
   InsertCategory,
   InsertOrder,
@@ -34,6 +35,7 @@ import type {
   InsertOperatorSession,
   InsertSupportMessage,
   InsertTrackedUser,
+  InsertBroadcast,
 } from "@shared/schema";
 import {
   categories,
@@ -52,6 +54,7 @@ import {
   operatorSessions,
   supportMessages,
   trackedUsers,
+  broadcasts,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -905,21 +908,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Broadcast operations implementation
-  async getAllUsers(): Promise<any[]> {
+  async getAllUsers(): Promise<TrackedUser[]> {
     // Return tracked users for broadcast
     return this.getTrackedUsers();
   }
 
   async saveBroadcast(broadcast: any): Promise<void> {
-    // For now, just log the broadcast
-    // In a real implementation, this would save to a broadcasts table
+    const broadcastToInsert: InsertBroadcast = {
+      message: broadcast.message,
+      hasImage: broadcast.hasImage || false,
+      recipientCount: broadcast.recipientCount || 0,
+    };
+    
+    await db.insert(broadcasts).values(broadcastToInsert);
     console.log('Broadcast saved:', broadcast);
   }
 
-  async getBroadcastHistory(): Promise<any[]> {
-    // For now, return empty array
-    // In a real implementation, this would query a broadcasts table
-    return [];
+  async getBroadcastHistory(): Promise<Broadcast[]> {
+    return await db.select().from(broadcasts).orderBy(desc(broadcasts.createdAt)).limit(20);
   }
 
   // Operator Support implementation
