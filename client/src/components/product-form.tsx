@@ -165,7 +165,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
     console.log('Form errors:', form.formState.errors);
     console.log('Pricing tiers:', pricingTiers);
     
-    const productData: InsertProduct = {
+    const productData: InsertProduct & { pricingTiers?: PricingTierData[] } = {
       ...data,
       compareAtPrice: data.compareAtPrice || null,
       maxOrderQuantity: data.maxOrderQuantity || null,
@@ -174,6 +174,8 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
         ...specifications,
         unit: data.unit,
       }),
+      // Include pricing tiers in the product data
+      ...(pricingTiers.length > 0 && { pricingTiers }),
     };
 
     console.log('Product data to submit:', productData);
