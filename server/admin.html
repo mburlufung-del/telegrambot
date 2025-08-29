@@ -1374,14 +1374,23 @@
                                 });
                                 
                                 if (!tierResponse.ok) {
-                                    console.error('Failed to create pricing tier:', await tierResponse.text());
-                                    throw new Error(`Failed to create pricing tier: ${tierResponse.statusText}`);
+                                    const errorText = await tierResponse.text();
+                                    console.error('Failed to create pricing tier:', errorText);
+                                    let errorData;
+                                    try {
+                                        errorData = JSON.parse(errorText);
+                                    } catch (e) {
+                                        errorData = { message: errorText };
+                                    }
+                                    throw new Error(`Failed to create pricing tier: ${errorData.message || tierResponse.statusText}`);
                                 }
                             }
                             console.log(`Successfully created ${pricingTiers.length} pricing tiers`);
                         } catch (tierError) {
                             console.error('Error creating pricing tiers:', tierError);
-                            showNotification(`Product created but failed to add ${pricingTiers.length} pricing tiers`, 'warning');
+                            showNotification(`Product created successfully but failed to add pricing tiers: ${tierError.message}`, 'warning');
+                            // Don't let this error propagate to the outer catch block
+                            return;
                         }
                     }
                     

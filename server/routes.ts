@@ -239,7 +239,11 @@ function registerAllRoutes(app: Express): void {
       const tier = await storage.createPricingTier(tierData);
       res.status(201).json(tier);
     } catch (error) {
-      res.status(400).json({ message: "Invalid pricing tier data" });
+      console.error("Error creating pricing tier:", error);
+      res.status(400).json({ 
+        message: "Invalid pricing tier data", 
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
