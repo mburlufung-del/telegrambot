@@ -120,21 +120,19 @@ export class TeleShopBot {
     try {
       // Get target users based on type
       if (targetType === 'all') {
-        // Get all users who have interacted with the bot (from orders)
-        const orders = await storage.getOrders();
-        const uniqueUserIds = new Set(orders.map(order => order.telegramUserId));
-        targetUserIds = Array.from(uniqueUserIds);
+        // Get all users who have interacted with the bot (from tracked users)
+        const trackedUsers = await storage.getTrackedUsers();
+        targetUserIds = trackedUsers.map(user => user.chatId);
       } else if (targetType === 'recent') {
-        // Get users from recent orders (last 30 days)
-        const orders = await storage.getOrders();
+        // Get users from recent activity (last 30 days)
+        const trackedUsers = await storage.getTrackedUsers();
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         
-        const recentOrders = orders.filter(order => 
-          new Date(order.createdAt) > thirtyDaysAgo
+        const recentUsers = trackedUsers.filter(user => 
+          new Date(user.lastSeen) > thirtyDaysAgo
         );
-        const uniqueUserIds = new Set(recentOrders.map(order => order.telegramUserId));
-        targetUserIds = Array.from(uniqueUserIds);
+        targetUserIds = recentUsers.map(user => user.chatId);
       } else if (targetType === 'custom' && customUsers) {
         // Parse custom user IDs
         targetUserIds = customUsers
@@ -175,7 +173,7 @@ export class TeleShopBot {
             }
             
             try {
-              await this.bot.sendPhoto(chatId, fullImageUrl, {
+              await this.bot!.sendPhoto(chatId, fullImageUrl, {
                 caption: message,
                 parse_mode: 'Markdown'
               });
@@ -183,20 +181,20 @@ export class TeleShopBot {
               console.log(`Failed to send photo, trying as document:`, photoError?.message);
               // Fallback to sending as document if photo fails
               try {
-                await this.bot.sendDocument(chatId, fullImageUrl, {
+                await this.bot!.sendDocument(chatId, fullImageUrl, {
                   caption: message,
                   parse_mode: 'Markdown'
                 });
               } catch (docError) {
                 console.log(`Document also failed, sending text only:`, docError);
-                await this.bot.sendMessage(chatId, `${message}\n\n[Image could not be sent - ${fullImageUrl}]`, {
+                await this.bot!.sendMessage(chatId, `${message}\n\n[Image could not be sent - ${fullImageUrl}]`, {
                   parse_mode: 'Markdown'
                 });
               }
             }
           } else {
             // Send text message only
-            await this.bot.sendMessage(chatId, message, {
+            await this.bot!.sendMessage(chatId, message, {
               parse_mode: 'Markdown'
             });
           }
