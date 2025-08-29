@@ -849,7 +849,15 @@ export class DatabaseStorage implements IStorage {
 
   async createOperator(operator: InsertOperator): Promise<Operator> {
     const result = await db.insert(operators).values(operator).returning();
-    return result[0];
+    const newOperator = result[0];
+    
+    // If this operator has admin role, set it as the primary operator
+    if (newOperator.active && newOperator.role?.toLowerCase().includes('admin')) {
+      await this.setBotSetting({ key: 'operator_username', value: newOperator.telegramUsername });
+      console.log(`[OPERATOR] Set primary operator to ${newOperator.telegramUsername}`);
+    }
+    
+    return newOperator;
   }
 
   async updateOperator(id: string, operator: Partial<InsertOperator>): Promise<Operator | undefined> {
@@ -857,7 +865,16 @@ export class DatabaseStorage implements IStorage {
       .set({ ...operator, updatedAt: sql`now()` })
       .where(eq(operators.id, id))
       .returning();
-    return result[0];
+    
+    const updatedOperator = result[0];
+    
+    // If this operator has admin role and is active, set it as the primary operator
+    if (updatedOperator?.active && updatedOperator.role?.toLowerCase().includes('admin')) {
+      await this.setBotSetting({ key: 'operator_username', value: updatedOperator.telegramUsername });
+      console.log(`[OPERATOR] Updated primary operator to ${updatedOperator.telegramUsername}`);
+    }
+    
+    return updatedOperator;
   }
 
   async deleteOperator(id: string): Promise<boolean> {
