@@ -1306,22 +1306,24 @@
         async function addProduct() {
             // Collect basic product data
             const productData = {
-                name: document.getElementById('product-name').value,
-                description: document.getElementById('product-description').value,
-                price: parseFloat(document.getElementById('product-price').value),
+                name: document.getElementById('product-name').value.trim(),
+                description: document.getElementById('product-description').value.trim(),
+                price: parseFloat(document.getElementById('product-price').value) || 0,
                 compareAtPrice: document.getElementById('product-compare-price').value ? 
                     parseFloat(document.getElementById('product-compare-price').value) : null,
-                stock: parseInt(document.getElementById('product-stock').value),
-                unit: document.getElementById('product-unit').value,
-                minOrderQuantity: parseInt(document.getElementById('product-min-qty').value) || 1,
+                stock: parseInt(document.getElementById('product-stock').value) || 0,
+                unit: document.getElementById('product-unit').value || 'piece',
+                minOrderQuantity: Math.max(parseInt(document.getElementById('product-min-qty').value) || 1, 1),
                 maxOrderQuantity: document.getElementById('product-max-qty').value ? 
                     parseInt(document.getElementById('product-max-qty').value) : null,
                 categoryId: document.getElementById('product-category').value || null,
-                imageUrl: document.getElementById('product-image-url').value || null,
-                specifications: document.getElementById('product-specs').value || '{}',
+                imageUrl: document.getElementById('product-image-url').value.trim() || null,
+                specifications: document.getElementById('product-specs').value.trim() || '{}',
                 isActive: true,
                 isFeatured: false
             };
+            
+            console.log('Product data being sent:', productData);
 
             // Validate required fields
             if (!productData.name || !productData.description || !productData.price || productData.stock < 0) {
@@ -1330,7 +1332,19 @@
             }
 
             try {
-                JSON.parse(productData.specifications); // Validate JSON
+                // Validate and clean specifications JSON
+                let specs = productData.specifications || '{}';
+                if (specs.trim() === '') {
+                    specs = '{}';
+                }
+                try {
+                    JSON.parse(specs); // Validate JSON
+                    productData.specifications = specs;
+                } catch (jsonError) {
+                    console.error('Invalid JSON in specifications:', specs);
+                    showNotification('Invalid JSON format in specifications. Please use valid JSON format like {"key": "value"}', 'error');
+                    return;
+                }
                 
                 // Create the product first
                 const response = await fetch('/api/products', {
@@ -1365,7 +1379,13 @@
                 }
             } catch (error) {
                 console.error('Error adding product:', error);
-                showNotification('Invalid JSON in specifications or server error', 'error');
+                if (error.name === 'SyntaxError' && error.message.includes('JSON')) {
+                    showNotification('Invalid JSON format in specifications field', 'error');
+                } else if (error.message && error.message.includes('fetch')) {
+                    showNotification('Network error: Unable to connect to server', 'error');
+                } else {
+                    showNotification(`Server error: ${error.message || 'Unknown error occurred'}`, 'error');
+                }
             }
         }
 
