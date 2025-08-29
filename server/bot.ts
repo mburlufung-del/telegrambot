@@ -729,6 +729,9 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       for (const cat of allCategories) {
         const products = await storage.getProductsByCategory(cat.id);
         console.log(`[DEBUG] Category "${cat.name}" (${cat.id}): ${products.length} products`);
+        if (products.length > 0) {
+          console.log('[DEBUG] Sample products:', products.slice(0, 3).map(p => ({ name: p.name, isActive: p.isActive })));
+        }
       }
       
       const message = '📋 No products available at the moment.\n\nCome back later for new listings!';
@@ -1464,7 +1467,10 @@ ${businessHours}
       
       productsMessage += `${index + 1}. *${product.name}* ${stockStatus}\n`;
       productsMessage += `   ${priceDisplay}\n`;
-      productsMessage += `   ${product.description.substring(0, 60)}${product.description.length > 60 ? '...' : ''}\n\n`;
+      
+      // Safe description handling - ensure description exists and handle potential undefined
+      const description = product.description || 'No description available';
+      productsMessage += `   ${description.substring(0, 60)}${description.length > 60 ? '...' : ''}\n\n`;
       
       // Create product buttons in rows of 2
       if (index % 2 === 0) {
@@ -1504,29 +1510,29 @@ ${businessHours}
 
     const category = await storage.getCategories().then(cats => cats.find(c => c.id === product.categoryId));
     
-    // Clear previous messages and send product image if available
+    // Clear previous messages first
+    const messagesToDelete = this.userMessages.get(chatId) || [];
+    for (const msgId of messagesToDelete) {
+      try {
+        await this.bot?.deleteMessage(chatId, msgId);
+        console.log(`[INSTANT-VANISH] Cleared previous message ${msgId} for user ${chatId}`);
+      } catch (err) {
+        // Ignore errors if message already deleted
+      }
+    }
+    this.userMessages.set(chatId, []);
+
+    // Try to send product image if available, but don't let image failures block product display
     if (product.imageUrl) {
       try {
         // Convert relative path to full URL for Telegram compatibility
         const baseUrl = process.env.WEBHOOK_URL || `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}`;
         const fullImageUrl = product.imageUrl.startsWith('http') ? product.imageUrl : `${baseUrl}${product.imageUrl}`;
         
-        console.log(`Sending product image: ${fullImageUrl}`);
-        
-        // Clear previous messages first
-        const messagesToDelete = this.userMessages.get(chatId) || [];
-        for (const msgId of messagesToDelete) {
-          try {
-            await this.bot?.deleteMessage(chatId, msgId);
-            console.log(`[INSTANT-VANISH] Cleared previous message ${msgId} for user ${chatId}`);
-          } catch (err) {
-            // Ignore errors if message already deleted
-          }
-        }
-        this.userMessages.set(chatId, []);
+        console.log(`Attempting to send product image: ${fullImageUrl}`);
         
         const sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
-          caption: `📦 *${product.name}*`,
+          caption: `📦 *${product.name}*\n💰 *$${product.price}*`,
           parse_mode: 'Markdown'
         });
         
@@ -1538,9 +1544,8 @@ ${businessHours}
           console.log(`[INSTANT-VANISH] Tracked product image message ${sentMessage.message_id} for user ${chatId}`);
         }
       } catch (error) {
-        console.log('Image sending failed, continuing with text display:', error);
-        console.log('Failed image URL:', product.imageUrl);
-        console.log('Full constructed URL:', product.imageUrl.startsWith('http') ? product.imageUrl : `${process.env.WEBHOOK_URL || `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}`}${product.imageUrl}`);
+        console.log('Image sending failed, will show text-only product details:', error);
+        // Continue to show text details even if image fails
       }
     }
     
