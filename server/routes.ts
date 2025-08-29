@@ -525,7 +525,20 @@ function registerAllRoutes(app: Express): void {
   app.get("/api/inquiries", async (req, res) => {
     try {
       const inquiries = await storage.getInquiries();
-      res.json(inquiries);
+      const trackedUsers = await storage.getTrackedUsers();
+      
+      // Enrich inquiries with tracked user data when username is missing
+      const enrichedInquiries = inquiries.map(inquiry => {
+        if (!inquiry.username && inquiry.telegramUserId) {
+          const trackedUser = trackedUsers.find(user => user.chatId === inquiry.telegramUserId);
+          if (trackedUser?.username) {
+            return { ...inquiry, username: trackedUser.username };
+          }
+        }
+        return inquiry;
+      });
+      
+      res.json(enrichedInquiries);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch inquiries" });
     }

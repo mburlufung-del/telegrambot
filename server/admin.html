@@ -1616,7 +1616,7 @@
                         '<td class="px-6 py-4 text-sm text-gray-900">' +
                             '<div class="font-medium">' + (inquiry.customerName || 'N/A') + '</div>' +
                             (inquiry.username ? '<div class="text-xs text-blue-600">@' + inquiry.username + '</div>' : '') +
-                            '<div class="text-xs text-gray-500">ID: ' + inquiry.chatId + '</div>' +
+                            '<div class="text-xs text-gray-500">ID: ' + inquiry.telegramUserId + '</div>' +
                         '</td>' +
                         '<td class="px-6 py-4 text-sm text-gray-900" title="' + inquiry.message + '">' +
                             truncatedMessage +
@@ -1634,7 +1634,7 @@
                                     '<a href="https://t.me/' + inquiry.username + '" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs bg-blue-100 px-2 py-1 rounded inline-flex items-center">' +
                                         '💬 @' + inquiry.username +
                                     '</a>' :
-                                    '<span class="text-gray-400 text-xs">No username</span>'
+                                    '<span class="text-gray-400 text-xs">Username not captured</span>'
                                 ) +
                                 (isUnread ? 
                                     '<button onclick="markInquiryAsRead(\'' + inquiry.id + '\')" class="text-green-600 hover:text-green-800 text-xs bg-green-100 px-2 py-1 rounded">✓ Mark Read</button>' :
