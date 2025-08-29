@@ -1213,8 +1213,9 @@
                 });
 
                 if (fileResponse.ok) {
-                    // Extract object path from upload URL
-                    const objectPath = '/objects/' + uploadURL.split('/').pop().split('?')[0];
+                    // Extract object path from upload URL - include the uploads/ subfolder
+                    const fileName = uploadURL.split('/').pop().split('?')[0];
+                    const objectPath = '/objects/uploads/' + fileName;
                     
                     // Show preview
                     const preview = document.getElementById('image-preview');
@@ -2099,8 +2100,9 @@
                 });
 
                 if (fileResponse.ok) {
-                    // Extract object path from upload URL
-                    const objectPath = '/objects/' + uploadURL.split('/').pop().split('?')[0];
+                    // Extract object path from upload URL - include the uploads/ subfolder
+                    const fileName = uploadURL.split('/').pop().split('?')[0];
+                    const objectPath = '/objects/uploads/' + fileName;
                     
                     // Show preview and hide current image
                     const preview = document.getElementById('edit-image-preview');

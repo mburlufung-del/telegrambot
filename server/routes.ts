@@ -1074,6 +1074,28 @@ function registerAllRoutes(app: Express): void {
     }
   });
 
+  // Fix existing product image paths to include uploads/ folder
+  app.post("/api/fix-image-paths", async (req, res) => {
+    try {
+      const products = await storage.getProducts();
+      let fixedCount = 0;
+      
+      for (const product of products) {
+        if (product.imageUrl && product.imageUrl.startsWith('/objects/') && !product.imageUrl.includes('/uploads/')) {
+          const fileName = product.imageUrl.replace('/objects/', '');
+          const newImageUrl = `/objects/uploads/${fileName}`;
+          await storage.updateProduct(product.id, { ...product, imageUrl: newImageUrl });
+          fixedCount++;
+        }
+      }
+      
+      res.json({ message: `Fixed ${fixedCount} product image paths` });
+    } catch (error) {
+      console.error("Error fixing image paths:", error);
+      res.status(500).json({ message: "Failed to fix image paths" });
+    }
+  });
+
   // Serve uploaded objects (for images in broadcasts) - proxy for Telegram compatibility
   app.get("/objects/*", async (req, res) => {
     try {
