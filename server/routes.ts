@@ -854,6 +854,19 @@ function registerAllRoutes(app: Express): void {
     }
   });
 
+  // Debug endpoint to check tracked users
+  app.get("/api/debug/tracked-users", async (req, res) => {
+    try {
+      const trackedUsers = await storage.getTrackedUsers();
+      res.json({
+        count: trackedUsers.length,
+        users: trackedUsers
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Legacy broadcast route for backward compatibility
   app.post("/api/bot/broadcast", async (req, res) => {
     try {
