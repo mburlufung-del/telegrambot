@@ -1429,6 +1429,11 @@ ${businessHours}
 
   // Enhanced Listings Flow Methods
 
+  // Helper function to escape markdown characters
+  private escapeMarkdown(text: string): string {
+    return text.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&').replace(/\n/g, ' ');
+  }
+
   // Handle category product listing
   private async handleCategoryProducts(chatId: number, userId: string, categoryId: string) {
     const category = await storage.getCategories().then(cats => cats.find(c => c.id === categoryId));
@@ -1442,7 +1447,7 @@ ${businessHours}
     }
 
     if (activeProducts.length === 0) {
-      const message = `📂 *${category.name}*\n\nNo products available in this category at the moment.`;
+      const message = `📂 *${this.escapeMarkdown(category.name)}*\n\nNo products available in this category at the moment.`;
       const keyboard = {
         inline_keyboard: [
           [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
@@ -1456,7 +1461,7 @@ ${businessHours}
       return;
     }
 
-    let productsMessage = `📂 *${category.name}*\n\n`;
+    let productsMessage = `📂 *${this.escapeMarkdown(category.name)}*\n\n`;
     
     const productButtons: Array<Array<{text: string, callback_data: string}>> = [];
     activeProducts.slice(0, 10).forEach((product, index) => {
@@ -1465,12 +1470,13 @@ ${businessHours}
         ? `~~$${product.compareAtPrice}~~ *$${product.price}*`
         : `*$${product.price}*`;
       
-      productsMessage += `${index + 1}. *${product.name}* ${stockStatus}\n`;
+      productsMessage += `${index + 1}. *${this.escapeMarkdown(product.name)}* ${stockStatus}\n`;
       productsMessage += `   ${priceDisplay}\n`;
       
       // Safe description handling - ensure description exists and handle potential undefined
       const description = product.description || 'No description available';
-      productsMessage += `   ${description.substring(0, 60)}${description.length > 60 ? '...' : ''}\n\n`;
+      const escapedDescription = this.escapeMarkdown(description);
+      productsMessage += `   ${escapedDescription.substring(0, 60)}${escapedDescription.length > 60 ? '...' : ''}\n\n`;
       
       // Create product buttons in rows of 2
       if (index % 2 === 0) {
