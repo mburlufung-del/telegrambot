@@ -61,7 +61,11 @@ export const deliveryMethods = pgTable("delivery_methods", {
   name: varchar("name").notNull(),
   description: text("description"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0"),
-  estimatedDays: text("estimated_days"), // e.g., "3-5 days", "Same day"
+  isFree: boolean("is_free").notNull().default(false), // For free delivery option
+  estimatedTime: text("estimated_time"), // e.g., "2-3 hours", "1-2 days", "Same day"
+  timeUnit: text("time_unit").default("days"), // hours, days, weeks
+  minTime: integer("min_time"), // Minimum time estimate
+  maxTime: integer("max_time"), // Maximum time estimate
   instructions: text("instructions"), // Special delivery instructions
   isActive: boolean("is_active").default(true).notNull(),
   sortOrder: integer("sort_order").default(0).notNull(),
