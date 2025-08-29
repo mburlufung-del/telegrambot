@@ -114,8 +114,25 @@ function registerAllRoutes(app: Express): void {
       }
       
       console.log("Final product data with defaults:", JSON.stringify(productData, null, 2));
-      const product = await storage.createProduct(productData);
-      res.status(201).json(product);
+      
+      try {
+        const product = await storage.createProduct(productData);
+        console.log("Product created successfully:", product.id);
+        
+        // Ensure response is sent properly
+        if (!res.headersSent) {
+          res.status(201).json(product);
+        }
+      } catch (dbError) {
+        console.error("Database error during product creation:", dbError);
+        if (!res.headersSent) {
+          res.status(500).json({ 
+            message: "Database error occurred while creating product",
+            error: dbError instanceof Error ? dbError.message : "Database connection issue"
+          });
+        }
+        return;
+      }
     } catch (error) {
       console.error("Product creation error:", error);
       if (error instanceof Error) {
