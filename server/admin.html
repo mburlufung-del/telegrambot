@@ -1283,38 +1283,71 @@
         }
 
         function collectPricingTiers() {
-            const tiers = [];
-            const tierElements = document.querySelectorAll('#pricing-tiers .border');
-            
-            tierElements.forEach(tierElement => {
-                try {
-                    const minQtyElement = tierElement.querySelector('.tier-min-qty');
-                    const maxQtyElement = tierElement.querySelector('.tier-max-qty');
-                    const priceElement = tierElement.querySelector('.tier-price');
-                    
-                    if (!minQtyElement || !maxQtyElement || !priceElement) {
-                        console.warn('Pricing tier elements not found in tier element');
-                        return;
-                    }
-                    
-                    const minQty = parseInt(minQtyElement.value);
-                    const maxQty = maxQtyElement.value;
-                    const price = parseFloat(priceElement.value);
-                    
-                    if (minQty && price && !isNaN(minQty) && !isNaN(price)) {
-                        tiers.push({
-                            minQuantity: minQty,
-                            maxQuantity: maxQty ? parseInt(maxQty) : null,
-                            price: price,
-                            isActive: true
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error processing pricing tier:', error);
+            try {
+                console.log('Starting collectPricingTiers function');
+                const tiers = [];
+                const pricingTiersDiv = document.getElementById('pricing-tiers');
+                
+                if (!pricingTiersDiv) {
+                    console.warn('Pricing tiers div not found');
+                    return tiers;
                 }
-            });
-            
-            return tiers;
+                
+                console.log('Pricing tiers div content:', pricingTiersDiv.innerHTML);
+                const tierElements = pricingTiersDiv.querySelectorAll('.border');
+                console.log('Found tier elements:', tierElements.length);
+                
+                if (tierElements.length === 0) {
+                    console.log('No pricing tier elements found, returning empty array');
+                    return tiers;
+                }
+                
+                tierElements.forEach((tierElement, index) => {
+                    try {
+                        console.log(`Processing tier element ${index + 1}`);
+                        const minQtyElement = tierElement.querySelector('.tier-min-qty');
+                        const maxQtyElement = tierElement.querySelector('.tier-max-qty');
+                        const priceElement = tierElement.querySelector('.tier-price');
+                        
+                        console.log('Element found checks:', {
+                            minQty: !!minQtyElement,
+                            maxQty: !!maxQtyElement,
+                            price: !!priceElement
+                        });
+                        
+                        if (!minQtyElement || !maxQtyElement || !priceElement) {
+                            console.warn(`Pricing tier elements not found in tier element ${index + 1}`);
+                            return;
+                        }
+                        
+                        const minQty = parseInt(minQtyElement.value);
+                        const maxQty = maxQtyElement.value;
+                        const price = parseFloat(priceElement.value);
+                        
+                        console.log('Parsed values:', { minQty, maxQty, price });
+                        
+                        if (minQty && price && !isNaN(minQty) && !isNaN(price)) {
+                            tiers.push({
+                                minQuantity: minQty,
+                                maxQuantity: maxQty ? parseInt(maxQty) : null,
+                                price: price,
+                                isActive: true
+                            });
+                            console.log(`Added tier: ${minQty}-${maxQty || '∞'} @ $${price}`);
+                        } else {
+                            console.warn(`Invalid tier data: minQty=${minQty}, price=${price}`);
+                        }
+                    } catch (error) {
+                        console.error(`Error processing pricing tier ${index + 1}:`, error);
+                    }
+                });
+                
+                console.log('Final collected tiers:', tiers);
+                return tiers;
+            } catch (error) {
+                console.error('Error in collectPricingTiers function:', error);
+                return [];
+            }
         }
 
         // Enhanced add product function
