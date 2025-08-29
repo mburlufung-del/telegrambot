@@ -1287,17 +1287,30 @@
             const tierElements = document.querySelectorAll('#pricing-tiers .border');
             
             tierElements.forEach(tierElement => {
-                const minQty = parseInt(tierElement.querySelector('.tier-min-qty').value);
-                const maxQty = tierElement.querySelector('.tier-max-qty').value;
-                const price = parseFloat(tierElement.querySelector('.tier-price').value);
-                
-                if (minQty && price) {
-                    tiers.push({
-                        minQuantity: minQty,
-                        maxQuantity: maxQty ? parseInt(maxQty) : null,
-                        price: price,
-                        isActive: true
-                    });
+                try {
+                    const minQtyElement = tierElement.querySelector('.tier-min-qty');
+                    const maxQtyElement = tierElement.querySelector('.tier-max-qty');
+                    const priceElement = tierElement.querySelector('.tier-price');
+                    
+                    if (!minQtyElement || !maxQtyElement || !priceElement) {
+                        console.warn('Pricing tier elements not found in tier element');
+                        return;
+                    }
+                    
+                    const minQty = parseInt(minQtyElement.value);
+                    const maxQty = maxQtyElement.value;
+                    const price = parseFloat(priceElement.value);
+                    
+                    if (minQty && price && !isNaN(minQty) && !isNaN(price)) {
+                        tiers.push({
+                            minQuantity: minQty,
+                            maxQuantity: maxQty ? parseInt(maxQty) : null,
+                            price: price,
+                            isActive: true
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error processing pricing tier:', error);
                 }
             });
             
