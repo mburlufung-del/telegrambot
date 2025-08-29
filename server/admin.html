@@ -1411,17 +1411,20 @@
                 }
             } catch (error) {
                 console.error('Error adding product:', error);
-                // Only show error notification for actual errors, not empty objects
-                if (error && (error.message || Object.keys(error).length > 0)) {
+                // Only show error notification for actual errors with meaningful content
+                if (error && error.message && error.message.trim() !== '') {
                     if (error.name === 'SyntaxError' && error.message.includes('JSON')) {
                         showNotification('Invalid JSON format in specifications field', 'error');
                     } else if (error.message && error.message.includes('fetch')) {
                         showNotification('Network error: Unable to connect to server', 'error');
                     } else {
-                        showNotification(`Server error: ${error.message || 'Unknown error occurred'}`, 'error');
+                        showNotification(`Server error: ${error.message}`, 'error');
                     }
+                } else if (error && error.name && error.name !== 'Error') {
+                    // Only show errors with meaningful names
+                    showNotification(`Server error: ${error.name}`, 'error');
                 } else {
-                    console.log('Empty error object caught, likely not a real error');
+                    console.log('Empty or meaningless error caught, likely not a real error');
                 }
             }
         }

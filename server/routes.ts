@@ -201,21 +201,21 @@ function registerAllRoutes(app: Express): void {
   });
 
   // Pricing Tiers routes
-  app.get("/api/products/:productId/pricing-tiers", async (req, res) => {
+  app.get("/api/products/:id/pricing-tiers", async (req, res) => {
     try {
-      const tiers = await storage.getPricingTiers(req.params.productId);
+      const tiers = await storage.getPricingTiers(req.params.id);
       res.json(tiers);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch pricing tiers" });
     }
   });
 
-  app.post("/api/products/:productId/pricing-tiers", async (req, res) => {
+  app.post("/api/products/:id/pricing-tiers", async (req, res) => {
     try {
-      const tierData = { ...req.body, productId: req.params.productId };
+      const tierData = { ...req.body, productId: req.params.id };
       
       // Get existing tiers to check for overlaps
-      const existingTiers = await storage.getPricingTiers(req.params.productId);
+      const existingTiers = await storage.getPricingTiers(req.params.id);
       
       // Validate no overlapping ranges
       const newMin = tierData.minQuantity;
@@ -985,34 +985,6 @@ function registerAllRoutes(app: Express): void {
     }
   });
 
-  // Get pricing tiers for a product
-  app.get("/api/products/:id/pricing-tiers", async (req, res) => {
-    try {
-      const productId = req.params.id;
-      const pricingTiers = await storage.getPricingTiers(productId);
-      res.json(pricingTiers);
-    } catch (error) {
-      console.error("Error fetching pricing tiers:", error);
-      res.status(500).json({ message: "Failed to fetch pricing tiers" });
-    }
-  });
-
-  // Create pricing tier for a product
-  app.post("/api/products/:id/pricing-tiers", async (req, res) => {
-    try {
-      const productId = req.params.id;
-      const tierData = {
-        ...req.body,
-        productId,
-      };
-      
-      const tier = await storage.createPricingTier(tierData);
-      res.json(tier);
-    } catch (error) {
-      console.error("Error creating pricing tier:", error);
-      res.status(500).json({ message: "Failed to create pricing tier" });
-    }
-  });
 
   // Create pricing tier (standalone)
   app.post("/api/pricing-tiers", async (req, res) => {
