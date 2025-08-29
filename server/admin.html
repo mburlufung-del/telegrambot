@@ -1364,13 +1364,24 @@
                     // Add pricing tiers if any
                     const pricingTiers = collectPricingTiers();
                     if (pricingTiers.length > 0) {
-                        for (const tier of pricingTiers) {
-                            tier.productId = createdProduct.id;
-                            await fetch('/api/pricing-tiers', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(tier)
-                            });
+                        try {
+                            for (const tier of pricingTiers) {
+                                tier.productId = createdProduct.id;
+                                const tierResponse = await fetch(`/api/products/${createdProduct.id}/pricing-tiers`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(tier)
+                                });
+                                
+                                if (!tierResponse.ok) {
+                                    console.error('Failed to create pricing tier:', await tierResponse.text());
+                                    throw new Error(`Failed to create pricing tier: ${tierResponse.statusText}`);
+                                }
+                            }
+                            console.log(`Successfully created ${pricingTiers.length} pricing tiers`);
+                        } catch (tierError) {
+                            console.error('Error creating pricing tiers:', tierError);
+                            showNotification(`Product created but failed to add ${pricingTiers.length} pricing tiers`, 'warning');
                         }
                     }
                     
@@ -1400,12 +1411,17 @@
                 }
             } catch (error) {
                 console.error('Error adding product:', error);
-                if (error.name === 'SyntaxError' && error.message.includes('JSON')) {
-                    showNotification('Invalid JSON format in specifications field', 'error');
-                } else if (error.message && error.message.includes('fetch')) {
-                    showNotification('Network error: Unable to connect to server', 'error');
+                // Only show error notification for actual errors, not empty objects
+                if (error && (error.message || Object.keys(error).length > 0)) {
+                    if (error.name === 'SyntaxError' && error.message.includes('JSON')) {
+                        showNotification('Invalid JSON format in specifications field', 'error');
+                    } else if (error.message && error.message.includes('fetch')) {
+                        showNotification('Network error: Unable to connect to server', 'error');
+                    } else {
+                        showNotification(`Server error: ${error.message || 'Unknown error occurred'}`, 'error');
+                    }
                 } else {
-                    showNotification(`Server error: ${error.message || 'Unknown error occurred'}`, 'error');
+                    console.log('Empty error object caught, likely not a real error');
                 }
             }
         }
