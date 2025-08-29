@@ -1,5 +1,5 @@
 import express from 'express';
-import { TeleShopBot } from './bot';
+import { teleShopBot } from './bot';
 import { storage } from './storage';
 
 const app = express();
@@ -17,9 +17,6 @@ app.get('/health', (req, res) => {
     bot_status: 'online'
   });
 });
-
-// Initialize TeleShop Bot instance
-const teleShopBot = new TeleShopBot();
 
 function log(message: string, source: string = 'express') {
   const timestamp = new Date();
