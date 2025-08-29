@@ -1373,9 +1373,18 @@
                     }
                     
                     hideAddProductForm();
-                    loadProducts();
-                    loadDashboardData();
                     showNotification('Product added successfully with all features!', 'success');
+                    
+                    // Reload data with error handling
+                    setTimeout(async () => {
+                        try {
+                            await loadProducts();
+                            await loadDashboardData();
+                        } catch (error) {
+                            console.error('Error reloading data after product creation:', error);
+                            showNotification('Product created but dashboard refresh failed', 'warning');
+                        }
+                    }, 1000);
                 } else {
                     console.log('Response not OK, trying to parse error...');
                     try {
