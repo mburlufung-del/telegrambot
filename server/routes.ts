@@ -121,7 +121,11 @@ function registerAllRoutes(app: Express): void {
         
         // Ensure response is sent properly
         if (!res.headersSent) {
+          console.log("Sending success response to frontend");
           res.status(201).json(product);
+          console.log("Success response sent");
+        } else {
+          console.log("WARNING: Response headers already sent!");
         }
       } catch (dbError) {
         console.error("Database error during product creation:", dbError);

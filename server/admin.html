@@ -1347,11 +1347,14 @@
                 }
                 
                 // Create the product first
+                console.log('Sending request to server...');
                 const response = await fetch('/api/products', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(productData)
                 });
+                
+                console.log('Response received:', response.status, response.statusText);
                 
                 if (response.ok) {
                     const createdProduct = await response.json();
@@ -1374,8 +1377,15 @@
                     loadDashboardData();
                     showNotification('Product added successfully with all features!', 'success');
                 } else {
-                    const errorData = await response.json();
-                    showNotification(`Error adding product: ${errorData.message || 'Unknown error'}`, 'error');
+                    console.log('Response not OK, trying to parse error...');
+                    try {
+                        const errorData = await response.json();
+                        console.log('Error data received:', errorData);
+                        showNotification(`Error adding product: ${errorData.message || 'Unknown error'}`, 'error');
+                    } catch (parseError) {
+                        console.log('Failed to parse error response:', parseError);
+                        showNotification(`Server error: HTTP ${response.status} ${response.statusText}`, 'error');
+                    }
                 }
             } catch (error) {
                 console.error('Error adding product:', error);
