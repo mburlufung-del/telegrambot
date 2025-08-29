@@ -26,6 +26,7 @@ export const products = pgTable("products", {
 export const inquiries = pgTable("inquiries", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   telegramUserId: text("telegram_user_id").notNull(),
+  username: text("username"), // Telegram username without @
   customerName: text("customer_name").notNull(),
   message: text("message").notNull(),
   productId: varchar("product_id").references(() => products.id),

@@ -485,6 +485,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         try {
           await storage.createInquiry({
             telegramUserId: userId,
+            username: msg.from?.username || null,
             customerName: msg.from?.first_name || 'Anonymous',
             contactInfo: `Telegram User: ${userId}`,
             message: msg.text || ''
