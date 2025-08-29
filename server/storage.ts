@@ -17,6 +17,7 @@ import type {
   Operator,
   OperatorSession,
   SupportMessage,
+  TrackedUser,
   InsertCart,
   InsertCategory,
   InsertOrder,
@@ -32,6 +33,7 @@ import type {
   InsertOperator,
   InsertOperatorSession,
   InsertSupportMessage,
+  InsertTrackedUser,
 } from "@shared/schema";
 import {
   categories,
@@ -49,6 +51,7 @@ import {
   operators,
   operatorSessions,
   supportMessages,
+  trackedUsers,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -871,22 +874,34 @@ export class DatabaseStorage implements IStorage {
   }
 
   // User tracking implementation
-  private trackedUsers: Map<string, any> = new Map();
-
   async trackUser(chatId: string, userData: any): Promise<void> {
-    const user = {
+    const userToInsert: InsertTrackedUser = {
       chatId,
       username: userData.username || null,
       firstName: userData.first_name || null,
       lastName: userData.last_name || null,
-      lastSeen: new Date().toISOString()
+      lastSeen: new Date()
     };
-    this.trackedUsers.set(chatId, user);
-    console.log(`[USER TRACKING] User ${chatId} tracked:`, user);
+    
+    // Insert or update user
+    await db
+      .insert(trackedUsers)
+      .values(userToInsert)
+      .onConflictDoUpdate({
+        target: trackedUsers.chatId,
+        set: {
+          username: userToInsert.username,
+          firstName: userToInsert.firstName,
+          lastName: userToInsert.lastName,
+          lastSeen: userToInsert.lastSeen,
+        },
+      });
+    
+    console.log(`[USER TRACKING] User ${chatId} tracked:`, userToInsert);
   }
 
-  async getTrackedUsers(): Promise<any[]> {
-    return Array.from(this.trackedUsers.values());
+  async getTrackedUsers(): Promise<TrackedUser[]> {
+    return await db.select().from(trackedUsers).orderBy(desc(trackedUsers.lastSeen));
   }
 
   // Broadcast operations implementation

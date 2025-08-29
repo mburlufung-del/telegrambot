@@ -256,6 +256,22 @@ export const insertProductRatingSchema = createInsertSchema(productRatings).omit
   createdAt: true,
 });
 
+// Tracked users table for broadcast functionality
+export const trackedUsers = pgTable("tracked_users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatId: text("chat_id").notNull().unique(),
+  username: text("username"),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  lastSeen: timestamp("last_seen").notNull().default(sql`now()`),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+export const insertTrackedUserSchema = createInsertSchema(trackedUsers).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Order item type for cart and orders
 export const orderItemSchema = z.object({
   productId: z.string(),
@@ -315,3 +331,5 @@ export type OperatorSession = typeof operatorSessions.$inferSelect;
 export type InsertOperatorSession = z.infer<typeof insertOperatorSessionSchema>;
 export type SupportMessage = typeof supportMessages.$inferSelect;
 export type InsertSupportMessage = z.infer<typeof insertSupportMessageSchema>;
+export type TrackedUser = typeof trackedUsers.$inferSelect;
+export type InsertTrackedUser = z.infer<typeof insertTrackedUserSchema>;
