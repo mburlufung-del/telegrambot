@@ -1273,6 +1273,22 @@ function registerAllRoutes(app: Express): void {
     }
   });
 
+  app.get("/api/delivery-methods/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const method = await storage.getDeliveryMethod(id);
+      
+      if (!method) {
+        return res.status(404).json({ message: "Delivery method not found" });
+      }
+
+      res.json(method);
+    } catch (error) {
+      console.error("Error getting delivery method:", error);
+      res.status(500).json({ message: "Failed to get delivery method" });
+    }
+  });
+
   app.post("/api/delivery-methods", async (req, res) => {
     try {
       const deliveryMethodData = req.body;

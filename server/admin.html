@@ -1658,7 +1658,7 @@
                     return;
                 }
 
-                let tableHTML = '<table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Est. Days</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th></tr></thead><tbody>';
+                let tableHTML = '<table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Est. Time</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th></tr></thead><tbody>';
                 
                 methods.forEach(method => {
                     // Status display
@@ -1670,10 +1670,20 @@
                         '<button class="text-red-600 hover:text-red-900 text-sm font-medium" onclick="deleteDeliveryMethod(\'' + method.id + '\')">Delete</button>' +
                         '</div>';
                     
+                    // Format estimated time display
+                    let timeDisplay = method.estimatedTime || '';
+                    if (!timeDisplay && method.minTime && method.maxTime) {
+                        timeDisplay = method.minTime === method.maxTime ? 
+                            `${method.minTime} ${method.timeUnit || 'days'}` : 
+                            `${method.minTime}-${method.maxTime} ${method.timeUnit || 'days'}`;
+                    } else if (!timeDisplay && method.minTime) {
+                        timeDisplay = `${method.minTime}+ ${method.timeUnit || 'days'}`;
+                    }
+                    
                     tableHTML += '<tr>' +
                         '<td class="px-6 py-4 text-sm font-medium text-gray-900">' + method.name + '</td>' +
                         '<td class="px-6 py-4 text-sm text-gray-500">$' + method.price + '</td>' +
-                        '<td class="px-6 py-4 text-sm text-gray-500">' + method.estimatedDays + ' days</td>' +
+                        '<td class="px-6 py-4 text-sm text-gray-500">' + (timeDisplay || '-') + '</td>' +
                         '<td class="px-6 py-4">' + statusBadge + '</td>' +
                         '<td class="px-6 py-4">' + actionButtons + '</td>' +
                         '</tr>';
@@ -2598,8 +2608,11 @@
             document.getElementById('edit-delivery-id').value = '';
             document.getElementById('edit-delivery-name').value = '';
             document.getElementById('edit-delivery-description').value = '';
-            document.getElementById('edit-delivery-price').value = '';
-            document.getElementById('edit-delivery-days').value = '';
+            document.getElementById('edit-delivery-price').value = '0';
+            document.getElementById('edit-delivery-is-free').checked = false;
+            document.getElementById('edit-delivery-min-time').value = '';
+            document.getElementById('edit-delivery-max-time').value = '';
+            document.getElementById('edit-delivery-time-unit').value = 'days';
             document.getElementById('edit-delivery-active').checked = false;
         }
 
