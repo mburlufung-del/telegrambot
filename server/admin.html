@@ -5,38 +5,189 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TeleShop Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom responsive styles */
+        @media (max-width: 767px) {
+            .mobile-hidden { display: none !important; }
+            .mobile-full { width: 100% !important; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .tablet-hidden { display: none !important; }
+        }
+        @media (min-width: 1024px) {
+            .desktop-only { display: block !important; }
+        }
+        
+        /* Mobile sidebar animation */
+        .sidebar-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .sidebar-menu {
+            transition: transform 0.3s ease-in-out;
+        }
+        .sidebar-menu.closed {
+            transform: translateX(-100%);
+        }
+        
+        /* Touch-friendly buttons */
+        @media (max-width: 767px) {
+            .btn-touch {
+                min-height: 44px !important;
+                min-width: 44px !important;
+                padding: 12px 16px !important;
+            }
+        }
+        
+        /* Card layout for mobile tables */
+        .table-card {
+            @apply bg-white rounded-lg shadow-sm border p-4 mb-3;
+        }
+        .table-card-header {
+            @apply font-medium text-gray-900 mb-2;
+        }
+        .table-card-content {
+            @apply space-y-2 text-sm;
+        }
+        .table-card-actions {
+            @apply mt-3 pt-3 border-t border-gray-200 flex gap-2;
+        }
+        
+        /* Sidebar link styling */
+        .sidebar-link {
+            @apply text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-200;
+        }
+        .sidebar-link.active {
+            @apply bg-indigo-100 text-indigo-700;
+        }
+        
+        /* Responsive form styling */
+        @media (max-width: 767px) {
+            .form-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .modal {
+                position: fixed !important;
+                inset: 0 !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                max-width: none !important;
+                max-height: none !important;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
-    <div class="min-h-screen">
-        <nav class="bg-white border-b border-gray-200 shadow-sm">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
-                        <h1 class="text-xl font-bold text-gray-900">🤖 TeleShop Admin</h1>
-                        <div class="ml-6 flex space-x-8">
-                            <a href="#" onclick="showSection('dashboard')" class="text-gray-900 px-3 py-2 text-sm font-medium border-b-2 border-indigo-500">Dashboard</a>
-                            <a href="#" onclick="showSection('products')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Products</a>
-                            <a href="#" onclick="showSection('categories')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Categories</a>
-                            <a href="#" onclick="showSection('payments')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Payment Methods</a>
-                            <a href="#" onclick="showSection('delivery')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Delivery Options</a>
-                            <a href="#" onclick="showSection('orders')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Orders</a>
-                            <a href="#" onclick="showSection('inquiries')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Inquiries</a>
-                            <a href="#" onclick="showSection('support')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Operator Support</a>
-                            <a href="#" onclick="showSection('broadcast')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Broadcast</a>
-                            <a href="#" onclick="showSection('settings')" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Bot Settings</a>
+    <div class="min-h-screen flex">
+        <!-- Mobile sidebar overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden sidebar-overlay opacity-0 pointer-events-none" onclick="closeMobileSidebar()"></div>
+        
+        <!-- Sidebar -->
+        <div id="sidebar" class="fixed md:relative z-50 w-64 h-full bg-white border-r border-gray-200 sidebar-menu closed md:translate-x-0">
+            <div class="flex flex-col h-full">
+                <!-- Sidebar header -->
+                <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                    <h1 class="text-lg font-bold text-gray-900">🤖 TeleShop</h1>
+                    <button class="md:hidden btn-touch" onclick="closeMobileSidebar()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Navigation menu -->
+                <nav class="flex-1 overflow-y-auto py-4">
+                    <div class="px-3 space-y-1">
+                        <a href="#" onclick="showSection('dashboard'); closeMobileSidebar()" class="sidebar-link active flex items-center px-3 py-2 text-sm font-medium rounded-md" data-section="dashboard">
+                            <span class="mr-3">📊</span>
+                            Dashboard
+                        </a>
+                        
+                        <!-- Catalog Group -->
+                        <div class="pt-4">
+                            <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Catalog</p>
+                            <a href="#" onclick="showSection('products'); closeMobileSidebar()" class="sidebar-link flex items-center px-3 py-2 mt-1 text-sm font-medium rounded-md" data-section="products">
+                                <span class="mr-3">📦</span>
+                                Products
+                            </a>
+                            <a href="#" onclick="showSection('categories'); closeMobileSidebar()" class="sidebar-link flex items-center px-3 py-2 text-sm font-medium rounded-md" data-section="categories">
+                                <span class="mr-3">📁</span>
+                                Categories
+                            </a>
+                        </div>
+                        
+                        <!-- Sales Group -->
+                        <div class="pt-4">
+                            <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Sales</p>
+                            <a href="#" onclick="showSection('orders'); closeMobileSidebar()" class="sidebar-link flex items-center px-3 py-2 mt-1 text-sm font-medium rounded-md" data-section="orders">
+                                <span class="mr-3">🛒</span>
+                                Orders
+                            </a>
+                            <a href="#" onclick="showSection('payments'); closeMobileSidebar()" class="sidebar-link flex items-center px-3 py-2 text-sm font-medium rounded-md" data-section="payments">
+                                <span class="mr-3">💳</span>
+                                Payment Methods
+                            </a>
+                            <a href="#" onclick="showSection('delivery'); closeMobileSidebar()" class="sidebar-link flex items-center px-3 py-2 text-sm font-medium rounded-md" data-section="delivery">
+                                <span class="mr-3">🚚</span>
+                                Delivery Options
+                            </a>
+                        </div>
+                        
+                        <!-- Support Group -->
+                        <div class="pt-4">
+                            <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Support</p>
+                            <a href="#" onclick="showSection('inquiries'); closeMobileSidebar()" class="sidebar-link flex items-center px-3 py-2 mt-1 text-sm font-medium rounded-md" data-section="inquiries">
+                                <span class="mr-3">💬</span>
+                                Inquiries
+                            </a>
+                            <a href="#" onclick="showSection('support'); closeMobileSidebar()" class="sidebar-link flex items-center px-3 py-2 text-sm font-medium rounded-md" data-section="support">
+                                <span class="mr-3">🎧</span>
+                                Operator Support
+                            </a>
+                            <a href="#" onclick="showSection('broadcast'); closeMobileSidebar()" class="sidebar-link flex items-center px-3 py-2 text-sm font-medium rounded-md" data-section="broadcast">
+                                <span class="mr-3">📢</span>
+                                Broadcast
+                            </a>
+                        </div>
+                        
+                        <!-- Settings Group -->
+                        <div class="pt-4">
+                            <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Settings</p>
+                            <a href="#" onclick="showSection('settings'); closeMobileSidebar()" class="sidebar-link flex items-center px-3 py-2 mt-1 text-sm font-medium rounded-md" data-section="settings">
+                                <span class="mr-3">⚙️</span>
+                                Bot Settings
+                            </a>
                         </div>
                     </div>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main content area -->
+        <div class="flex-1 flex flex-col min-w-0">
+            <!-- Top bar -->
+            <header class="bg-white border-b border-gray-200 shadow-sm">
+                <div class="flex items-center justify-between px-4 py-3">
                     <div class="flex items-center">
+                        <button class="md:hidden btn-touch mr-3" onclick="openMobileSidebar()">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                        <h1 class="text-xl font-bold text-gray-900 md:hidden">🤖 Admin</h1>
+                        <h1 class="hidden md:block text-xl font-bold text-gray-900" id="page-title">Dashboard Overview</h1>
+                    </div>
+                    <div class="flex items-center space-x-3">
                         <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Bot Online</span>
                     </div>
                 </div>
-            </div>
-        </nav>
+            </header>
 
-        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <div id="dashboard-section">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Dashboard Overview</h2>
-                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <!-- Main content -->
+            <main class="flex-1 overflow-auto">
+                <div class="p-4 md:p-6 max-w-7xl mx-auto">
+                    <div id="dashboard-section">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6 hidden md:block">Dashboard Overview</h2>
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
                     <div class="bg-white overflow-hidden shadow rounded-lg">
                         <div class="p-5">
                             <div class="flex items-center">
@@ -89,10 +240,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                        </div>
+                    </div>
 
-            <div id="products-section" style="display: none;">
+                    <div id="products-section" style="display: none;">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-900">Product Management</h2>
                     <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium" onclick="showAddProductForm()">
@@ -950,10 +1101,74 @@
                     </div>
                 </div>
             </div>
-        </main>
+                </div>
+            </main>
+        </div>
     </div>
 
     <script>
+        // Mobile sidebar functions
+        function openMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            sidebar.classList.remove('closed');
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+            overlay.classList.add('opacity-100');
+            
+            // Prevent body scroll when sidebar is open
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            sidebar.classList.add('closed');
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            overlay.classList.remove('opacity-100');
+            
+            // Restore body scroll
+            document.body.style.overflow = '';
+        }
+        
+        // Update page title when section changes
+        function updatePageTitle(section) {
+            const titles = {
+                'dashboard': 'Dashboard Overview',
+                'products': 'Product Management',
+                'categories': 'Category Management',
+                'payments': 'Payment Methods',
+                'delivery': 'Delivery Options',
+                'orders': 'Order Management',
+                'inquiries': 'Customer Inquiries',
+                'support': 'Operator Support',
+                'broadcast': 'Broadcast Messages',
+                'settings': 'Bot Settings'
+            };
+            
+            const pageTitle = document.getElementById('page-title');
+            if (pageTitle && titles[section]) {
+                pageTitle.textContent = titles[section];
+            }
+        }
+        
+        // Update sidebar active state
+        function updateSidebarActive(section) {
+            // Remove active class from all sidebar links
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active', 'bg-indigo-100', 'text-indigo-700');
+                link.classList.add('text-gray-600', 'hover:text-gray-900', 'hover:bg-gray-50');
+            });
+            
+            // Add active class to current section
+            const activeLink = document.querySelector(`[data-section="${section}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active', 'bg-indigo-100', 'text-indigo-700');
+                activeLink.classList.remove('text-gray-600', 'hover:text-gray-900', 'hover:bg-gray-50');
+            }
+        }
+
         function showSection(section) {
             const sections = ['dashboard', 'products', 'categories', 'payments', 'delivery', 'orders', 'support', 'broadcast', 'settings'];
             sections.forEach(s => {
@@ -974,6 +1189,10 @@
                 if (activeLink) {
                     activeLink.className = 'text-gray-900 px-3 py-2 text-sm font-medium border-b-2 border-indigo-500';
                 }
+                
+                // Update page title and sidebar active state
+                updatePageTitle(section);
+                updateSidebarActive(section);
                 
                 // Load data for the section
                 if (section === 'products') {
