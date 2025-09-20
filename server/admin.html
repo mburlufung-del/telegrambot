@@ -1168,6 +1168,55 @@
                 activeLink.classList.remove('text-gray-600', 'hover:text-gray-900', 'hover:bg-gray-50');
             }
         }
+        
+        // Responsive table/card utilities
+        function isMobileView() {
+            return window.innerWidth < 768;
+        }
+        
+        function createResponsiveTable(containerId, data, columns, generateRowData) {
+            const container = document.getElementById(containerId);
+            
+            if (data.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No data found</p>';
+                return;
+            }
+            
+            if (isMobileView()) {
+                // Mobile card layout
+                let cardHTML = '<div class="space-y-3">';
+                data.forEach(item => {
+                    const rowData = generateRowData(item);
+                    cardHTML += `
+                        <div class="table-card">
+                            <div class="table-card-header">${rowData.title}</div>
+                            <div class="table-card-content">
+                                ${rowData.content}
+                            </div>
+                            <div class="table-card-actions">
+                                ${rowData.actions}
+                            </div>
+                        </div>`;
+                });
+                cardHTML += '</div>';
+                container.innerHTML = cardHTML;
+            } else {
+                // Desktop table layout
+                let tableHTML = '<div class="overflow-x-auto"><table class="min-w-full bg-white border border-gray-200 rounded-lg"><thead class="bg-gray-50"><tr>';
+                columns.forEach(col => {
+                    tableHTML += `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${col}</th>`;
+                });
+                tableHTML += '</tr></thead><tbody class="divide-y divide-gray-200">';
+                
+                data.forEach(item => {
+                    const rowData = generateRowData(item);
+                    tableHTML += `<tr class="hover:bg-gray-50">${rowData.tableRow}</tr>`;
+                });
+                
+                tableHTML += '</tbody></table></div>';
+                container.innerHTML = tableHTML;
+            }
+        }
 
         function showSection(section) {
             const sections = ['dashboard', 'products', 'categories', 'payments', 'delivery', 'orders', 'support', 'broadcast', 'settings'];
@@ -1329,17 +1378,11 @@
             try {
                 const response = await fetch('/api/products');
                 const products = await response.json();
-                const productsList = document.getElementById('products-list');
                 
-                if (products.length === 0) {
-                    productsList.innerHTML = '<p class="text-gray-500">No products found</p>';
-                    return;
-                }
-
-                let tableHTML = '<table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th></tr></thead><tbody>';
+                const columns = ['Image', 'Name', 'Price', 'Stock', 'Unit', 'Status', 'Actions'];
                 
-                products.forEach(product => {
-                    // Image column with error handling
+                createResponsiveTable('products-list', products, columns, (product) => {
+                    // Image handling
                     let imageHtml = '<div class="h-12 w-12 flex-shrink-0">';
                     if (product.imageUrl) {
                         imageHtml += '<img class="h-12 w-12 rounded-lg object-cover" src="' + product.imageUrl + '" alt="Product Image" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'">' +
@@ -1353,24 +1396,36 @@
                     const statusBadge = '<span class="px-2 py-1 text-xs font-semibold rounded-full ' + (product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') + '">' + (product.isActive ? 'Active' : 'Inactive') + '</span>';
                     
                     // Action buttons
-                    const actionButtons = '<div class="flex space-x-2">' +
-                        '<button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium" onclick="editProduct(\'' + product.id + '\')">Edit</button>' +
-                        '<button class="text-red-600 hover:text-red-900 text-sm font-medium" onclick="deleteProduct(\'' + product.id + '\')">Delete</button>' +
-                        '</div>';
+                    const actionButtons = '<button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium btn-touch mr-2" onclick="editProduct(\'' + product.id + '\')">Edit</button>' +
+                        '<button class="text-red-600 hover:text-red-900 text-sm font-medium btn-touch" onclick="deleteProduct(\'' + product.id + '\')">Delete</button>';
                     
-                    tableHTML += '<tr>' +
-                        '<td class="px-6 py-4">' + imageHtml + '</td>' +
-                        '<td class="px-6 py-4 text-sm font-medium text-gray-900">' + product.name + '</td>' +
-                        '<td class="px-6 py-4 text-sm text-gray-500">$' + product.price + '</td>' +
-                        '<td class="px-6 py-4 text-sm text-gray-500">' + product.stock + ' ' + product.unit + '</td>' +
-                        '<td class="px-6 py-4 text-sm text-gray-500">' + product.unit + '</td>' +
-                        '<td class="px-6 py-4">' + statusBadge + '</td>' +
-                        '<td class="px-6 py-4">' + actionButtons + '</td>' +
-                        '</tr>';
+                    return {
+                        // Mobile card data
+                        title: product.name,
+                        content: `
+                            <div class="flex items-center gap-3 mb-2">
+                                ${imageHtml}
+                                <div>
+                                    <div class="font-medium">$${product.price}</div>
+                                    <div class="text-gray-500 text-sm">${product.stock} ${product.unit} in stock</div>
+                                    <div class="mt-1">${statusBadge}</div>
+                                </div>
+                            </div>
+                        `,
+                        actions: actionButtons,
+                        
+                        // Desktop table row data
+                        tableRow: `
+                            <td class="px-6 py-4">${imageHtml}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">${product.name}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">$${product.price}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">${product.stock} ${product.unit}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">${product.unit}</td>
+                            <td class="px-6 py-4">${statusBadge}</td>
+                            <td class="px-6 py-4"><div class="flex space-x-2">${actionButtons}</div></td>
+                        `
+                    };
                 });
-                
-                tableHTML += '</tbody></table>';
-                productsList.innerHTML = tableHTML;
             } catch (error) {
                 document.getElementById('products-list').innerHTML = '<p class="text-red-500">Error loading products</p>';
             }
