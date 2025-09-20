@@ -32,6 +32,13 @@
             }
         }
         
+        /* Ensure sidebar is visible on desktop */
+        @media (min-width: 768px) {
+            .sidebar-menu {
+                transform: translateX(0) !important;
+            }
+        }
+        
         /* Touch-friendly buttons */
         @media (max-width: 767px) {
             .btn-touch {
@@ -85,7 +92,7 @@
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden sidebar-overlay opacity-0 pointer-events-none" onclick="closeMobileSidebar()"></div>
         
         <!-- Sidebar -->
-        <div id="sidebar" class="fixed md:relative z-50 w-64 h-full bg-white border-r border-gray-200 sidebar-menu closed md:translate-x-0">
+        <div id="sidebar" class="fixed md:relative z-50 w-64 h-full bg-white border-r border-gray-200 sidebar-menu md:translate-x-0">
             <div class="flex flex-col h-full">
                 <!-- Sidebar header -->
                 <div class="flex items-center justify-between p-4 border-b border-gray-200">
@@ -2922,7 +2929,7 @@
                 // Desktop/tablet - ensure sidebar is visible
                 sidebar.classList.remove('closed');
             } else {
-                // Mobile - ensure sidebar is closed
+                // Mobile - ensure sidebar is closed initially
                 sidebar.classList.add('closed');
             }
         }
