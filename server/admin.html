@@ -25,8 +25,11 @@
         .sidebar-menu {
             transition: transform 0.3s ease-in-out;
         }
-        .sidebar-menu.closed {
-            transform: translateX(-100%);
+        /* Only hide on mobile when closed */
+        @media (max-width: 767px) {
+            .sidebar-menu.closed {
+                transform: translateX(-100%);
+            }
         }
         
         /* Touch-friendly buttons */
@@ -2890,11 +2893,14 @@
             document.getElementById('edit-delivery-active').checked = false;
         }
 
-        // Handle window resize for responsive tables
+        // Handle window resize for responsive tables and sidebar
         window.addEventListener('resize', () => {
             // Debounce resize events
             clearTimeout(window.resizeTimeout);
             window.resizeTimeout = setTimeout(() => {
+                // Update sidebar state based on new screen size
+                initializeSidebar();
+                
                 // Reload current section data to update table layout
                 const activeSection = document.querySelector('.sidebar-link.active')?.getAttribute('data-section');
                 if (activeSection === 'products') {
@@ -2909,7 +2915,20 @@
             }, 250); // 250ms debounce
         });
 
+        // Initialize sidebar state based on screen size
+        function initializeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth >= 768) {
+                // Desktop/tablet - ensure sidebar is visible
+                sidebar.classList.remove('closed');
+            } else {
+                // Mobile - ensure sidebar is closed
+                sidebar.classList.add('closed');
+            }
+        }
+
         window.onload = function() {
+            initializeSidebar();
             loadDashboardData();
         };
         // Operator Support Functions
