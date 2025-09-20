@@ -2890,6 +2890,25 @@
             document.getElementById('edit-delivery-active').checked = false;
         }
 
+        // Handle window resize for responsive tables
+        window.addEventListener('resize', () => {
+            // Debounce resize events
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(() => {
+                // Reload current section data to update table layout
+                const activeSection = document.querySelector('.sidebar-link.active')?.getAttribute('data-section');
+                if (activeSection === 'products') {
+                    loadProducts();
+                } else if (activeSection === 'orders') {
+                    loadOrders();
+                } else if (activeSection === 'categories') {
+                    loadCategories();
+                } else if (activeSection === 'inquiries') {
+                    loadInquiries();
+                }
+            }, 250); // 250ms debounce
+        });
+
         window.onload = function() {
             loadDashboardData();
         };
