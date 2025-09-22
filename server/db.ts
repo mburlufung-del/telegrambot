@@ -19,7 +19,7 @@ export const pool = new Pool({
 });
 
 // Add error handler to prevent crashes
-pool.on('error', (err) => {
+pool.on('error', (err: Error) => {
   console.error('Database pool error:', err);
 });
 

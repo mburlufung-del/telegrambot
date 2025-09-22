@@ -1913,7 +1913,7 @@ ${businessHours}
         if (method.description) {
           message += ` - ${method.description}`;
         }
-        message += `\n⏱️ Time: ${method.estimatedDays || 'As scheduled'}`;
+        message += `\n⏱️ Time: ${method.estimatedTime || 'As scheduled'}`;
         message += `\n💰 Cost: ${cost === 0 ? 'Free' : `$${cost}`}`;
         message += `\n💵 **Total with delivery: $${finalTotal}**`;
         
@@ -2344,7 +2344,7 @@ You can continue shopping while we prepare your response.`;
 
     const deliveryInfo = {
       name: selected.name,
-      time: selected.estimatedDays || 'As scheduled',
+      time: selected.estimatedTime || 'As scheduled',
       cost: parseFloat(selected.price),
       requiresAddress: !selected.name.toLowerCase().includes('pickup') // Store pickup doesn't require address
     };

@@ -394,7 +394,7 @@ export function DeliveryMethodsManager() {
                   value={formData.estimatedTime}
                   onChange={(e) =>
                     setFormData({ ...formData, estimatedTime: e.target.value })
-                  )
+                  }
                   placeholder="e.g., 3-5 days"
                   data-testid="input-delivery-method-days"
                 />
