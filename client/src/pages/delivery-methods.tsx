@@ -40,22 +40,24 @@ export default function DeliveryMethods() {
 
 
 
-  const form = useForm<InsertDeliveryMethod>({
-    resolver: zodResolver(insertDeliveryMethodSchema.extend({
-      price: z.string().min(1, 'Price is required'),
-    })),
+  const formSchema = insertDeliveryMethodSchema.extend({
+    price: z.string().min(1, 'Price is required'),
+  })
+  
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
       description: '',
       price: '0',
-      estimatedDays: '',
+      estimatedTime: '',
       isActive: true,
       sortOrder: 0,
     },
   })
 
   const createMutation = useMutation({
-    mutationFn: async (data: InsertDeliveryMethod) => {
+    mutationFn: async (data: z.infer<typeof formSchema>) => {
 
       const response = await fetch('/api/delivery-methods', {
         method: 'POST',
@@ -94,7 +96,7 @@ export default function DeliveryMethods() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string, data: Partial<InsertDeliveryMethod> }) => {
+    mutationFn: async ({ id, data }: { id: string, data: Partial<z.infer<typeof formSchema>> }) => {
       return await apiRequest(`/api/delivery-methods/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data)
@@ -164,7 +166,7 @@ export default function DeliveryMethods() {
     },
   })
 
-  const onSubmit = (data: InsertDeliveryMethod) => {
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
     if (editingMethod) {
       updateMutation.mutate({ id: editingMethod.id, data })
     } else {
@@ -178,7 +180,7 @@ export default function DeliveryMethods() {
       name: method.name,
       description: method.description || '',
       price: method.price,
-      estimatedDays: method.estimatedDays || '',
+      estimatedTime: method.estimatedTime || '',
       isActive: method.isActive,
       sortOrder: method.sortOrder,
     })
@@ -191,7 +193,7 @@ export default function DeliveryMethods() {
       name: '',
       description: '',
       price: '0',
-      estimatedDays: '',
+      estimatedTime: '',
       instructions: '',
       isActive: true,
       sortOrder: 0,
@@ -276,7 +278,7 @@ export default function DeliveryMethods() {
                   />
                   <FormField
                     control={form.control}
-                    name="estimatedDays"
+                    name="estimatedTime"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm">Delivery Time</FormLabel>
@@ -461,9 +463,9 @@ export default function DeliveryMethods() {
                         <span className="text-sm font-medium text-blue-600" data-testid={`text-delivery-price-${method.id}`}>
                           ${parseFloat(method.price).toFixed(2)}
                         </span>
-                        {method.estimatedDays && (
+                        {method.estimatedTime && (
                           <span className="text-xs text-gray-500" data-testid={`text-delivery-time-${method.id}`}>
-                            {method.estimatedDays}
+                            {method.estimatedTime}
                           </span>
                         )}
                       </div>

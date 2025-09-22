@@ -33,7 +33,7 @@ interface DeliveryMethodFormData {
   name: string;
   description: string;
   price: string;
-  estimatedDays: string;
+  estimatedTime: string;
   instructions: string;
   isActive: boolean;
   sortOrder: number;
@@ -43,7 +43,7 @@ const initialFormData: DeliveryMethodFormData = {
   name: "",
   description: "",
   price: "0",
-  estimatedDays: "",
+  estimatedTime: "",
   instructions: "",
   isActive: true,
   sortOrder: 0,
@@ -73,7 +73,7 @@ export function DeliveryMethodsManager() {
       name: method.name,
       description: method.description || "",
       price: method.price,
-      estimatedDays: method.estimatedDays || "",
+      estimatedTime: method.estimatedTime || "",
       instructions: method.instructions || "",
       isActive: method.isActive,
       sortOrder: method.sortOrder,
@@ -273,12 +273,12 @@ export function DeliveryMethodsManager() {
                     </Label>
                     <p className="text-sm font-medium">${method.price}</p>
                   </div>
-                  {method.estimatedDays && (
+                  {method.estimatedTime && (
                     <div>
                       <Label className="text-xs font-medium text-muted-foreground">
                         Delivery Time
                       </Label>
-                      <p className="text-sm">{method.estimatedDays}</p>
+                      <p className="text-sm">{method.estimatedTime}</p>
                     </div>
                   )}
                   <div>
@@ -391,10 +391,10 @@ export function DeliveryMethodsManager() {
                 <Label htmlFor="estimated-days">Delivery Time</Label>
                 <Input
                   id="estimated-days"
-                  value={formData.estimatedDays}
+                  value={formData.estimatedTime}
                   onChange={(e) =>
-                    setFormData({ ...formData, estimatedDays: e.target.value })
-                  }
+                    setFormData({ ...formData, estimatedTime: e.target.value })
+                  )
                   placeholder="e.g., 3-5 days"
                   data-testid="input-delivery-method-days"
                 />
