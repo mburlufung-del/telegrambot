@@ -226,6 +226,26 @@ export class TeleShopBot {
     }
   }
 
+  // Public method for sending a message to a specific user
+  async sendMessage(chatId: string, message: string, options?: any) {
+    if (!this.bot) {
+      throw new Error('Bot not initialized');
+    }
+    
+    const numericChatId = parseInt(chatId);
+    return await this.bot.sendMessage(numericChatId, message, options);
+  }
+
+  // Public method for sending a photo to a specific user
+  async sendPhoto(chatId: string, photo: Buffer | string, options?: any) {
+    if (!this.bot) {
+      throw new Error('Bot not initialized');
+    }
+    
+    const numericChatId = parseInt(chatId);
+    return await this.bot.sendPhoto(numericChatId, photo, options);
+  }
+
   private async sendAutoVanishMessage(chatId: number, text: string, options: any = {}) {
     if (!this.bot) return;
 

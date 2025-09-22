@@ -816,18 +816,18 @@ function registerAllRoutes(app: Express): void {
       for (const user of users) {
         try {
           if (imageFile) {
-            await teleShopBot.bot.sendPhoto(user.chatId, imageFile.buffer, {
+            await teleShopBot.sendPhoto(user.chatId, imageFile.buffer, {
               caption: message,
               parse_mode: 'HTML'
             });
           } else {
-            await teleShopBot.bot.sendMessage(user.chatId, message, {
+            await teleShopBot.sendMessage(user.chatId, message, {
               parse_mode: 'HTML'
             });
           }
           sentCount++;
         } catch (error) {
-          console.log(`Failed to send broadcast to user ${user.chatId}:`, error.message);
+          console.log(`Failed to send broadcast to user ${user.chatId}:`, error instanceof Error ? error.message : String(error));
         }
       }
 
@@ -863,7 +863,7 @@ function registerAllRoutes(app: Express): void {
         users: trackedUsers
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
