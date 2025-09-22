@@ -115,9 +115,11 @@ export interface IStorage {
   incrementOrderCount(): Promise<void>;
   incrementMessageCount(): Promise<void>;
   addRevenue(amount: string): Promise<void>;
+  updateBotStats(stats: InsertBotStats): Promise<BotStats>;
 
   // Product Ratings
   createProductRating(rating: InsertProductRating): Promise<ProductRating>;
+  addProductRating(rating: InsertProductRating): Promise<ProductRating>;
   getProductRatings(productId: string): Promise<ProductRating[]>;
   getWeeklyRatings(): Promise<{
     productId: string;
@@ -578,10 +580,34 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async updateBotStats(stats: InsertBotStats): Promise<BotStats> {
+    const existing = await this.getBotStats();
+    if (existing) {
+      const result = await db.update(botStats)
+        .set({
+          ...stats,
+          updatedAt: new Date()
+        })
+        .where(eq(botStats.id, existing.id))
+        .returning();
+      return result[0];
+    } else {
+      const result = await db.insert(botStats).values({
+        ...stats,
+        updatedAt: new Date()
+      }).returning();
+      return result[0];
+    }
+  }
+
   // Product Ratings
   async createProductRating(rating: InsertProductRating): Promise<ProductRating> {
     const result = await db.insert(productRatings).values(rating).returning();
     return result[0];
+  }
+
+  async addProductRating(rating: InsertProductRating): Promise<ProductRating> {
+    return await this.createProductRating(rating);
   }
 
   async getProductRatings(productId: string): Promise<ProductRating[]> {
