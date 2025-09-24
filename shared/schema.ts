@@ -122,6 +122,8 @@ export const orders = pgTable("orders", {
   contactInfo: text("contact_info").notNull(),
   items: text("items").notNull(), // JSON string of order items
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  currencyCode: varchar("currency_code", { length: 3 }).references(() => currencies.code), // Currency used for this order (nullable for backward compatibility)
+  fxRateUsed: decimal("fx_rate_used", { precision: 18, scale: 8 }).default("1"), // Exchange rate at time of order
   status: text("status").notNull().default("pending"), // pending, confirmed, processing, shipped, delivered, cancelled
   paymentMethod: text("payment_method"),
   deliveryAddress: text("delivery_address"),
@@ -233,6 +235,9 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  currencyCode: z.string().length(3).optional(),
+  fxRateUsed: z.string().or(z.number()).transform(val => String(val)).optional(),
 });
 
 export const insertCartSchema = createInsertSchema(cart).omit({
@@ -353,3 +358,100 @@ export type TrackedUser = typeof trackedUsers.$inferSelect;
 export type InsertTrackedUser = z.infer<typeof insertTrackedUserSchema>;
 export type Broadcast = typeof broadcasts.$inferSelect;
 export type InsertBroadcast = z.infer<typeof insertBroadcastSchema>;
+
+// Multi-language and multi-currency support tables
+
+// Supported languages table
+export const languages = pgTable("languages", {
+  code: varchar("code", { length: 10 }).primaryKey(), // ISO language code like 'en', 'es', 'fr'
+  name: text("name").notNull(), // Display name like 'English', 'Español', 'Français'
+  nativeName: text("native_name").notNull(), // Native name like 'English', 'Español', 'Français'
+  isActive: boolean("is_active").notNull().default(true),
+  isDefault: boolean("is_default").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+// Supported currencies table
+export const currencies = pgTable("currencies", {
+  code: varchar("code", { length: 3 }).primaryKey(), // ISO currency code like 'USD', 'EUR', 'GBP'
+  name: text("name").notNull(), // Display name like 'US Dollar', 'Euro', 'British Pound'
+  symbol: text("symbol").notNull(), // Currency symbol like '$', '€', '£'
+  decimalPlaces: integer("decimal_places").notNull().default(2), // Number of decimal places
+  isActive: boolean("is_active").notNull().default(true),
+  isDefault: boolean("is_default").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+// User language and currency preferences
+export const userPreferences = pgTable("user_preferences", {
+  telegramUserId: text("telegram_user_id").primaryKey(),
+  languageCode: varchar("language_code", { length: 10 }).notNull().references(() => languages.code),
+  currencyCode: varchar("currency_code", { length: 3 }).notNull().references(() => currencies.code),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+});
+
+// Product name and description translations
+export const productTranslations = pgTable("product_translations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  productId: varchar("product_id").notNull().references(() => products.id),
+  languageCode: varchar("language_code", { length: 10 }).notNull().references(() => languages.code),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  unit: text("unit").notNull().default("piece"),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+}, (table) => ({
+  uniqueProductLanguage: sql`UNIQUE (${table.productId}, ${table.languageCode})`,
+}));
+
+// Category name and description translations
+export const categoryTranslations = pgTable("category_translations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  categoryId: varchar("category_id").notNull().references(() => categories.id),
+  languageCode: varchar("language_code", { length: 10 }).notNull().references(() => languages.code),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+}, (table) => ({
+  uniqueCategoryLanguage: sql`UNIQUE (${table.categoryId}, ${table.languageCode})`,
+}));
+
+// Insert schemas for new tables
+export const insertLanguageSchema = createInsertSchema(languages).omit({
+  createdAt: true,
+});
+
+export const insertCurrencySchema = createInsertSchema(currencies).omit({
+  createdAt: true,
+});
+
+export const insertUserPreferencesSchema = createInsertSchema(userPreferences).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertProductTranslationSchema = createInsertSchema(productTranslations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCategoryTranslationSchema = createInsertSchema(categoryTranslations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types for new tables
+export type Language = typeof languages.$inferSelect;
+export type InsertLanguage = z.infer<typeof insertLanguageSchema>;
+export type Currency = typeof currencies.$inferSelect;
+export type InsertCurrency = z.infer<typeof insertCurrencySchema>;
+export type UserPreferences = typeof userPreferences.$inferSelect;
+export type InsertUserPreferences = z.infer<typeof insertUserPreferencesSchema>;
+export type ProductTranslation = typeof productTranslations.$inferSelect;
+export type InsertProductTranslation = z.infer<typeof insertProductTranslationSchema>;
+export type CategoryTranslation = typeof categoryTranslations.$inferSelect;
+export type InsertCategoryTranslation = z.infer<typeof insertCategoryTranslationSchema>;
