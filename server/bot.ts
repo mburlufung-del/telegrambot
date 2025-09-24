@@ -598,6 +598,10 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         await this.sendMainMenu(chatId, userId);
       } else if (data === 'settings') {
         await this.handleSettingsCommand(chatId, userId);
+      } else if (data === 'select_language') {
+        await this.handleLanguageSettings(chatId, userId);
+      } else if (data === 'select_currency') {
+        await this.handleCurrencySettings(chatId, userId);
       } else if (data === 'language_settings') {
         await this.handleLanguageSettings(chatId, userId);
       } else if (data === 'currency_settings') {
@@ -720,12 +724,18 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     const keyboard = {
       inline_keyboard: [
         [
-          { text: await i18n.t(telegramUserId, 'menu.listings'), callback_data: 'listings' },
-          { text: await i18n.t(telegramUserId, 'menu.carts'), callback_data: 'carts' },
-          { text: await i18n.t(telegramUserId, 'menu.orders'), callback_data: 'orders' }
+          { text: await i18n.t(telegramUserId, 'menu.language'), callback_data: 'select_language' },
+          { text: await i18n.t(telegramUserId, 'menu.currency'), callback_data: 'select_currency' }
         ],
         [
-          { text: await i18n.t(telegramUserId, 'menu.wishlist'), callback_data: 'wishlist' },
+          { text: await i18n.t(telegramUserId, 'menu.listings'), callback_data: 'listings' },
+          { text: await i18n.t(telegramUserId, 'menu.carts'), callback_data: 'carts' }
+        ],
+        [
+          { text: await i18n.t(telegramUserId, 'menu.orders'), callback_data: 'orders' },
+          { text: await i18n.t(telegramUserId, 'menu.wishlist'), callback_data: 'wishlist' }
+        ],
+        [
           { text: await i18n.t(telegramUserId, 'menu.rating'), callback_data: 'rating' },
           { text: await i18n.t(telegramUserId, 'menu.operator'), callback_data: 'operator' }
         ],
@@ -1594,10 +1604,10 @@ ${businessHours}
         console.log(`Attempting to send product image: ${fullImageUrl}`);
         
         // Get localized price for image caption
-        const localizedPrice = await i18n.getProductPrice(userId, product.price, product.id);
+        const localizedPrice = await i18n.getProductPrice(userId, product.price);
         
         const sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
-          caption: `📦 *${product.name}*\n💰 *${localizedPrice}*`,
+          caption: `📦 *${product.name}*\n💰 *${localizedPrice.formattedPrice}*`,
           parse_mode: 'Markdown'
         });
         
@@ -1623,22 +1633,23 @@ ${businessHours}
     }
     
     // Price information with currency conversion
-    const localizedCurrentPrice = await i18n.getProductPrice(userId, product.price, product.id);
+    const localizedCurrentPrice = await i18n.getProductPrice(userId, product.price);
     
     if (product.compareAtPrice) {
-      const localizedComparePrice = await i18n.getProductPrice(userId, product.compareAtPrice, product.id);
-      message += `💰 *Price:* ~~${localizedComparePrice}~~ *${localizedCurrentPrice}*\n`;
+      const localizedComparePrice = await i18n.getProductPrice(userId, product.compareAtPrice);
+      message += `💰 *Price:* ~~${localizedComparePrice.formattedPrice}~~ *${localizedCurrentPrice.formattedPrice}*\n`;
       
-      // Calculate savings in user's currency
-      const userCurrency = await storage.getUserSettings(userId).then(s => s?.currency || 'USD');
-      const currentPriceConverted = await currencyService.convertPrice(product.price, 'USD', userCurrency);
-      const comparePriceConverted = await currencyService.convertPrice(product.compareAtPrice, 'USD', userCurrency);
-      const savings = (comparePriceConverted - currentPriceConverted).toFixed(2);
+      // Calculate savings in user's currency  
+      const userPreferences = await storage.getUserPreferences(userId);
+      const userCurrency = userPreferences?.currencyCode || 'USD';
+      const currentPriceNum = parseFloat(localizedCurrentPrice.originalPrice);
+      const comparePriceNum = parseFloat(localizedComparePrice.originalPrice);
+      const savings = (comparePriceNum - currentPriceNum).toFixed(2);
       const formattedSavings = await i18n.formatPrice(userId, savings);
       
       message += `💸 *You Save:* ${formattedSavings}\n\n`;
     } else {
-      message += `💰 *Price:* ${localizedCurrentPrice}\n\n`;
+      message += `💰 *Price:* ${localizedCurrentPrice.formattedPrice}\n\n`;
     }
 
     // Stock and availability
