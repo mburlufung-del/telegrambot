@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { teleShopBot } from "./bot";
 import { SimpleObjectStorageService } from "./simpleObjectStorage";
+import { currencyService } from "./services/currency-service";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
@@ -16,8 +17,28 @@ import {
   insertCategorySchema,
   insertPaymentMethodSchema,
   insertOperatorSchema,
+  insertUserPreferencesSchema,
   type PaymentMethod
 } from "@shared/schema";
+import { z } from "zod";
+
+// Validation schemas for currency and i18n operations
+const currencyConversionSchema = z.object({
+  amount: z.number().positive("Amount must be positive"),
+  fromCurrency: z.string().length(3, "Currency code must be 3 letters").toUpperCase(),
+  toCurrency: z.string().length(3, "Currency code must be 3 letters").toUpperCase()
+});
+
+const priceFormatSchema = z.object({
+  price: z.string().regex(/^\d+(\.\d{1,4})?$/, "Invalid price format"),
+  fromCurrency: z.string().length(3, "Currency code must be 3 letters").toUpperCase(),
+  toCurrency: z.string().length(3, "Currency code must be 3 letters").toUpperCase()
+});
+
+const userPreferencesUpdateSchema = z.object({
+  languageCode: z.string().length(2, "Language code must be 2 letters").optional(),
+  currencyCode: z.string().length(3, "Currency code must be 3 letters").toUpperCase().optional()
+});
 
 // Register only API routes for admin dashboard
 export async function registerApiRoutes(app: Express): Promise<void> {
@@ -2265,6 +2286,235 @@ railway run npm run db:push</pre>
     } catch (error) {
       console.error('Error adding support message:', error);
       res.status(500).json({ message: 'Failed to add support message' });
+    }
+  });
+
+  // Currency Management routes
+  app.get("/api/currencies", async (req, res) => {
+    try {
+      const currencies = await storage.getCurrencies();
+      res.json(currencies);
+    } catch (error) {
+      console.error('Error fetching currencies:', error);
+      res.status(500).json({ message: "Failed to fetch currencies" });
+    }
+  });
+
+  app.get("/api/currencies/active", async (req, res) => {
+    try {
+      const currencies = await storage.getActiveCurrencies();
+      res.json(currencies);
+    } catch (error) {
+      console.error('Error fetching active currencies:', error);
+      res.status(500).json({ message: "Failed to fetch active currencies" });
+    }
+  });
+
+  app.get("/api/currencies/default", async (req, res) => {
+    try {
+      const currency = await storage.getDefaultCurrency();
+      if (!currency) {
+        return res.status(404).json({ message: "No default currency found" });
+      }
+      res.json(currency);
+    } catch (error) {
+      console.error('Error fetching default currency:', error);
+      res.status(500).json({ message: "Failed to fetch default currency" });
+    }
+  });
+
+  app.put("/api/currencies/:code/set-default", async (req, res) => {
+    try {
+      const success = await storage.setDefaultCurrency(req.params.code);
+      if (!success) {
+        return res.status(404).json({ message: "Currency not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error setting default currency:', error);
+      res.status(500).json({ message: "Failed to set default currency" });
+    }
+  });
+
+  // Language Management routes
+  app.get("/api/languages", async (req, res) => {
+    try {
+      const languages = await storage.getLanguages();
+      res.json(languages);
+    } catch (error) {
+      console.error('Error fetching languages:', error);
+      res.status(500).json({ message: "Failed to fetch languages" });
+    }
+  });
+
+  app.get("/api/languages/active", async (req, res) => {
+    try {
+      const languages = await storage.getActiveLanguages();
+      res.json(languages);
+    } catch (error) {
+      console.error('Error fetching active languages:', error);
+      res.status(500).json({ message: "Failed to fetch active languages" });
+    }
+  });
+
+  app.get("/api/languages/default", async (req, res) => {
+    try {
+      const language = await storage.getDefaultLanguage();
+      if (!language) {
+        return res.status(404).json({ message: "No default language found" });
+      }
+      res.json(language);
+    } catch (error) {
+      console.error('Error fetching default language:', error);
+      res.status(500).json({ message: "Failed to fetch default language" });
+    }
+  });
+
+  app.put("/api/languages/:code/set-default", async (req, res) => {
+    try {
+      const success = await storage.setDefaultLanguage(req.params.code);
+      if (!success) {
+        return res.status(404).json({ message: "Language not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error setting default language:', error);
+      res.status(500).json({ message: "Failed to set default language" });
+    }
+  });
+
+  // Currency Conversion routes
+  app.post("/api/currency/convert", async (req, res) => {
+    try {
+      // Validate request body with Zod schema
+      const validation = currencyConversionSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid request data",
+          errors: validation.error.errors
+        });
+      }
+
+      const { amount, fromCurrency, toCurrency } = validation.data;
+
+      const conversion = await currencyService.convertCurrency(
+        amount, 
+        fromCurrency, 
+        toCurrency
+      );
+      
+      res.json({ 
+        originalAmount: amount,
+        convertedAmount: conversion.amount,
+        fromCurrency,
+        toCurrency,
+        fallbackUsed: conversion.fallbackUsed
+      });
+    } catch (error) {
+      console.error('Error converting currency:', error);
+      res.status(500).json({ message: "Failed to convert currency" });
+    }
+  });
+
+  app.post("/api/currency/format-price", async (req, res) => {
+    try {
+      // Validate request body with Zod schema
+      const validation = priceFormatSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid request data", 
+          errors: validation.error.errors
+        });
+      }
+
+      const { price, fromCurrency, toCurrency } = validation.data;
+
+      const formatting = await currencyService.getFormattedPrice(
+        price, 
+        fromCurrency, 
+        toCurrency
+      );
+      
+      res.json({ 
+        originalPrice: price,
+        formattedPrice: formatting.formattedPrice,
+        fromCurrency,
+        toCurrency,
+        fallbackUsed: formatting.fallbackUsed
+      });
+    } catch (error) {
+      console.error('Error formatting price:', error);
+      res.status(500).json({ message: "Failed to format price" });
+    }
+  });
+
+  // User Preferences routes
+  app.get("/api/users/:telegramUserId/preferences", async (req, res) => {
+    try {
+      const preferences = await storage.getUserPreferences(req.params.telegramUserId);
+      res.json(preferences);
+    } catch (error) {
+      console.error('Error fetching user preferences:', error);
+      res.status(500).json({ message: "Failed to fetch user preferences" });
+    }
+  });
+
+  app.put("/api/users/:telegramUserId/preferences", async (req, res) => {
+    try {
+      // Validate request body
+      const validation = userPreferencesUpdateSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid request data", 
+          errors: validation.error.errors
+        });
+      }
+
+      const { languageCode, currencyCode } = validation.data;
+      
+      const preferences = await storage.setUserPreferences({
+        telegramUserId: req.params.telegramUserId,
+        languageCode: languageCode || 'en',
+        currencyCode: currencyCode || 'USD'
+      });
+      
+      res.json(preferences);
+    } catch (error) {
+      console.error('Error updating user preferences:', error);
+      res.status(500).json({ message: "Failed to update user preferences" });
+    }
+  });
+
+  // Product price with user currency
+  app.get("/api/products/:id/price/:telegramUserId", async (req, res) => {
+    try {
+      const product = await storage.getProduct(req.params.id);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      const baseCurrency = 'USD'; // Assuming products are stored in USD
+      const priceResult = await currencyService.getProductPriceForUser(
+        product.price,
+        baseCurrency,
+        req.params.telegramUserId
+      );
+      
+      res.json({ 
+        productId: product.id,
+        productName: product.name,
+        basePrice: product.price,
+        baseCurrency,
+        userPrice: priceResult.formattedPrice,
+        fallbackUsed: priceResult.fallbackUsed,
+        telegramUserId: req.params.telegramUserId
+      });
+    } catch (error) {
+      console.error('Error getting product price for user:', error);
+      res.status(500).json({ message: "Failed to get product price" });
     }
   });
 }
