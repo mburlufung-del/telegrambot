@@ -966,8 +966,11 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
             new Date(order.createdAt).getTime().toString().slice(-6) : 
             order.id.slice(-6).toUpperCase());
         
+        // Format order total with user's preferred currency
+        const formattedTotal = await i18n.formatPrice(userId, order.totalAmount.toString());
+        
         message += `${i + 1}. Order #${orderNumber}\n`;
-        message += `   💰 Total: $${order.totalAmount}\n`;
+        message += `   💰 Total: ${formattedTotal}\n`;
         message += `   📅 Date: ${orderDate}\n`;
         message += `   📋 Status: ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}\n\n`;
       }
@@ -1590,8 +1593,11 @@ ${businessHours}
         
         console.log(`Attempting to send product image: ${fullImageUrl}`);
         
+        // Get localized price for image caption
+        const localizedPrice = await i18n.getProductPrice(userId, product.price, product.id);
+        
         const sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
-          caption: `📦 *${product.name}*\n💰 *$${product.price}*`,
+          caption: `📦 *${product.name}*\n💰 *${localizedPrice}*`,
           parse_mode: 'Markdown'
         });
         
@@ -1616,13 +1622,23 @@ ${businessHours}
       message += `📝 *Description:*\n${product.description}\n\n`;
     }
     
-    // Price information
+    // Price information with currency conversion
+    const localizedCurrentPrice = await i18n.getProductPrice(userId, product.price, product.id);
+    
     if (product.compareAtPrice) {
-      message += `💰 *Price:* ~~$${product.compareAtPrice}~~ *$${product.price}*\n`;
-      const savings = (parseFloat(product.compareAtPrice) - parseFloat(product.price)).toFixed(2);
-      message += `💸 *You Save:* $${savings}\n\n`;
+      const localizedComparePrice = await i18n.getProductPrice(userId, product.compareAtPrice, product.id);
+      message += `💰 *Price:* ~~${localizedComparePrice}~~ *${localizedCurrentPrice}*\n`;
+      
+      // Calculate savings in user's currency
+      const userCurrency = await storage.getUserSettings(userId).then(s => s?.currency || 'USD');
+      const currentPriceConverted = await currencyService.convertPrice(product.price, 'USD', userCurrency);
+      const comparePriceConverted = await currencyService.convertPrice(product.compareAtPrice, 'USD', userCurrency);
+      const savings = (comparePriceConverted - currentPriceConverted).toFixed(2);
+      const formattedSavings = await i18n.formatPrice(userId, savings);
+      
+      message += `💸 *You Save:* ${formattedSavings}\n\n`;
     } else {
-      message += `💰 *Price:* $${product.price}\n\n`;
+      message += `💰 *Price:* ${localizedCurrentPrice}\n\n`;
     }
 
     // Stock and availability
