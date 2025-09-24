@@ -19,6 +19,11 @@ import type {
   SupportMessage,
   TrackedUser,
   Broadcast,
+  Language,
+  Currency,
+  UserPreferences,
+  ProductTranslation,
+  CategoryTranslation,
   InsertCart,
   InsertCategory,
   InsertOrder,
@@ -36,6 +41,11 @@ import type {
   InsertSupportMessage,
   InsertTrackedUser,
   InsertBroadcast,
+  InsertLanguage,
+  InsertCurrency,
+  InsertUserPreferences,
+  InsertProductTranslation,
+  InsertCategoryTranslation,
 } from "@shared/schema";
 import {
   categories,
@@ -55,6 +65,11 @@ import {
   supportMessages,
   trackedUsers,
   broadcasts,
+  languages,
+  currencies,
+  userPreferences,
+  productTranslations,
+  categoryTranslations,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -195,6 +210,49 @@ export interface IStorage {
   // Operator Management
   assignOperator(sessionId: string, operatorName: string): Promise<boolean>;
   closeOperatorSession(sessionId: string): Promise<boolean>;
+
+  // Languages
+  getLanguages(): Promise<Language[]>;
+  getActiveLanguages(): Promise<Language[]>;
+  getLanguage(code: string): Promise<Language | undefined>;
+  getDefaultLanguage(): Promise<Language | undefined>;
+  createLanguage(language: InsertLanguage): Promise<Language>;
+  updateLanguage(code: string, language: Partial<InsertLanguage>): Promise<Language | undefined>;
+  deleteLanguage(code: string): Promise<boolean>;
+  setDefaultLanguage(code: string): Promise<boolean>;
+
+  // Currencies  
+  getCurrencies(): Promise<Currency[]>;
+  getActiveCurrencies(): Promise<Currency[]>;
+  getCurrency(code: string): Promise<Currency | undefined>;
+  getDefaultCurrency(): Promise<Currency | undefined>;
+  createCurrency(currency: InsertCurrency): Promise<Currency>;
+  updateCurrency(code: string, currency: Partial<InsertCurrency>): Promise<Currency | undefined>;
+  deleteCurrency(code: string): Promise<boolean>;
+  setDefaultCurrency(code: string): Promise<boolean>;
+
+  // User Preferences
+  getUserPreferences(telegramUserId: string): Promise<UserPreferences | undefined>;
+  setUserPreferences(preferences: InsertUserPreferences): Promise<UserPreferences>;
+  updateUserPreferences(telegramUserId: string, preferences: Partial<InsertUserPreferences>): Promise<UserPreferences | undefined>;
+  getUserLanguage(telegramUserId: string): Promise<string>; // Returns language code with fallback to default
+  getUserCurrency(telegramUserId: string): Promise<string>; // Returns currency code with fallback to default
+
+  // Product Translations
+  getProductTranslations(productId: string): Promise<ProductTranslation[]>;
+  getProductTranslation(productId: string, languageCode: string): Promise<ProductTranslation | undefined>;
+  createProductTranslation(translation: InsertProductTranslation): Promise<ProductTranslation>;
+  updateProductTranslation(id: string, translation: Partial<InsertProductTranslation>): Promise<ProductTranslation | undefined>;
+  deleteProductTranslation(id: string): Promise<boolean>;
+  deleteProductTranslations(productId: string): Promise<boolean>;
+
+  // Category Translations
+  getCategoryTranslations(categoryId: string): Promise<CategoryTranslation[]>;
+  getCategoryTranslation(categoryId: string, languageCode: string): Promise<CategoryTranslation | undefined>;
+  createCategoryTranslation(translation: InsertCategoryTranslation): Promise<CategoryTranslation>;
+  updateCategoryTranslation(id: string, translation: Partial<InsertCategoryTranslation>): Promise<CategoryTranslation | undefined>;
+  deleteCategoryTranslation(id: string): Promise<boolean>;
+  deleteCategoryTranslations(categoryId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1067,6 +1125,229 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(operatorSessions.id, sessionId));
     return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Languages implementation
+  async getLanguages(): Promise<Language[]> {
+    return await db.select().from(languages).orderBy(languages.name);
+  }
+
+  async getActiveLanguages(): Promise<Language[]> {
+    return await db.select().from(languages).where(eq(languages.isActive, true)).orderBy(languages.name);
+  }
+
+  async getLanguage(code: string): Promise<Language | undefined> {
+    const result = await db.select().from(languages).where(eq(languages.code, code));
+    return result[0];
+  }
+
+  async getDefaultLanguage(): Promise<Language | undefined> {
+    const result = await db.select().from(languages).where(eq(languages.isDefault, true));
+    return result[0] || await db.select().from(languages).where(eq(languages.code, 'en'));
+  }
+
+  async createLanguage(language: InsertLanguage): Promise<Language> {
+    const result = await db.insert(languages).values(language).returning();
+    return result[0];
+  }
+
+  async updateLanguage(code: string, language: Partial<InsertLanguage>): Promise<Language | undefined> {
+    const result = await db.update(languages)
+      .set(language)
+      .where(eq(languages.code, code))
+      .returning();
+    return result[0];
+  }
+
+  async deleteLanguage(code: string): Promise<boolean> {
+    const result = await db.update(languages)
+      .set({ isActive: false })
+      .where(eq(languages.code, code));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async setDefaultLanguage(code: string): Promise<boolean> {
+    // First, remove default from all languages
+    await db.update(languages).set({ isDefault: false });
+    // Then set the specified language as default
+    const result = await db.update(languages)
+      .set({ isDefault: true })
+      .where(eq(languages.code, code));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Currencies implementation  
+  async getCurrencies(): Promise<Currency[]> {
+    return await db.select().from(currencies).orderBy(currencies.name);
+  }
+
+  async getActiveCurrencies(): Promise<Currency[]> {
+    return await db.select().from(currencies).where(eq(currencies.isActive, true)).orderBy(currencies.name);
+  }
+
+  async getCurrency(code: string): Promise<Currency | undefined> {
+    const result = await db.select().from(currencies).where(eq(currencies.code, code));
+    return result[0];
+  }
+
+  async getDefaultCurrency(): Promise<Currency | undefined> {
+    const result = await db.select().from(currencies).where(eq(currencies.isDefault, true));
+    return result[0] || await db.select().from(currencies).where(eq(currencies.code, 'USD'));
+  }
+
+  async createCurrency(currency: InsertCurrency): Promise<Currency> {
+    const result = await db.insert(currencies).values(currency).returning();
+    return result[0];
+  }
+
+  async updateCurrency(code: string, currency: Partial<InsertCurrency>): Promise<Currency | undefined> {
+    const result = await db.update(currencies)
+      .set(currency)
+      .where(eq(currencies.code, code))
+      .returning();
+    return result[0];
+  }
+
+  async deleteCurrency(code: string): Promise<boolean> {
+    const result = await db.update(currencies)
+      .set({ isActive: false })
+      .where(eq(currencies.code, code));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async setDefaultCurrency(code: string): Promise<boolean> {
+    // First, remove default from all currencies
+    await db.update(currencies).set({ isDefault: false });
+    // Then set the specified currency as default
+    const result = await db.update(currencies)
+      .set({ isDefault: true })
+      .where(eq(currencies.code, code));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // User Preferences implementation
+  async getUserPreferences(telegramUserId: string): Promise<UserPreferences | undefined> {
+    const result = await db.select().from(userPreferences).where(eq(userPreferences.telegramUserId, telegramUserId));
+    return result[0];
+  }
+
+  async setUserPreferences(preferences: InsertUserPreferences): Promise<UserPreferences> {
+    const existing = await this.getUserPreferences(preferences.telegramUserId);
+    
+    if (existing) {
+      const result = await db.update(userPreferences)
+        .set({ ...preferences, updatedAt: new Date() })
+        .where(eq(userPreferences.telegramUserId, preferences.telegramUserId))
+        .returning();
+      return result[0];
+    } else {
+      const result = await db.insert(userPreferences).values(preferences).returning();
+      return result[0];
+    }
+  }
+
+  async updateUserPreferences(telegramUserId: string, preferences: Partial<InsertUserPreferences>): Promise<UserPreferences | undefined> {
+    const result = await db.update(userPreferences)
+      .set({ ...preferences, updatedAt: new Date() })
+      .where(eq(userPreferences.telegramUserId, telegramUserId))
+      .returning();
+    return result[0];
+  }
+
+  async getUserLanguage(telegramUserId: string): Promise<string> {
+    const preferences = await this.getUserPreferences(telegramUserId);
+    if (preferences) {
+      return preferences.languageCode;
+    }
+    
+    // Fallback to default language
+    const defaultLang = await this.getDefaultLanguage();
+    return defaultLang?.code || 'en';
+  }
+
+  async getUserCurrency(telegramUserId: string): Promise<string> {
+    const preferences = await this.getUserPreferences(telegramUserId);
+    if (preferences) {
+      return preferences.currencyCode;
+    }
+    
+    // Fallback to default currency
+    const defaultCurrency = await this.getDefaultCurrency();
+    return defaultCurrency?.code || 'USD';
+  }
+
+  // Product Translations implementation
+  async getProductTranslations(productId: string): Promise<ProductTranslation[]> {
+    return await db.select().from(productTranslations).where(eq(productTranslations.productId, productId));
+  }
+
+  async getProductTranslation(productId: string, languageCode: string): Promise<ProductTranslation | undefined> {
+    const result = await db.select().from(productTranslations)
+      .where(and(
+        eq(productTranslations.productId, productId),
+        eq(productTranslations.languageCode, languageCode)
+      ));
+    return result[0];
+  }
+
+  async createProductTranslation(translation: InsertProductTranslation): Promise<ProductTranslation> {
+    const result = await db.insert(productTranslations).values(translation).returning();
+    return result[0];
+  }
+
+  async updateProductTranslation(id: string, translation: Partial<InsertProductTranslation>): Promise<ProductTranslation | undefined> {
+    const result = await db.update(productTranslations)
+      .set({ ...translation, updatedAt: new Date() })
+      .where(eq(productTranslations.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteProductTranslation(id: string): Promise<boolean> {
+    const result = await db.delete(productTranslations).where(eq(productTranslations.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async deleteProductTranslations(productId: string): Promise<boolean> {
+    const result = await db.delete(productTranslations).where(eq(productTranslations.productId, productId));
+    return result.rowCount !== null && result.rowCount >= 0;
+  }
+
+  // Category Translations implementation
+  async getCategoryTranslations(categoryId: string): Promise<CategoryTranslation[]> {
+    return await db.select().from(categoryTranslations).where(eq(categoryTranslations.categoryId, categoryId));
+  }
+
+  async getCategoryTranslation(categoryId: string, languageCode: string): Promise<CategoryTranslation | undefined> {
+    const result = await db.select().from(categoryTranslations)
+      .where(and(
+        eq(categoryTranslations.categoryId, categoryId),
+        eq(categoryTranslations.languageCode, languageCode)
+      ));
+    return result[0];
+  }
+
+  async createCategoryTranslation(translation: InsertCategoryTranslation): Promise<CategoryTranslation> {
+    const result = await db.insert(categoryTranslations).values(translation).returning();
+    return result[0];
+  }
+
+  async updateCategoryTranslation(id: string, translation: Partial<InsertCategoryTranslation>): Promise<CategoryTranslation | undefined> {
+    const result = await db.update(categoryTranslations)
+      .set({ ...translation, updatedAt: new Date() })
+      .where(eq(categoryTranslations.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteCategoryTranslation(id: string): Promise<boolean> {
+    const result = await db.delete(categoryTranslations).where(eq(categoryTranslations.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async deleteCategoryTranslations(categoryId: string): Promise<boolean> {
+    const result = await db.delete(categoryTranslations).where(eq(categoryTranslations.categoryId, categoryId));
+    return result.rowCount !== null && result.rowCount >= 0;
   }
 }
 
