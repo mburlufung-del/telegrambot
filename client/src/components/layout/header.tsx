@@ -7,6 +7,8 @@ const pageTitle = {
   "/products": "Product Management",
   "/inquiries": "Customer Inquiries",
   "/bot-settings": "Bot Settings",
+  "/languages": "Language Management",
+  "/currencies": "Currency Management",
 };
 
 const pageSubtitle = {
@@ -14,6 +16,8 @@ const pageSubtitle = {
   "/products": "Add, edit, and manage your product catalog",
   "/inquiries": "View and respond to customer messages",
   "/bot-settings": "Configure bot behavior and responses",
+  "/languages": "Manage supported languages and bot translations",
+  "/currencies": "Configure supported currencies and exchange rates",
 };
 
 export default function Header() {

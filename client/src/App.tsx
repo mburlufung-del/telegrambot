@@ -11,6 +11,8 @@ import Analytics from './pages/analytics-simple'
 import Broadcast from './pages/broadcast'
 import PaymentMethods from './pages/payment-methods'
 import DeliveryMethods from './pages/delivery-methods'
+import Languages from './pages/languages'
+import Currencies from './pages/currencies'
 import OperatorSupport from './pages/operator-support'
 import NotFound from './pages/not-found'
 
@@ -31,6 +33,8 @@ function App() {
             <Route path="/inquiries" component={Inquiries} />
             <Route path="/payment-methods" component={PaymentMethods} />
             <Route path="/delivery-methods" component={DeliveryMethods} />
+            <Route path="/languages" component={Languages} />
+            <Route path="/currencies" component={Currencies} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/broadcast" component={Broadcast} />
             <Route path="/bot-settings" component={BotSettings} />

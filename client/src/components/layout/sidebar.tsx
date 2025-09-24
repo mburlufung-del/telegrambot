@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Bot, Package, MessageSquare, Settings, BarChart3, Activity, Folder, ShoppingCart, TrendingUp, Send, CreditCard, Truck, Headphones } from "lucide-react";
+import { Bot, Package, MessageSquare, Settings, BarChart3, Activity, Folder, ShoppingCart, TrendingUp, Send, CreditCard, Truck, Headphones, Globe, DollarSign } from "lucide-react";
 
 const navigation = [
   { name: "Admin Dashboard", href: "/", icon: BarChart3 },
@@ -10,6 +10,8 @@ const navigation = [
   { name: "Inquiries", href: "/inquiries", icon: MessageSquare },
   { name: "Payment Methods", href: "/payment-methods", icon: CreditCard },
   { name: "Delivery Methods", href: "/delivery-methods", icon: Truck },
+  { name: "Languages", href: "/languages", icon: Globe },
+  { name: "Currencies", href: "/currencies", icon: DollarSign },
   { name: "Broadcast", href: "/broadcast", icon: Send },
   { name: "Analytics", href: "/analytics", icon: TrendingUp },
   { name: "Operator Support", href: "/operator-support", icon: Headphones },

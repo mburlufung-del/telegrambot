@@ -1,5 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { storage } from './storage.js';
+import { i18n } from './services/i18n-service.js';
 
 export class TeleShopBot {
   private bot: TelegramBot | null = null;
@@ -594,7 +595,19 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         const sessionId = data.replace('view_session_', '');
         await this.handleViewSession(chatId, userId, sessionId);
       } else if (data === 'back_to_menu') {
-        await this.sendMainMenu(chatId);
+        await this.sendMainMenu(chatId, userId);
+      } else if (data === 'settings') {
+        await this.handleSettingsCommand(chatId, userId);
+      } else if (data === 'language_settings') {
+        await this.handleLanguageSettings(chatId, userId);
+      } else if (data === 'currency_settings') {
+        await this.handleCurrencySettings(chatId, userId);
+      } else if (data.startsWith('set_language_')) {
+        const languageCode = data.replace('set_language_', '');
+        await this.handleLanguageChange(chatId, userId, languageCode);
+      } else if (data.startsWith('set_currency_')) {
+        const currencyCode = data.replace('set_currency_', '');
+        await this.handleCurrencyChange(chatId, userId, currencyCode);
       } else if (data.startsWith('category_')) {
         const categoryId = data.replace('category_', '');
         await this.handleCategoryProducts(chatId, userId, categoryId);
@@ -698,23 +711,26 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
   }
 
   // Main menu method
-  private async sendMainMenu(chatId: number) {
-    // Get welcome message from database settings
-    const botSettings = await storage.getBotSettings();
-    const welcomeSetting = botSettings.find(s => s.key === 'welcome_message');
-    const welcomeMessage = welcomeSetting?.value || '🛍️ Welcome to TeleShop!\n\nChoose an option below:';
+  private async sendMainMenu(chatId: number, userId?: string) {
+    const telegramUserId = userId || chatId.toString();
+    
+    // Get localized welcome message
+    const welcomeMessage = await i18n.t(telegramUserId, 'welcome.message');
     
     const keyboard = {
       inline_keyboard: [
         [
-          { text: '📋 Listings', callback_data: 'listings' },
-          { text: '🛒 Carts', callback_data: 'carts' },
-          { text: '📦 Orders', callback_data: 'orders' }
+          { text: await i18n.t(telegramUserId, 'menu.listings'), callback_data: 'listings' },
+          { text: await i18n.t(telegramUserId, 'menu.carts'), callback_data: 'carts' },
+          { text: await i18n.t(telegramUserId, 'menu.orders'), callback_data: 'orders' }
         ],
         [
-          { text: '❤️ Wishlist', callback_data: 'wishlist' },
-          { text: '⭐ Rating', callback_data: 'rating' },
-          { text: '👤 Operator', callback_data: 'operator' }
+          { text: await i18n.t(telegramUserId, 'menu.wishlist'), callback_data: 'wishlist' },
+          { text: await i18n.t(telegramUserId, 'menu.rating'), callback_data: 'rating' },
+          { text: await i18n.t(telegramUserId, 'menu.operator'), callback_data: 'operator' }
+        ],
+        [
+          { text: await i18n.t(telegramUserId, 'menu.settings'), callback_data: 'settings' }
         ]
       ]
     };
@@ -752,16 +768,16 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         }
       }
       
-      const message = '📋 No products available at the moment.\n\nCome back later for new listings!';
+      const message = await i18n.t(userId, 'listings.no_products');
       const backButton = {
-        inline_keyboard: [[{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]]
+        inline_keyboard: [[{ text: await i18n.t(userId, 'menu.back'), callback_data: 'back_to_menu' }]]
       };
       
       await this.sendAutoVanishMessage(chatId, message, { reply_markup: backButton });
       return;
     }
 
-    let categoriesMessage = '📋 *Choose Product Category:*\n\n';
+    let categoriesMessage = await i18n.t(userId, 'listings.title') + '\n\n';
     
     const categoryButtons: Array<Array<{text: string, callback_data: string}>> = [];
     categoriesWithProducts.forEach((category, index) => {
@@ -783,7 +799,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
     // Add navigation buttons
     categoryButtons.push([
-      { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+      { text: await i18n.t(userId, 'menu.back'), callback_data: 'back_to_menu' }
     ]);
 
     const keyboard = { inline_keyboard: categoryButtons };
@@ -800,11 +816,14 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const cartItems = await storage.getCart(userId);
       
       if (cartItems.length === 0) {
-        const message = '🛒 *Your Shopping Cart*\n\nYour cart is empty. Start shopping to add items!';
+        const title = await i18n.t(userId, 'cart.title');
+        const emptyMessage = await i18n.t(userId, 'cart.empty');
+        const message = `${title}\n\n${emptyMessage}`;
+        
         const keyboard = {
           inline_keyboard: [
-            [{ text: '📋 Listings', callback_data: 'listings' }],
-            [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+            [{ text: await i18n.t(userId, 'menu.listings'), callback_data: 'listings' }],
+            [{ text: await i18n.t(userId, 'menu.back'), callback_data: 'back_to_menu' }]
           ]
         };
         
@@ -815,7 +834,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         return;
       }
 
-      let cartMessage = '🛒 *Your Shopping Cart*\n\n';
+      let cartMessage = await i18n.t(userId, 'cart.title') + '\n\n';
       let totalAmount = 0;
       const cartButtons: Array<Array<{text: string, callback_data: string}>> = [];
 
@@ -824,14 +843,29 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         const product = await storage.getProduct(item.productId);
         
         if (product) {
-          // Use pricing tier price if available, otherwise use base price
+          // Get localized price for the product
+          const priceInfo = await i18n.getProductPrice(userId, product);
+          
+          // Use pricing tier if available, otherwise use converted price
           const tierPrice = await storage.getProductPriceForQuantity(item.productId, item.quantity);
-          const effectivePrice = tierPrice || product.price;
-          const itemTotal = parseFloat(effectivePrice) * item.quantity;
-          totalAmount += itemTotal;
+          let effectivePrice = tierPrice ? parseFloat(tierPrice) : parseFloat(product.price);
+          let formattedPrice = priceInfo.formattedPrice;
+          
+          // If tier price is different, need to convert that too
+          if (tierPrice && parseFloat(tierPrice) !== parseFloat(product.price)) {
+            effectivePrice = parseFloat(tierPrice);
+            formattedPrice = await i18n.formatPrice(userId, tierPrice);
+          }
+          
+          const itemTotalFormatted = await i18n.formatPrice(userId, (effectivePrice * item.quantity).toString());
+          totalAmount += effectivePrice * item.quantity;
           
           cartMessage += `${i + 1}. *${product.name}*\n`;
-          cartMessage += `   Qty: ${item.quantity} × $${effectivePrice} = $${itemTotal.toFixed(2)}\n\n`;
+          cartMessage += `   ${await i18n.t(userId, 'cart.quantity', {
+            quantity: item.quantity.toString(),
+            price: formattedPrice,
+            total: itemTotalFormatted
+          })}\n\n`;
 
           // Add quantity control buttons for each item
           const minusEnabled = item.quantity > 1;
@@ -858,19 +892,20 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         }
       }
 
-      cartMessage += `💰 *Total: $${totalAmount.toFixed(2)}*\n\n`;
-      cartMessage += `🚀 *Ready to checkout?*\nComplete your order with delivery, payment, and contact options.`;
+      const totalFormatted = await i18n.formatPrice(userId, totalAmount.toString());
+      cartMessage += await i18n.t(userId, 'cart.total', { total: totalFormatted }) + '\n\n';
+      cartMessage += await i18n.t(userId, 'cart.checkout_ready');
 
       // Add main action buttons
       cartButtons.push([
-        { text: '🛒 Proceed to Checkout', callback_data: 'start_checkout' }
+        { text: await i18n.t(userId, 'cart.proceed_checkout'), callback_data: 'start_checkout' }
       ]);
       cartButtons.push([
-        { text: '🔄 Clear Cart', callback_data: 'clear_cart' },
-        { text: '📋 Listings', callback_data: 'listings' }
+        { text: await i18n.t(userId, 'cart.clear_cart'), callback_data: 'clear_cart' },
+        { text: await i18n.t(userId, 'menu.listings'), callback_data: 'listings' }
       ]);
       cartButtons.push([
-        { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+        { text: await i18n.t(userId, 'menu.back'), callback_data: 'back_to_menu' }
       ]);
 
       const keyboard = { inline_keyboard: cartButtons };
@@ -2661,6 +2696,183 @@ Thank you for shopping with us! 🛍️`;
           ]
         }
       });
+    }
+  }
+
+  // Settings command handler
+  private async handleSettingsCommand(chatId: number, userId: string) {
+    const settingsTitle = await i18n.t(userId, 'settings.title');
+    const currentLanguage = await i18n.getUserLanguage(userId);
+    const currentCurrencyMessage = await i18n.t(userId, 'settings.language_current', { language: currentLanguage });
+    
+    // Get user's current currency
+    const preferences = await storage.getUserPreferences(userId);
+    const currentCurrency = preferences?.currencyCode || 'USD';
+    const currentCurrencyDisplayMessage = await i18n.t(userId, 'settings.currency_current', { currency: currentCurrency });
+    
+    const message = `${settingsTitle}\n\n${currentCurrencyMessage}\n${currentCurrencyDisplayMessage}`;
+    
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: await i18n.t(userId, 'menu.language'), callback_data: 'language_settings' },
+          { text: await i18n.t(userId, 'menu.currency'), callback_data: 'currency_settings' }
+        ],
+        [
+          { text: await i18n.t(userId, 'menu.back'), callback_data: 'back_to_menu' }
+        ]
+      ]
+    };
+
+    await this.sendAutoVanishMessage(chatId, message, {
+      reply_markup: keyboard,
+      parse_mode: 'Markdown'
+    });
+  }
+
+  // Language settings handler
+  private async handleLanguageSettings(chatId: number, userId: string) {
+    const title = await i18n.t(userId, 'settings.language_title');
+    const currentLanguage = await i18n.getUserLanguage(userId);
+    
+    const availableLanguages = i18n.getAvailableLanguages();
+    const languageButtons: Array<Array<{text: string, callback_data: string}>> = [];
+    
+    for (const lang of availableLanguages) {
+      const isCurrentLanguage = lang.code === currentLanguage;
+      const text = isCurrentLanguage ? `✅ ${lang.name}` : lang.name;
+      
+      languageButtons.push([{
+        text,
+        callback_data: isCurrentLanguage ? 'no_action' : `set_language_${lang.code}`
+      }]);
+    }
+    
+    languageButtons.push([
+      { text: await i18n.t(userId, 'action.back'), callback_data: 'settings' }
+    ]);
+    
+    const keyboard = { inline_keyboard: languageButtons };
+
+    await this.sendAutoVanishMessage(chatId, title, {
+      reply_markup: keyboard,
+      parse_mode: 'Markdown'
+    });
+  }
+
+  // Currency settings handler
+  private async handleCurrencySettings(chatId: number, userId: string) {
+    const title = await i18n.t(userId, 'settings.currency_title');
+    
+    // Get user's current currency
+    const preferences = await storage.getUserPreferences(userId);
+    const currentCurrency = preferences?.currencyCode || 'USD';
+    
+    // Get available currencies from database
+    const currencies = await storage.getCurrencies();
+    const currencyButtons: Array<Array<{text: string, callback_data: string}>> = [];
+    
+    for (const currency of currencies) {
+      const isCurrentCurrency = currency.code === currentCurrency;
+      const text = isCurrentCurrency ? `✅ ${currency.symbol} ${currency.name}` : `${currency.symbol} ${currency.name}`;
+      
+      currencyButtons.push([{
+        text,
+        callback_data: isCurrentCurrency ? 'no_action' : `set_currency_${currency.code}`
+      }]);
+    }
+    
+    currencyButtons.push([
+      { text: await i18n.t(userId, 'action.back'), callback_data: 'settings' }
+    ]);
+    
+    const keyboard = { inline_keyboard: currencyButtons };
+
+    await this.sendAutoVanishMessage(chatId, title, {
+      reply_markup: keyboard,
+      parse_mode: 'Markdown'
+    });
+  }
+
+  // Handle language change
+  private async handleLanguageChange(chatId: number, userId: string, languageCode: string) {
+    try {
+      // Validate language
+      if (!i18n.isLanguageSupported(languageCode)) {
+        await this.sendAutoVanishMessage(chatId, 'Unsupported language.');
+        return;
+      }
+
+      // Get current preferences to preserve currency
+      const currentPreferences = await storage.getUserPreferences(userId);
+      
+      // Update user preferences
+      await storage.setUserPreferences({
+        telegramUserId: userId,
+        languageCode,
+        currencyCode: currentPreferences?.currencyCode || 'USD'
+      });
+
+      // Get the language name in the new language
+      const availableLanguages = i18n.getAvailableLanguages();
+      const selectedLanguage = availableLanguages.find(l => l.code === languageCode);
+      const languageName = selectedLanguage?.name || languageCode;
+
+      // Send confirmation in the new language
+      const confirmationMessage = await i18n.t(userId, 'settings.language_changed', { language: languageName });
+      
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: await i18n.t(userId, 'menu.back'), callback_data: 'back_to_menu' }]
+        ]
+      };
+
+      await this.sendAutoVanishMessage(chatId, confirmationMessage, {
+        reply_markup: keyboard
+      });
+    } catch (error) {
+      console.error('Error changing language:', error);
+      await this.sendAutoVanishMessage(chatId, await i18n.t(userId, 'error.general'));
+    }
+  }
+
+  // Handle currency change
+  private async handleCurrencyChange(chatId: number, userId: string, currencyCode: string) {
+    try {
+      // Validate currency exists in database
+      const currencies = await storage.getCurrencies();
+      const selectedCurrency = currencies.find(c => c.code === currencyCode);
+      
+      if (!selectedCurrency) {
+        await this.sendAutoVanishMessage(chatId, await i18n.t(userId, 'error.general'));
+        return;
+      }
+
+      // Get current preferences to preserve language
+      const currentPreferences = await storage.getUserPreferences(userId);
+      
+      // Update user preferences
+      await storage.setUserPreferences({
+        telegramUserId: userId,
+        languageCode: currentPreferences?.languageCode || 'en',
+        currencyCode
+      });
+
+      // Send confirmation
+      const confirmationMessage = await i18n.t(userId, 'settings.currency_changed', { currency: selectedCurrency.name });
+      
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: await i18n.t(userId, 'menu.back'), callback_data: 'back_to_menu' }]
+        ]
+      };
+
+      await this.sendAutoVanishMessage(chatId, confirmationMessage, {
+        reply_markup: keyboard
+      });
+    } catch (error) {
+      console.error('Error changing currency:', error);
+      await this.sendAutoVanishMessage(chatId, await i18n.t(userId, 'error.general'));
     }
   }
 }
