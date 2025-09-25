@@ -41,7 +41,7 @@ export function setupSimpleDashboard(app: express.Express) {
             </div>
             
             <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibent mb-4">API Response</h3>
+                <h3 class="text-lg font-semibold mb-4">API Response</h3>
                 <div id="api-response" class="bg-gray-50 p-4 rounded text-sm font-mono max-h-64 overflow-y-auto">
                     Click a button to load data
                 </div>
