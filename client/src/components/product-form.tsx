@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import type { Product, Category, InsertProduct } from "@shared/schema";
+import type { Product, Category, Currency, InsertProduct } from "@shared/schema";
 import { Plus, X, Save, Package, Upload, Image } from "lucide-react";
 import ObjectUploader from "@/components/object-uploader";
 import PricingTiers from "@/components/pricing-tiers";
@@ -24,6 +24,7 @@ const productFormSchema = z.object({
   description: z.string().min(1, "Description is required"),
   price: z.string().min(1, "Price is required"),
   compareAtPrice: z.string().optional(),
+  currencyCode: z.string().min(1, "Currency is required"),
   stock: z.number().min(0, "Stock must be non-negative"),
   minOrderQuantity: z.number().min(1, "Minimum order quantity must be at least 1"),
   maxOrderQuantity: z.number().optional(),
@@ -67,6 +68,10 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
     refetchInterval: 2000, // Auto-refresh every 2 seconds for debugging
   });
 
+  const { data: currencies = [] } = useQuery<Currency[]>({
+    queryKey: ["/api/currencies"],
+  });
+
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
@@ -74,6 +79,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
       description: product?.description || "",
       price: product?.price || "",
       compareAtPrice: product?.compareAtPrice || "",
+      currencyCode: product?.currencyCode || "USD",
       stock: product?.stock || 0,
       minOrderQuantity: product?.minOrderQuantity || 1,
       maxOrderQuantity: product?.maxOrderQuantity || undefined,
