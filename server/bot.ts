@@ -425,27 +425,6 @@ export class TeleShopBot {
         console.log(`[USER STATS] Error checking user stats: ${error}`);
       }
       
-      // Send welcome message with main menu directly (no separate messages)
-      // Use actual Telegram username without escaping for clean display
-      
-      // Get main menu keyboard
-      const keyboard = {
-        inline_keyboard: [
-          [
-            { text: '📋 Listings', callback_data: 'listings' },
-            { text: '🛒 My Cart', callback_data: 'carts' }
-          ],
-          [
-            { text: '📦 My Orders', callback_data: 'orders' },
-            { text: '💝 Wishlist', callback_data: 'wishlist' }
-          ],
-          [
-            { text: '⭐ Rating', callback_data: 'rating' },
-            { text: '👤 Contact Operator', callback_data: 'operator' }
-          ]
-        ]
-      };
-
       // Get admin-configured welcome message
       const welcomeMessageSetting = await storage.getBotSetting('welcome_message');
       const defaultWelcome = `🎉 Welcome ${displayName} to our Shop! 
@@ -465,11 +444,13 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         welcomeMessage = welcomeMessage.replace(/Welcome/i, `Welcome ${displayName}`);
       }
       
-      // Send combined welcome message with menu in single message (use HTML to avoid underscore issues)
+      // Send welcome message first
       await this.sendAutoVanishMessage(chatId, welcomeMessage, {
-        parse_mode: 'HTML',
-        reply_markup: keyboard
+        parse_mode: 'HTML'
       });
+      
+      // Then send main menu with proper Language/Currency options (consistent with back_to_menu)
+      await this.sendMainMenu(chatId, userId);
     });
 
     // Handle text messages
