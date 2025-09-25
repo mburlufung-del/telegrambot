@@ -2678,11 +2678,14 @@ Include your Order Number: ${orderNumber}`;
       const operatorContactSetting = botSettings.find(s => s.key === 'operator_username');
       const operatorContact = operatorContactSetting?.value || '@murzion';
       
+      // Format total with user's preferred currency
+      const formattedTotal = await i18n.formatPrice(userId, total);
+      
       const message = `🎉 <b>Order Confirmed!</b>
 
 <b>Order Number:</b> ${orderNumber}
 <b>Customer ID:</b> ${userId}
-<b>Total:</b> $${total.toFixed(2)}
+<b>Total:</b> ${formattedTotal}
 <b>Status:</b> Completed
 
 📋 <b>Next Steps:</b>

@@ -535,6 +535,7 @@ export class I18nService {
       const currency = currencies.find(c => c.code === currencyCode);
       
       if (!currency) {
+        // Fallback to USD if currency not found
         return `$${Number(price).toFixed(2)}`;
       }
 
@@ -544,6 +545,14 @@ export class I18nService {
       return `${currency.symbol}${formattedAmount}`;
     } catch (error) {
       console.error('Error formatting price:', error);
+      // Try to get USD currency info for fallback
+      try {
+        const currencies = await storage.getCurrencies();
+        const usdCurrency = currencies.find(c => c.code === 'USD');
+        if (usdCurrency) {
+          return `${usdCurrency.symbol}${Number(price).toFixed(usdCurrency.decimalPlaces)}`;
+        }
+      } catch {}
       return `$${Number(price).toFixed(2)}`;
     }
   }
@@ -560,10 +569,17 @@ export class I18nService {
       // Validate product has a price
       if (!product || typeof product.price === 'undefined' || product.price === null) {
         console.error('Invalid price format:', product?.price);
+        // Use user's preferred currency even for zero price
+        const preferences = await storage.getUserPreferences(telegramUserId);
+        const userCurrency = preferences?.currencyCode || 'USD';
+        const currencies = await storage.getCurrencies();
+        const currency = currencies.find(c => c.code === userCurrency);
+        const symbol = currency?.symbol || '$';
+        const decimals = currency?.decimalPlaces || 2;
         return {
-          formattedPrice: '$0.00',
+          formattedPrice: `${symbol}${(0).toFixed(decimals)}`,
           originalPrice: '0.00',
-          currencyCode: 'USD'
+          currencyCode: userCurrency
         };
       }
 
@@ -599,11 +615,26 @@ export class I18nService {
       }
     } catch (error) {
       console.error('Error getting product price:', error);
-      return {
-        formattedPrice: '$0.00',
-        originalPrice: '0.00',
-        currencyCode: 'USD'
-      };
+      // Use user's preferred currency even in error cases
+      try {
+        const preferences = await storage.getUserPreferences(telegramUserId);
+        const userCurrency = preferences?.currencyCode || 'USD';
+        const currencies = await storage.getCurrencies();
+        const currency = currencies.find(c => c.code === userCurrency);
+        const symbol = currency?.symbol || '$';
+        const decimals = currency?.decimalPlaces || 2;
+        return {
+          formattedPrice: `${symbol}${(0).toFixed(decimals)}`,
+          originalPrice: '0.00',
+          currencyCode: userCurrency
+        };
+      } catch {
+        return {
+          formattedPrice: '$0.00',
+          originalPrice: '0.00',
+          currencyCode: 'USD'
+        };
+      }
     }
   }
 }
