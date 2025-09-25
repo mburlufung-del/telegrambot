@@ -24,7 +24,7 @@ const productFormSchema = z.object({
   description: z.string().min(1, "Description is required"),
   price: z.string().min(1, "Price is required"),
   compareAtPrice: z.string().optional(),
-  currencyCode: z.string().min(1, "Currency is required"),
+  currencyCode: z.string().length(3, "Invalid currency code"),
   stock: z.number().min(0, "Stock must be non-negative"),
   minOrderQuantity: z.number().min(1, "Minimum order quantity must be at least 1"),
   maxOrderQuantity: z.number().optional(),
@@ -71,6 +71,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
   const { data: currencies = [] } = useQuery<Currency[]>({
     queryKey: ["/api/currencies"],
   });
+
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
