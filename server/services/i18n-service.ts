@@ -375,6 +375,16 @@ export class I18nService {
     currencyCode: string;
   }> {
     try {
+      // Validate product has a price
+      if (!product || typeof product.price === 'undefined' || product.price === null) {
+        console.error('Invalid price format:', product?.price);
+        return {
+          formattedPrice: '$0.00',
+          originalPrice: '0.00',
+          currencyCode: 'USD'
+        };
+      }
+
       // Import currency service dynamically to avoid circular dependency
       const { currencyService } = await import('./currency-service.js');
       
@@ -407,10 +417,9 @@ export class I18nService {
       }
     } catch (error) {
       console.error('Error getting product price:', error);
-      const fallbackPrice = await this.formatPrice(telegramUserId, product.price);
       return {
-        formattedPrice: fallbackPrice,
-        originalPrice: product.price.toString(),
+        formattedPrice: '$0.00',
+        originalPrice: '0.00',
         currencyCode: 'USD'
       };
     }
