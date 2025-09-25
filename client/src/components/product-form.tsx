@@ -72,6 +72,10 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
     queryKey: ["/api/currencies"],
   });
 
+  // Debug: Log currencies data
+  console.log("ProductForm currencies data:", currencies);
+  console.log("ProductForm currencies length:", currencies.length);
+
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
