@@ -270,6 +270,186 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'success.cart_cleared': '✅ Panier vidé avec succès.',
     'success.item_removed': '✅ Article retiré du panier.',
     'success.order_placed': '✅ Commande passée avec succès !',
+  },
+  
+  de: {
+    // Welcome messages
+    'welcome.message': '🛍️ Willkommen bei TeleShop!\n\nWählen Sie eine Option unten:',
+    'welcome.returning': '🛍️ Willkommen zurück bei TeleShop!',
+    
+    // Main menu
+    'menu.listings': '📋 Produkte',
+    'menu.carts': '🛒 Warenkorb',
+    'menu.orders': '📦 Bestellungen',
+    'menu.wishlist': '❤️ Wunschliste',
+    'menu.rating': '⭐ Bewertungen',
+    'menu.operator': '👤 Support',
+    'menu.back': '🔙 Zurück zum Menü',
+    'menu.settings': '⚙️ Einstellungen',
+    'menu.language': '🌐 Sprache',
+    'menu.currency': '💱 Währung',
+    
+    // Listings
+    'listings.title': '📋 *Produktkategorie wählen:*',
+    'listings.no_products': '📋 Derzeit sind keine Produkte verfügbar.\n\nKommen Sie später für neue Angebote zurück!',
+    'listings.category_products': '{name} ({count} Produkte)',
+    
+    // Cart
+    'cart.title': '🛒 *Ihr Warenkorb*',
+    'cart.empty': 'Ihr Warenkorb ist leer. Beginnen Sie zu shoppen und fügen Sie Artikel hinzu!',
+    'cart.total': '💰 *Gesamt: {total}*',
+    'cart.checkout_ready': '🚀 *Bereit zum Bezahlen?*\nVervollständigen Sie Ihre Bestellung mit Liefer-, Zahlungs- und Kontaktoptionen.',
+    'cart.proceed_checkout': '🛒 Zur Kasse gehen',
+    'cart.clear_cart': '🔄 Warenkorb leeren',
+    'cart.quantity': 'Menge: {quantity} × {price} = {total}',
+    
+    // Products
+    'product.add_to_cart': '🛒 In den Warenkorb',
+    'product.add_to_wishlist': '❤️ Zur Wunschliste',
+    'product.rate_product': '⭐ Produkt bewerten',
+    'product.stock': 'Lagerbestand: {stock}',
+    'product.price': 'Preis: {price}',
+    'product.out_of_stock': '❌ Nicht auf Lager',
+    'product.added_to_cart': '✅ Zum Warenkorb hinzugefügt: {product}',
+    'product.added_to_wishlist': '✅ Zur Wunschliste hinzugefügt: {product}',
+    
+    // Orders
+    'orders.title': '📦 *Ihre Bestellungen*',
+    'orders.no_orders': 'Noch keine Bestellungen. Tätigen Sie Ihren ersten Kauf!',
+    'orders.order_number': 'Bestellung {number}',
+    'orders.status': 'Status: {status}',
+    'orders.total': 'Gesamt: {total}',
+    
+    // Checkout
+    'checkout.title': '🛒 *Bestellvorgang*',
+    'checkout.delivery_method': 'Liefermethode wählen:',
+    'checkout.payment_method': 'Zahlungsmethode wählen:',
+    'checkout.confirm_order': '✅ Bestellung bestätigen',
+    'checkout.order_confirmed': '✅ Bestellung bestätigt! Bestellnummer: {orderNumber}',
+    
+    // Support
+    'support.title': '👤 *Kundensupport*',
+    'support.options': 'Wie können wir Ihnen helfen?',
+    'support.send_message': '💬 Nachricht senden',
+    'support.email_support': '📧 E-Mail Support',
+    'support.faq': '❓ FAQ',
+    
+    // Settings
+    'settings.title': '⚙️ *Einstellungen*',
+    'settings.language_title': '🌐 *Sprache wählen:*',
+    'settings.currency_title': '💱 *Währung wählen:*',
+    'settings.language_changed': '✅ Sprache geändert zu {language}',
+    'settings.currency_changed': '✅ Währung geändert zu {currency}',
+    'settings.language_current': 'Aktuelle Sprache: {language}',
+    'settings.currency_current': 'Aktuelle Währung: {currency}',
+    
+    // Common actions
+    'action.back': '🔙 Zurück',
+    'action.cancel': '❌ Abbrechen',
+    'action.confirm': '✅ Bestätigen',
+    'action.continue': '➡️ Weiter',
+    'action.save': '💾 Speichern',
+    
+    // Error messages
+    'error.general': '❌ Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
+    'error.product_not_found': '❌ Produkt nicht gefunden.',
+    'error.out_of_stock': '❌ Produkt ist nicht auf Lager.',
+    'error.invalid_quantity': '❌ Ungültige Menge.',
+    
+    // Success messages
+    'success.cart_cleared': '✅ Warenkorb erfolgreich geleert.',
+    'success.item_removed': '✅ Artikel aus dem Warenkorb entfernt.',
+    'success.order_placed': '✅ Bestellung erfolgreich aufgegeben!',
+  },
+  
+  nl: {
+    // Welcome messages
+    'welcome.message': '🛍️ Welkom bij TeleShop!\n\nKies een optie hieronder:',
+    'welcome.returning': '🛍️ Welkom terug bij TeleShop!',
+    
+    // Main menu
+    'menu.listings': '📋 Producten',
+    'menu.carts': '🛒 Winkelwagen',
+    'menu.orders': '📦 Bestellingen',
+    'menu.wishlist': '❤️ Verlanglijst',
+    'menu.rating': '⭐ Beoordelingen',
+    'menu.operator': '👤 Ondersteuning',
+    'menu.back': '🔙 Terug naar Menu',
+    'menu.settings': '⚙️ Instellingen',
+    'menu.language': '🌐 Taal',
+    'menu.currency': '💱 Valuta',
+    
+    // Listings
+    'listings.title': '📋 *Productcategorie kiezen:*',
+    'listings.no_products': '📋 Momenteel zijn er geen producten beschikbaar.\n\nKom later terug voor nieuwe aanbiedingen!',
+    'listings.category_products': '{name} ({count} producten)',
+    
+    // Cart
+    'cart.title': '🛒 *Uw Winkelwagen*',
+    'cart.empty': 'Uw winkelwagen is leeg. Begin met winkelen om artikelen toe te voegen!',
+    'cart.total': '💰 *Totaal: {total}*',
+    'cart.checkout_ready': '🚀 *Klaar om af te rekenen?*\nVoltooi uw bestelling met bezorg-, betalings- en contactopties.',
+    'cart.proceed_checkout': '🛒 Doorgaan naar Afrekenen',
+    'cart.clear_cart': '🔄 Winkelwagen Leegmaken',
+    'cart.quantity': 'Aantal: {quantity} × {price} = {total}',
+    
+    // Products
+    'product.add_to_cart': '🛒 Toevoegen aan Winkelwagen',
+    'product.add_to_wishlist': '❤️ Toevoegen aan Verlanglijst',
+    'product.rate_product': '⭐ Product Beoordelen',
+    'product.stock': 'Voorraad: {stock}',
+    'product.price': 'Prijs: {price}',
+    'product.out_of_stock': '❌ Niet op Voorraad',
+    'product.added_to_cart': '✅ Toegevoegd aan winkelwagen: {product}',
+    'product.added_to_wishlist': '✅ Toegevoegd aan verlanglijst: {product}',
+    
+    // Orders
+    'orders.title': '📦 *Uw Bestellingen*',
+    'orders.no_orders': 'Nog geen bestellingen. Doe uw eerste aankoop!',
+    'orders.order_number': 'Bestelling {number}',
+    'orders.status': 'Status: {status}',
+    'orders.total': 'Totaal: {total}',
+    
+    // Checkout
+    'checkout.title': '🛒 *Afreken Proces*',
+    'checkout.delivery_method': 'Bezorgmethode kiezen:',
+    'checkout.payment_method': 'Betaalmethode kiezen:',
+    'checkout.confirm_order': '✅ Bestelling Bevestigen',
+    'checkout.order_confirmed': '✅ Bestelling bevestigd! Bestellingnummer: {orderNumber}',
+    
+    // Support
+    'support.title': '👤 *Klantenservice*',
+    'support.options': 'Hoe kunnen we u helpen?',
+    'support.send_message': '💬 Bericht Versturen',
+    'support.email_support': '📧 E-mail Ondersteuning',
+    'support.faq': '❓ FAQ',
+    
+    // Settings
+    'settings.title': '⚙️ *Instellingen*',
+    'settings.language_title': '🌐 *Taal kiezen:*',
+    'settings.currency_title': '💱 *Valuta kiezen:*',
+    'settings.language_changed': '✅ Taal gewijzigd naar {language}',
+    'settings.currency_changed': '✅ Valuta gewijzigd naar {currency}',
+    'settings.language_current': 'Huidige taal: {language}',
+    'settings.currency_current': 'Huidige valuta: {currency}',
+    
+    // Common actions
+    'action.back': '🔙 Terug',
+    'action.cancel': '❌ Annuleren',
+    'action.confirm': '✅ Bevestigen',
+    'action.continue': '➡️ Doorgaan',
+    'action.save': '💾 Opslaan',
+    
+    // Error messages
+    'error.general': '❌ Er is een fout opgetreden. Probeer het opnieuw.',
+    'error.product_not_found': '❌ Product niet gevonden.',
+    'error.out_of_stock': '❌ Product is niet op voorraad.',
+    'error.invalid_quantity': '❌ Ongeldige hoeveelheid.',
+    
+    // Success messages
+    'success.cart_cleared': '✅ Winkelwagen succesvol leeggemaakt.',
+    'success.item_removed': '✅ Artikel verwijderd uit winkelwagen.',
+    'success.order_placed': '✅ Bestelling succesvol geplaatst!',
   }
 };
 
