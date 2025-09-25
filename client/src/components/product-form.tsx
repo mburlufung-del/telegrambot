@@ -397,7 +397,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
             <CardTitle>Pricing & Inventory</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="price">Price *</Label>
                 <Input
@@ -424,6 +424,29 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                   step="0.01"
                   data-testid="input-compare-price"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="currencyCode">Currency *</Label>
+                <Select
+                  value={form.watch("currencyCode")}
+                  onValueChange={(value) => form.setValue("currencyCode", value)}
+                  disabled={!!newlyCreatedProduct}
+                >
+                  <SelectTrigger data-testid="select-currency">
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencies.map((currency) => (
+                      <SelectItem key={currency.code} value={currency.code}>
+                        {currency.symbol} - {currency.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.currencyCode && (
+                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.currencyCode.message}</p>
+                )}
               </div>
             </div>
 
