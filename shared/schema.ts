@@ -9,6 +9,7 @@ export const products = pgTable("products", {
   description: text("description").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   compareAtPrice: decimal("compare_at_price", { precision: 10, scale: 2 }),
+  currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD").references(() => currencies.code),
   stock: integer("stock").notNull().default(0),
   minOrderQuantity: integer("min_order_quantity").notNull().default(1),
   maxOrderQuantity: integer("max_order_quantity"),
