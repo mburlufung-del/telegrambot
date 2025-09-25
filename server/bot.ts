@@ -705,6 +705,9 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     const keyboard = {
       inline_keyboard: [
         [
+          { text: await i18n.t(telegramUserId, 'menu.language'), callback_data: 'select_language' }
+        ],
+        [
           { text: await i18n.t(telegramUserId, 'menu.listings'), callback_data: 'listings' },
           { text: await i18n.t(telegramUserId, 'menu.carts'), callback_data: 'carts' }
         ],
