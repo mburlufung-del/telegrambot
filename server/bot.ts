@@ -705,10 +705,6 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     const keyboard = {
       inline_keyboard: [
         [
-          { text: await i18n.t(telegramUserId, 'menu.language'), callback_data: 'select_language' },
-          { text: await i18n.t(telegramUserId, 'menu.currency'), callback_data: 'select_currency' }
-        ],
-        [
           { text: await i18n.t(telegramUserId, 'menu.listings'), callback_data: 'listings' },
           { text: await i18n.t(telegramUserId, 'menu.carts'), callback_data: 'carts' }
         ],
@@ -719,9 +715,6 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         [
           { text: await i18n.t(telegramUserId, 'menu.rating'), callback_data: 'rating' },
           { text: await i18n.t(telegramUserId, 'menu.operator'), callback_data: 'operator' }
-        ],
-        [
-          { text: await i18n.t(telegramUserId, 'menu.settings'), callback_data: 'settings' }
         ]
       ]
     };
