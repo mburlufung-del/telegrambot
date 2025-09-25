@@ -1604,7 +1604,7 @@ ${businessHours}
         console.log(`Attempting to send product image: ${fullImageUrl}`);
         
         // Get localized price for image caption
-        const localizedPrice = await i18n.getProductPrice(userId, product.price);
+        const localizedPrice = await i18n.getProductPrice(userId, product);
         
         const sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
           caption: `📦 *${product.name}*\n💰 *${localizedPrice.formattedPrice}*`,
@@ -1633,10 +1633,10 @@ ${businessHours}
     }
     
     // Price information with currency conversion
-    const localizedCurrentPrice = await i18n.getProductPrice(userId, product.price);
+    const localizedCurrentPrice = await i18n.getProductPrice(userId, product);
     
     if (product.compareAtPrice) {
-      const localizedComparePrice = await i18n.getProductPrice(userId, product.compareAtPrice);
+      const localizedComparePrice = await i18n.getProductPrice(userId, { price: product.compareAtPrice });
       message += `💰 *Price:* ~~${localizedComparePrice.formattedPrice}~~ *${localizedCurrentPrice.formattedPrice}*\n`;
       
       // Calculate savings in user's currency  
