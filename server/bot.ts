@@ -2732,22 +2732,20 @@ Thank you for shopping with us! 🛍️`;
   // Settings command handler
   private async handleSettingsCommand(chatId: number, userId: string) {
     const settingsTitle = await i18n.t(userId, 'settings.title');
-    const currentLanguage = await i18n.getUserLanguage(userId);
-    const currentCurrencyMessage = await i18n.t(userId, 'settings.language_current', { language: currentLanguage });
     
-    // Get user's current currency
+    // Get current user preferences for display only
+    const currentLanguage = await i18n.getUserLanguage(userId);
     const preferences = await storage.getUserPreferences(userId);
     const currentCurrency = preferences?.currencyCode || 'USD';
-    const currentCurrencyDisplayMessage = await i18n.t(userId, 'settings.currency_current', { currency: currentCurrency });
     
-    const message = `${settingsTitle}\n\n${currentCurrencyMessage}\n${currentCurrencyDisplayMessage}`;
+    const message = `${settingsTitle}\n\n` +
+                   `🌐 Current Language: ${currentLanguage.toUpperCase()}\n` +
+                   `💱 Current Currency: ${currentCurrency}\n\n` +
+                   `💡 *Tip:* Use the main menu to change your language and currency preferences.\n\n` +
+                   `Other settings and preferences will be available here in future updates.`;
     
     const keyboard = {
       inline_keyboard: [
-        [
-          { text: await i18n.t(userId, 'menu.language'), callback_data: 'language_settings' },
-          { text: await i18n.t(userId, 'menu.currency'), callback_data: 'currency_settings' }
-        ],
         [
           { text: await i18n.t(userId, 'menu.back'), callback_data: 'back_to_menu' }
         ]
