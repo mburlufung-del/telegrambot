@@ -1137,9 +1137,31 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       return;
     }
     
+    // Get active operators to display their information
+    const activeOperators = await storage.getActiveOperators();
+    
+    let operatorInfo = '';
+    if (activeOperators.length > 0) {
+      operatorInfo = `\n👥 *Available Operators:*\n`;
+      for (const operator of activeOperators.slice(0, 3)) { // Show max 3 operators
+        operatorInfo += `• ${operator.name}`;
+        if (operator.telegramUsername) {
+          operatorInfo += ` (@${operator.telegramUsername})`;
+        }
+        if (operator.email) {
+          operatorInfo += ` - ${operator.email}`;
+        }
+        operatorInfo += `\n`;
+      }
+      if (activeOperators.length > 3) {
+        operatorInfo += `... and ${activeOperators.length - 3} more operators\n`;
+      }
+      operatorInfo += `\n`;
+    }
+
     // Show support options for new session
     const message = `👨‍💼 *Customer Support Options*\n\n` +
-      `Choose how you'd like to get support:`;
+      `Choose how you'd like to get support:${operatorInfo}`;
       
     const keyboard = {
       inline_keyboard: [
