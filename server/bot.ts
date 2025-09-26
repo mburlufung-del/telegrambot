@@ -278,10 +278,10 @@ export class TeleShopBot {
       
       console.log(`[INSTANT-VANISH] Cleared previous messages and sent new message ${message.message_id} for user ${chatId}`);
       
-      // Set up 5-hour auto-deletion timer
+      // Set up 6-hour auto-deletion timer
       const vanishTimer = setTimeout(async () => {
         await this.clearUserChatHistory(chatId);
-      }, 5 * 60 * 60 * 1000); // 5 hours in milliseconds
+      }, 6 * 60 * 60 * 1000); // 6 hours in milliseconds
       
       this.autoVanishTimers.set(chatId, vanishTimer);
       
@@ -351,7 +351,7 @@ export class TeleShopBot {
       this.autoVanishTimers.delete(chatId);
 
       // Send a brief notice about auto-cleanup (this message will also auto-vanish)
-      const cleanupNotice = "🕐 Chat history automatically cleared after 5 hours.\n\n" +
+      const cleanupNotice = "🕐 Chat history automatically cleared after 6 hours.\n\n" +
                            "✅ Your order history is safely preserved and can be accessed anytime.\n\n" +
                            "Type /start to begin a new session.";
       
@@ -366,7 +366,7 @@ export class TeleShopBot {
         }
       }, 60 * 60 * 1000); // 1 hour
 
-      console.log(`[AUTO-VANISH] Cleared ${deletedCount}/${userMsgIds.length} messages for user ${chatId} after 5 hours`);
+      console.log(`[AUTO-VANISH] Cleared ${deletedCount}/${userMsgIds.length} messages for user ${chatId} after 6 hours`);
     } catch (error) {
       console.error('Error clearing user chat history:', error);
     }
@@ -381,10 +381,10 @@ export class TeleShopBot {
       clearTimeout(existingTimer);
     }
 
-    // Set new 5-hour timer
+    // Set new 6-hour timer
     const vanishTimer = setTimeout(async () => {
       await this.clearUserChatHistory(chatId);
-    }, 5 * 60 * 60 * 1000); // 5 hours in milliseconds
+    }, 6 * 60 * 60 * 1000); // 6 hours in milliseconds
     
     this.autoVanishTimers.set(chatId, vanishTimer);
   }
