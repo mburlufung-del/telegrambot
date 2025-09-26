@@ -3,6 +3,24 @@ import path from 'path';
 import fs from 'fs';
 
 export function setupSimpleDashboard(app: express.Express) {
+  // Serve static CSS file
+  app.get('/styles.css', (req, res) => {
+    try {
+      const cssPath = path.join(__dirname, '../client/dist/styles.css');
+      if (fs.existsSync(cssPath)) {
+        res.setHeader('Content-Type', 'text/css');
+        const css = fs.readFileSync(cssPath, 'utf-8');
+        res.send(css);
+      } else {
+        // Fallback: serve basic Tailwind CSS
+        res.setHeader('Content-Type', 'text/css');
+        res.send('@tailwind base; @tailwind components; @tailwind utilities;');
+      }
+    } catch (error) {
+      res.status(404).send('CSS file not found');
+    }
+  });
+
   // Serve the admin dashboard at root for easy preview access
   app.get('/', (req, res) => {
     try {
@@ -15,7 +33,7 @@ export function setupSimpleDashboard(app: express.Express) {
 <html>
 <head>
     <title>TeleShop Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="/styles.css" rel="stylesheet">
 </head>
 <body class="bg-gray-50 p-8">
     <div class="max-w-4xl mx-auto">
@@ -81,7 +99,7 @@ export function setupSimpleDashboard(app: express.Express) {
 <html>
 <head>
     <title>TeleShop Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="/styles.css" rel="stylesheet">
 </head>
 <body class="bg-gray-50 p-8">
     <div class="max-w-4xl mx-auto">
