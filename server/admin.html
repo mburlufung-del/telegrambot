@@ -3259,17 +3259,21 @@
                 return;
             }
             
-            container.innerHTML = operators.map(operator => `
+            container.innerHTML = operators.map(operator => {
+                const safeOperatorId = operator.id || 'unknown';
+                const safeOperatorName = (operator.name || 'Unknown').replace(/'/g, "\\'");
+                
+                return `
                 <div class="border border-gray-200 rounded-lg p-4 flex items-center justify-between">
                     <div class="flex items-center space-x-4">
                         <div class="flex-shrink-0">
                             <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                                <span class="text-indigo-600 font-semibold">${operator.name.charAt(0).toUpperCase()}</span>
+                                <span class="text-indigo-600 font-semibold">${safeOperatorName.charAt(0).toUpperCase()}</span>
                             </div>
                         </div>
                         <div>
                             <div class="flex items-center space-x-2">
-                                <h4 class="text-sm font-medium text-gray-900">${operator.name}</h4>
+                                <h4 class="text-sm font-medium text-gray-900">${safeOperatorName}</h4>
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                     operator.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                                 }">
@@ -3277,26 +3281,30 @@
                                 </span>
                             </div>
                             <div class="text-xs text-gray-500 space-y-1">
-                                <div><strong>Username:</strong> ${operator.telegramUsername}</div>
+                                <div><strong>Username:</strong> ${operator.telegramUsername || ''}</div>
                                 ${operator.email ? `<div><strong>Email:</strong> ${operator.email}</div>` : ''}
                                 ${operator.role ? `<div><strong>Role:</strong> ${operator.role}</div>` : ''}
                             </div>
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <button onclick="toggleOperatorStatus(${operator.id})" class="px-3 py-1 text-xs font-medium ${
+                        <button onclick="editOperator('${safeOperatorId}')" class="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Edit
+                        </button>
+                        <button onclick="toggleOperatorStatus('${safeOperatorId}')" class="px-3 py-1 text-xs font-medium ${
                             operator.active 
                                 ? 'text-gray-700 bg-gray-100 hover:bg-gray-200' 
                                 : 'text-green-700 bg-green-100 hover:bg-green-200'
                         } border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             ${operator.active ? 'Deactivate' : 'Activate'}
                         </button>
-                        <button onclick="deleteOperator(${operator.id})" class="px-3 py-1 text-xs font-medium text-red-700 bg-red-100 border border-transparent rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <button onclick="deleteOperator('${safeOperatorId}')" class="px-3 py-1 text-xs font-medium text-red-700 bg-red-100 border border-transparent rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">
                             Delete
                         </button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Operator management functions
@@ -3400,6 +3408,74 @@
             }
         }
 
+        // Edit operator functions
+        async function editOperator(operatorId) {
+            try {
+                const response = await fetch(`/api/operators/${operatorId}`);
+                if (response.ok) {
+                    const operator = await response.json();
+                    showEditOperatorModal(operator);
+                } else {
+                    alert('Failed to load operator details');
+                }
+            } catch (error) {
+                console.error('Error loading operator:', error);
+                alert('Failed to load operator details');
+            }
+        }
+
+        function showEditOperatorModal(operator) {
+            // Populate form with existing data
+            document.getElementById('edit-operator-id').value = operator.id;
+            document.getElementById('edit-operator-name').value = operator.name || '';
+            document.getElementById('edit-operator-username').value = operator.telegramUsername || '';
+            document.getElementById('edit-operator-email').value = operator.email || '';
+            document.getElementById('edit-operator-role').value = operator.role || '';
+            document.getElementById('edit-operator-active').checked = operator.active;
+            
+            // Show modal
+            document.getElementById('edit-operator-modal').style.display = 'block';
+        }
+
+        function closeEditOperatorModal() {
+            document.getElementById('edit-operator-modal').style.display = 'none';
+        }
+
+        async function updateOperator(event) {
+            event.preventDefault();
+            
+            const operatorId = document.getElementById('edit-operator-id').value;
+            const formData = {
+                name: document.getElementById('edit-operator-name').value,
+                telegramUsername: document.getElementById('edit-operator-username').value,
+                email: document.getElementById('edit-operator-email').value,
+                role: document.getElementById('edit-operator-role').value,
+                active: document.getElementById('edit-operator-active').checked
+            };
+
+            try {
+                const response = await fetch(`/api/operators/${operatorId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    await loadOperators();
+                    closeEditOperatorModal();
+                    showNotification('Operator updated successfully!', 'success');
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Failed to update operator');
+                }
+            } catch (error) {
+                console.error('Error updating operator:', error);
+                alert('Failed to update operator');
+            }
+        }
+
         // Initialize support section when it's shown
         function initSupportSection() {
             loadOperators();
@@ -3450,6 +3526,47 @@
                         </button>
                         <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             Add Operator
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Operator Modal -->
+    <div id="edit-operator-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" style="display: none;">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Bot Operator</h3>
+                <form onsubmit="updateOperator(event)" class="space-y-4">
+                    <input type="hidden" id="edit-operator-id">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Operator Name</label>
+                        <input type="text" id="edit-operator-name" required placeholder="John Smith" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Telegram Username</label>
+                        <input type="text" id="edit-operator-username" required placeholder="@johnsmith" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <p class="text-xs text-gray-500 mt-1">Include @ symbol</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Contact Email</label>
+                        <input type="email" id="edit-operator-email" placeholder="john@company.com" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Role/Department</label>
+                        <input type="text" id="edit-operator-role" placeholder="Customer Support" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="edit-operator-active" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <label for="edit-operator-active" class="ml-2 block text-sm text-gray-700">Active (available for customer support)</label>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4 border-t">
+                        <button type="button" onclick="closeEditOperatorModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Update Operator
                         </button>
                     </div>
                 </form>

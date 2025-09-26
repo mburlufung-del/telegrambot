@@ -1404,6 +1404,23 @@ function registerAllRoutes(app: Express): void {
     }
   });
 
+  // Get single operator by ID
+  app.get("/api/operators/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const operator = await storage.getOperator(id);
+      
+      if (!operator) {
+        return res.status(404).json({ message: "Operator not found" });
+      }
+
+      res.json(operator);
+    } catch (error) {
+      console.error("Error fetching operator:", error);
+      res.status(500).json({ message: "Failed to fetch operator" });
+    }
+  });
+
   app.post("/api/operators", async (req, res) => {
     try {
       const validatedData = insertOperatorSchema.parse(req.body);
