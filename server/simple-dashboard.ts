@@ -3,20 +3,34 @@ import path from 'path';
 import fs from 'fs';
 
 export function setupSimpleDashboard(app: express.Express) {
-  // Serve static CSS file
+  // Serve static CSS file - use the compiled CSS from client build
   app.get('/styles.css', (req, res) => {
     try {
+      // Try the newly built CSS first
+      const newCssPath = path.join(__dirname, '../dist/public/assets');
+      const cssFiles = fs.readdirSync(newCssPath).filter(file => file.endsWith('.css'));
+      
+      if (cssFiles.length > 0) {
+        const cssPath = path.join(newCssPath, cssFiles[0]);
+        res.setHeader('Content-Type', 'text/css');
+        const css = fs.readFileSync(cssPath, 'utf-8');
+        res.send(css);
+        return;
+      }
+      
+      // Fallback to old location
       const cssPath = path.join(__dirname, '../client/dist/styles.css');
       if (fs.existsSync(cssPath)) {
         res.setHeader('Content-Type', 'text/css');
         const css = fs.readFileSync(cssPath, 'utf-8');
         res.send(css);
       } else {
-        // Fallback: serve basic Tailwind CSS
+        // Final fallback: serve basic Tailwind CSS
         res.setHeader('Content-Type', 'text/css');
         res.send('@tailwind base; @tailwind components; @tailwind utilities;');
       }
     } catch (error) {
+      console.error('CSS serving error:', error);
       res.status(404).send('CSS file not found');
     }
   });
