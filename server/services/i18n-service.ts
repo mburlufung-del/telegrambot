@@ -482,6 +482,12 @@ export class I18nService {
    */
   async t(telegramUserId: string, key: string, params?: Record<string, string | number>): Promise<string> {
     const language = await this.getUserLanguage(telegramUserId);
+    
+    // If it's a welcome message, use configurable bot settings
+    if (key === 'welcome.message' || key === 'welcome.returning') {
+      return this.getConfigurableWelcomeMessage(language, key, params);
+    }
+    
     return this.translate(key, language, params);
   }
 
@@ -520,6 +526,54 @@ export class I18nService {
    */
   isLanguageSupported(languageCode: string): boolean {
     return !!messageCatalogs[languageCode];
+  }
+
+  /**
+   * Get configurable welcome message from bot settings
+   */
+  private async getConfigurableWelcomeMessage(language: string, key: string, params?: Record<string, string | number>): Promise<string> {
+    try {
+      // Get bot settings for store name and welcome message
+      const storeNameSetting = await storage.getBotSetting('store_name');
+      const welcomeMessageSetting = await storage.getBotSetting('welcome_message');
+      
+      const storeName = storeNameSetting?.value || 'TeleShop';
+      const customWelcomeMessage = welcomeMessageSetting?.value;
+      
+      // If there's a custom welcome message, use it (it should already be in the user's preferred language)
+      if (customWelcomeMessage && key === 'welcome.message') {
+        let message = customWelcomeMessage;
+        
+        // Replace parameters in the custom message
+        if (params) {
+          for (const [param, value] of Object.entries(params)) {
+            message = message.replace(`{${param}}`, String(value));
+          }
+        }
+        
+        return message;
+      }
+      
+      // Otherwise use the template from messageCatalogs with dynamic store name
+      const catalog = messageCatalogs[language] || messageCatalogs[this.defaultLanguage];
+      let message = catalog[key] || messageCatalogs[this.defaultLanguage][key] || key;
+      
+      // Replace TeleShop with the configured store name
+      message = message.replace(/TeleShop/g, storeName);
+      
+      // Replace other parameters
+      if (params) {
+        for (const [param, value] of Object.entries(params)) {
+          message = message.replace(`{${param}}`, String(value));
+        }
+      }
+      
+      return message;
+    } catch (error) {
+      console.error('Error getting configurable welcome message:', error);
+      // Fallback to default template
+      return this.translate(key, language, params);
+    }
   }
 
   /**
