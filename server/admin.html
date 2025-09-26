@@ -1241,24 +1241,35 @@
         }
 
         function showSection(section) {
-            const sections = ['dashboard', 'products', 'categories', 'payments', 'delivery', 'orders', 'support', 'broadcast', 'settings'];
+            console.log('Switching to section:', section);
+            const sections = ['dashboard', 'products', 'categories', 'payments', 'delivery', 'orders', 'inquiries', 'support', 'broadcast', 'settings'];
+            
+            // Hide all sections
             sections.forEach(s => {
                 const element = document.getElementById(s + '-section');
-                if (element) element.style.display = 'none';
-                // Update nav styling
-                const navLink = document.querySelector(`a[onclick="showSection('${s}')"]`);
+                if (element) {
+                    element.style.display = 'none';
+                    console.log('Hiding section:', s);
+                }
+                
+                // Reset nav styling for all links
+                const navLink = document.querySelector(`a[data-section="${s}"]`);
                 if (navLink) {
-                    navLink.className = 'text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium';
+                    navLink.classList.remove('active');
+                    navLink.classList.add('sidebar-link');
                 }
             });
             
+            // Show target section
             const targetSection = document.getElementById(section + '-section');
             if (targetSection) {
                 targetSection.style.display = 'block';
+                console.log('Showing section:', section);
+                
                 // Update active nav styling
-                const activeLink = document.querySelector(`a[onclick="showSection('${section}')"]`);
+                const activeLink = document.querySelector(`a[data-section="${section}"]`);
                 if (activeLink) {
-                    activeLink.className = 'text-gray-900 px-3 py-2 text-sm font-medium border-b-2 border-indigo-500';
+                    activeLink.classList.add('active');
                 }
                 
                 // Update page title and sidebar active state
