@@ -713,7 +713,7 @@
                                 <input type="checkbox" id="delivery-is-free" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" onchange="toggleFreeDelivery()">
                                 <span class="ml-2 text-sm text-gray-700 font-medium">Free Delivery</span>
                             </label>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                            <label for="delivery-price" class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
                             <input type="number" id="delivery-price" step="0.01" min="0" value="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
                         <div>
@@ -754,7 +754,7 @@
                                 <input type="checkbox" id="edit-delivery-is-free" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" onchange="toggleEditFreeDelivery()">
                                 <span class="ml-2 text-sm text-gray-700 font-medium">Free Delivery</span>
                             </label>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                            <label for="edit-delivery-price" class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
                             <input type="number" id="edit-delivery-price" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
                         <div>
@@ -1427,6 +1427,12 @@
                     });
                     // Set default to USD
                     addCurrencySelect.value = 'USD';
+                    
+                    // Add event listener to update currency labels when selection changes
+                    addCurrencySelect.addEventListener('change', updateCurrencyLabels);
+                    
+                    // Update labels with initial selection
+                    updateCurrencyLabels();
                 }
                 
                 // Populate edit product currency dropdown
@@ -1439,6 +1445,9 @@
                         option.textContent = `${currency.symbol} - ${currency.name}`;
                         editCurrencySelect.appendChild(option);
                     });
+                    
+                    // Add event listener to update currency labels when selection changes
+                    editCurrencySelect.addEventListener('change', updateCurrencyLabels);
                 }
                 
                 console.log('Currencies loaded:', currencies.length);
@@ -1588,6 +1597,39 @@
             }
         }
 
+        // Currency symbol management
+        function getCurrentCurrencySymbol() {
+            const currencySelect = document.getElementById('product-currency');
+            if (!currencySelect || !currencySelect.value) return '$';
+            
+            const selectedOption = currencySelect.options[currencySelect.selectedIndex];
+            if (!selectedOption || !selectedOption.textContent) return '$';
+            
+            // Extract symbol from "$ - US Dollar" format
+            const symbolMatch = selectedOption.textContent.match(/^([^\s]+)/);
+            return symbolMatch ? symbolMatch[1] : '$';
+        }
+
+        function updateCurrencyLabels() {
+            const symbol = getCurrentCurrencySymbol();
+            
+            // Update pricing tier labels
+            document.querySelectorAll('.tier-price-label').forEach(label => {
+                label.textContent = `Price (${symbol})`;
+            });
+            
+            // Update delivery price labels
+            const deliveryLabel = document.querySelector('label[for="delivery-price"]');
+            if (deliveryLabel) {
+                deliveryLabel.textContent = `Price (${symbol})`;
+            }
+            
+            const editDeliveryLabel = document.querySelector('label[for="edit-delivery-price"]');
+            if (editDeliveryLabel) {
+                editDeliveryLabel.textContent = `Price (${symbol})`;
+            }
+        }
+
         // Pricing tier management
         let tierCounter = 0;
         function addPricingTier() {
@@ -1598,6 +1640,7 @@
                 tiersDiv.innerHTML = ''; // Clear the placeholder text
             }
 
+            const symbol = getCurrentCurrencySymbol();
             const tierHTML = `
                 <div class="border rounded-lg p-3 bg-gray-50" id="tier-${tierCounter}">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
@@ -1610,7 +1653,7 @@
                             <input type="number" class="tier-max-qty w-full px-2 py-1 text-sm border border-gray-300 rounded-md" min="1" placeholder="Optional">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Price ($)</label>
+                            <label class="tier-price-label block text-xs font-medium text-gray-700 mb-1">Price (${symbol})</label>
                             <input type="number" class="tier-price w-full px-2 py-1 text-sm border border-gray-300 rounded-md" step="0.01" min="0" required>
                         </div>
                         <div>
