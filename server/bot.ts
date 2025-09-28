@@ -450,7 +450,11 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       });
       
       // Then send main menu with proper Language/Currency options (consistent with back_to_menu)
-      await this.sendMainMenu(chatId, userId);
+      await this.sendMainMenu(chatId, userId, {
+        username: msg.from?.username,
+        firstName: firstName,
+        displayName: displayName
+      });
     });
 
     // Handle text messages
@@ -696,11 +700,13 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
   }
 
   // Main menu method
-  private async sendMainMenu(chatId: number, userId?: string) {
+  private async sendMainMenu(chatId: number, userId?: string, userInfo?: { username?: string; firstName?: string; displayName?: string }) {
     const telegramUserId = userId || chatId.toString();
     
-    // Get localized welcome message
-    const welcomeMessage = await i18n.t(telegramUserId, 'welcome.message');
+    // Get localized welcome message with username replacement
+    const welcomeMessage = await i18n.t(telegramUserId, 'welcome.message', {
+      username: userInfo?.displayName || userInfo?.firstName || userInfo?.username || 'there'
+    });
     
     const keyboard = {
       inline_keyboard: [
