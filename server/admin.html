@@ -1488,7 +1488,7 @@
                             <div class="flex items-center gap-3 mb-2">
                                 ${imageHtml}
                                 <div>
-                                    <div class="font-medium">$${product.price}</div>
+                                    <div class="font-medium">${getCurrencySymbol(product.currencyCode)}${product.price}</div>
                                     <div class="text-gray-500 text-sm">${product.stock} ${product.unit} in stock</div>
                                     <div class="mt-1">${statusBadge}</div>
                                 </div>
@@ -1500,7 +1500,7 @@
                         tableRow: `
                             <td class="px-6 py-4">${imageHtml}</td>
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">${product.name}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">$${product.price}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">${getCurrencySymbol(product.currencyCode)}${product.price}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">${product.stock} ${product.unit}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">${product.unit}</td>
                             <td class="px-6 py-4">${statusBadge}</td>
@@ -1608,6 +1608,36 @@
             // Extract symbol from "$ - US Dollar" format
             const symbolMatch = selectedOption.textContent.match(/^([^\s]+)/);
             return symbolMatch ? symbolMatch[1] : '$';
+        }
+
+        // Get currency symbol from currency code
+        function getCurrencySymbol(currencyCode) {
+            const currencyMap = {
+                'USD': '$',
+                'EUR': '€',
+                'GBP': '£',
+                'JPY': '¥',
+                'CNY': '¥',
+                'CAD': 'C$',
+                'AUD': 'A$',
+                'CHF': 'CHF',
+                'RUB': '₽',
+                'BRL': 'R$',
+                'INR': '₹',
+                'KRW': '₩',
+                'SEK': 'kr',
+                'NOK': 'kr',
+                'DKK': 'kr',
+                'PLN': 'zł',
+                'TRY': '₺',
+                'ZAR': 'R',
+                'MXN': '$',
+                'SGD': 'S$',
+                'HKD': 'HK$',
+                'NZD': 'NZ$',
+                'THB': '฿'
+            };
+            return currencyMap[currencyCode] || '$';
         }
 
         function updateCurrencyLabels() {
@@ -2280,13 +2310,7 @@
             }
         }
 
-        // Form clearing functions
-        function clearProductForm() {
-            ['product-name', 'product-price', 'product-stock', 'product-category', 'product-description'].forEach(id => {
-                const element = document.getElementById(id);
-                if (element) element.value = '';
-            });
-        }
+        // Form clearing functions - duplicate clearProductForm function removed, using the complete one above
 
         function clearCategoryForm() {
             ['category-name', 'category-description', 'category-order'].forEach(id => {
