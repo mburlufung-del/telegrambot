@@ -577,12 +577,20 @@ export class I18nService {
   }
 
   /**
-   * Get currency-aware price formatting
+   * Get currency-aware price formatting with optional source currency
    */
-  async formatPrice(telegramUserId: string, price: string | number): Promise<string> {
+  async formatPrice(telegramUserId: string, price: string | number, sourceCurrency?: string): Promise<string> {
     try {
-      const preferences = await storage.getUserPreferences(telegramUserId);
-      const currencyCode = preferences?.currencyCode || 'USD';
+      // If source currency is provided, use it directly (for showing product in its actual currency)
+      // Otherwise, use user's preferred currency (for conversions)
+      let currencyCode: string;
+      
+      if (sourceCurrency) {
+        currencyCode = sourceCurrency;
+      } else {
+        const preferences = await storage.getUserPreferences(telegramUserId);
+        currencyCode = preferences?.currencyCode || 'USD';
+      }
 
       // Get currency info from database
       const currencies = await storage.getCurrencies();

@@ -841,10 +841,10 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
           // If tier price is different, need to convert that too
           if (tierPrice && parseFloat(tierPrice) !== parseFloat(product.price)) {
             effectivePrice = parseFloat(tierPrice);
-            formattedPrice = await i18n.formatPrice(userId, tierPrice);
+            formattedPrice = await i18n.formatPrice(userId, tierPrice, product.currencyCode);
           }
           
-          const itemTotalFormatted = await i18n.formatPrice(userId, (effectivePrice * item.quantity).toString());
+          const itemTotalFormatted = await i18n.formatPrice(userId, (effectivePrice * item.quantity).toString(), product.currencyCode);
           totalAmount += effectivePrice * item.quantity;
           
           cartMessage += `${i + 1}. *${product.name}*\n`;
@@ -1020,7 +1020,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         const product = await storage.getProduct(item.productId);
         
         if (product) {
-          const formattedPrice = await i18n.formatPrice(userId, product.price);
+          const formattedPrice = await i18n.formatPrice(userId, product.price, product.currencyCode);
           message += `${i + 1}. *${product.name}*\n`;
           message += `   💰 ${formattedPrice}\n`;
           message += `   📦 Quantity: ${item.quantity}\n`;
@@ -1535,9 +1535,9 @@ ${businessHours}
       const product = activeProducts[index];
       const stockStatus = product.stock > 0 ? '✅' : '❌';
       
-      const formattedPrice = await i18n.formatPrice(userId, product.price);
+      const formattedPrice = await i18n.formatPrice(userId, product.price, product.currencyCode);
       const formattedComparePrice = product.compareAtPrice 
-        ? await i18n.formatPrice(userId, product.compareAtPrice)
+        ? await i18n.formatPrice(userId, product.compareAtPrice, product.currencyCode)
         : null;
       
       const priceDisplay = formattedComparePrice 
@@ -1653,7 +1653,7 @@ ${businessHours}
       const currentPriceNum = parseFloat(localizedCurrentPrice.originalPrice);
       const comparePriceNum = parseFloat(localizedComparePrice.originalPrice);
       const savings = (comparePriceNum - currentPriceNum).toFixed(2);
-      const formattedSavings = await i18n.formatPrice(userId, savings);
+      const formattedSavings = await i18n.formatPrice(userId, savings, product.currencyCode);
       
       message += `💸 *You Save:* ${formattedSavings}\n\n`;
     } else {
@@ -1773,9 +1773,11 @@ ${businessHours}
         // Calculate effective price for final quantity
         const tierPriceForFinal = await storage.getProductPriceForQuantity(productId, finalQuantity);
         const effectiveFinalPrice = tierPriceForFinal || product.price;
-        message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Added: ${quantity}\n• Total in cart: ${finalQuantity}\n• Item total: $${(parseFloat(effectiveFinalPrice) * finalQuantity).toFixed(2)}`;
+        const itemTotalFormatted = await i18n.formatPrice(userId, (parseFloat(effectiveFinalPrice) * finalQuantity).toFixed(2), product.currencyCode);
+        message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Added: ${quantity}\n• Total in cart: ${finalQuantity}\n• Item total: ${itemTotalFormatted}`;
       } else {
-        message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Total: $${total}`;
+        const totalFormatted = await i18n.formatPrice(userId, total, product.currencyCode);
+        message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Total: ${totalFormatted}`;
       }
       
       const keyboard = {
@@ -1819,7 +1821,7 @@ ${businessHours}
       });
 
       // Show success message and auto-return to main menu
-      const formattedPrice = await i18n.formatPrice(userId, product.price);
+      const formattedPrice = await i18n.formatPrice(userId, product.price, product.currencyCode);
       const message = `❤️ *Added to Wishlist!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Price: ${formattedPrice} each\n\nReturning to main menu...`;
       
       await this.sendAutoVanishMessage(chatId, message, {
