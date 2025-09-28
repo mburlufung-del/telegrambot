@@ -2511,34 +2511,40 @@
                 const response = await fetch(`/api/products/${productId}`);
                 const product = await response.json();
                 
-                // Populate the edit form
-                document.getElementById('edit-product-id').value = product.id;
-                document.getElementById('edit-product-name').value = product.name || '';
-                document.getElementById('edit-product-description').value = product.description || '';
-                document.getElementById('edit-product-price').value = product.price || '';
-                document.getElementById('edit-product-compare-price').value = product.compareAtPrice || '';
-                document.getElementById('edit-product-stock').value = product.stock || 0;
-                document.getElementById('edit-product-unit').value = product.unit || 'piece';
-                document.getElementById('edit-product-min-qty').value = product.minOrderQuantity || 1;
-                document.getElementById('edit-product-max-qty').value = product.maxOrderQuantity || '';
-                document.getElementById('edit-product-category').value = product.categoryId || '';
-                document.getElementById('edit-product-active').checked = product.isActive || false;
-                document.getElementById('edit-product-featured').checked = product.isFeatured || false;
-                
-                // Handle current image
-                if (product.imageUrl) {
-                    document.getElementById('edit-current-image').classList.remove('hidden');
-                    document.getElementById('edit-current-img').src = product.imageUrl;
-                    document.getElementById('edit-product-image-url').value = product.imageUrl;
-                } else {
-                    document.getElementById('edit-current-image').classList.add('hidden');
-                    document.getElementById('edit-product-image-url').value = '';
-                }
-                
-                // Hide new image preview
-                document.getElementById('edit-image-preview').classList.add('hidden');
-                
+                // First show the form (this loads currencies)
                 showEditProductForm();
+                
+                // Wait a bit for currencies to load, then populate the form
+                setTimeout(() => {
+                    // Populate the edit form
+                    document.getElementById('edit-product-id').value = product.id;
+                    document.getElementById('edit-product-name').value = product.name || '';
+                    document.getElementById('edit-product-description').value = product.description || '';
+                    document.getElementById('edit-product-price').value = product.price || '';
+                    document.getElementById('edit-product-compare-price').value = product.compareAtPrice || '';
+                    document.getElementById('edit-product-currency').value = product.currencyCode || 'USD';
+                    document.getElementById('edit-product-stock').value = product.stock || 0;
+                    document.getElementById('edit-product-unit').value = product.unit || 'piece';
+                    document.getElementById('edit-product-min-qty').value = product.minOrderQuantity || 1;
+                    document.getElementById('edit-product-max-qty').value = product.maxOrderQuantity || '';
+                    document.getElementById('edit-product-category').value = product.categoryId || '';
+                    document.getElementById('edit-product-active').checked = product.isActive || false;
+                    document.getElementById('edit-product-featured').checked = product.isFeatured || false;
+                    
+                    // Handle current image
+                    if (product.imageUrl) {
+                        document.getElementById('edit-current-image').classList.remove('hidden');
+                        document.getElementById('edit-current-img').src = product.imageUrl;
+                        document.getElementById('edit-product-image-url').value = product.imageUrl;
+                    } else {
+                        document.getElementById('edit-current-image').classList.add('hidden');
+                        document.getElementById('edit-product-image-url').value = '';
+                    }
+                    
+                    // Hide new image preview
+                    document.getElementById('edit-image-preview').classList.add('hidden');
+                }, 200); // Wait 200ms for currencies to load
+                
             } catch (error) {
                 console.error('Error loading product for edit:', error);
                 showNotification('Error loading product details', 'error');
@@ -2555,6 +2561,7 @@
                 price: parseFloat(document.getElementById('edit-product-price').value),
                 compareAtPrice: document.getElementById('edit-product-compare-price').value ? 
                     parseFloat(document.getElementById('edit-product-compare-price').value) : null,
+                currencyCode: document.getElementById('edit-product-currency').value,
                 stock: parseInt(document.getElementById('edit-product-stock').value),
                 unit: document.getElementById('edit-product-unit').value,
                 minOrderQuantity: parseInt(document.getElementById('edit-product-min-qty').value) || 1,

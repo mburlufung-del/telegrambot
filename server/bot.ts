@@ -1020,8 +1020,9 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         const product = await storage.getProduct(item.productId);
         
         if (product) {
+          const formattedPrice = await i18n.formatPrice(userId, product.price);
           message += `${i + 1}. *${product.name}*\n`;
-          message += `   💰 $${product.price}\n`;
+          message += `   💰 ${formattedPrice}\n`;
           message += `   📦 Quantity: ${item.quantity}\n`;
           message += `   📊 Stock: ${product.stock > 0 ? `${product.stock} available` : 'Out of stock'}\n\n`;
         }
@@ -1529,11 +1530,19 @@ ${businessHours}
     let productsMessage = `📂 *${this.escapeMarkdown(category.name)}*\n\n`;
     
     const productButtons: Array<Array<{text: string, callback_data: string}>> = [];
-    activeProducts.slice(0, 10).forEach((product, index) => {
+    
+    for (let index = 0; index < Math.min(activeProducts.length, 10); index++) {
+      const product = activeProducts[index];
       const stockStatus = product.stock > 0 ? '✅' : '❌';
-      const priceDisplay = product.compareAtPrice 
-        ? `~~$${product.compareAtPrice}~~ *$${product.price}*`
-        : `*$${product.price}*`;
+      
+      const formattedPrice = await i18n.formatPrice(userId, product.price);
+      const formattedComparePrice = product.compareAtPrice 
+        ? await i18n.formatPrice(userId, product.compareAtPrice)
+        : null;
+      
+      const priceDisplay = formattedComparePrice 
+        ? `~~${formattedComparePrice}~~ *${formattedPrice}*`
+        : `*${formattedPrice}*`;
       
       productsMessage += `${index + 1}. *${this.escapeMarkdown(product.name)}* ${stockStatus}\n`;
       productsMessage += `   ${priceDisplay}\n`;
@@ -1551,7 +1560,7 @@ ${businessHours}
         text: `${index + 1}. ${product.name}`,
         callback_data: `product_${product.id}`
       });
-    });
+    }
 
     if (activeProducts.length > 10) {
       productsMessage += `... and ${activeProducts.length - 10} more products.`;
@@ -1810,7 +1819,8 @@ ${businessHours}
       });
 
       // Show success message and auto-return to main menu
-      const message = `❤️ *Added to Wishlist!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Price: $${product.price} each\n\nReturning to main menu...`;
+      const formattedPrice = await i18n.formatPrice(userId, product.price);
+      const message = `❤️ *Added to Wishlist!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Price: ${formattedPrice} each\n\nReturning to main menu...`;
       
       await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'Markdown'
