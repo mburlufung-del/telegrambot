@@ -1977,7 +1977,9 @@ ${businessHours}
         return;
       }
 
-      let message = `📦 *Choose Delivery Method*\n\n**Order Number:** ${orderNumber}\n**Cart Total:** $${total.toFixed(2)}\n\nSelect your preferred delivery option:`;
+      // For cart totals, use user's preferred currency since cart may contain mixed currencies
+      const cartTotalFormatted = await i18n.formatPrice(userId, total.toString());
+      let message = `📦 *Choose Delivery Method*\n\n**Order Number:** ${orderNumber}\n**Cart Total:** ${cartTotalFormatted}\n\nSelect your preferred delivery option:`;
 
       const keyboard = {
         inline_keyboard: [] as any[]
@@ -1993,11 +1995,14 @@ ${businessHours}
           message += ` - ${method.description}`;
         }
         message += `\n⏱️ Time: ${method.estimatedTime || 'As scheduled'}`;
-        message += `\n💰 Cost: ${cost === 0 ? 'Free' : `$${cost}`}`;
-        message += `\n💵 **Total with delivery: $${finalTotal}**`;
+        // Use user's preferred currency for delivery costs and totals (mixed currency handling)
+        const costFormatted = cost === 0 ? 'Free' : await i18n.formatPrice(userId, cost.toString());
+        const finalTotalFormatted = await i18n.formatPrice(userId, finalTotal.toString());
+        message += `\n💰 Cost: ${costFormatted}`;
+        message += `\n💵 **Total with delivery: ${finalTotalFormatted}**`;
         
         keyboard.inline_keyboard.push([{
-          text: `📦 ${method.name} - $${finalTotal}`,
+          text: `📦 ${method.name} - ${finalTotalFormatted}`,
           callback_data: `delivery_${method.id}_${orderNumber.replace('#', '')}`
         }]);
       }
@@ -2040,10 +2045,12 @@ ${businessHours}
     const effectivePrice = tierPrice || product.price;
     const totalPrice = (parseFloat(effectivePrice) * currentQty).toFixed(2);
     
+    const priceFormatted = await i18n.formatPrice(userId, effectivePrice, product.currencyCode);
+    const totalFormatted = await i18n.formatPrice(userId, totalPrice, product.currencyCode);
     const message = `🔢 *Quantity Selection*\n\n📦 *${product.name}*\n\n` +
                    `Current Selection: *${currentQty}*\n` +
-                   `💰 Price: $${effectivePrice} each\n` +
-                   `💵 Total: $${totalPrice}\n` +
+                   `💰 Price: ${priceFormatted} each\n` +
+                   `💵 Total: ${totalFormatted}\n` +
                    `📦 Available: ${product.stock}` +
                    (tierPrice ? `\n\n💡 *Bulk pricing applied!*` : '');
 
@@ -2598,10 +2605,12 @@ Select your preferred payment option:`;
     }
 
     // Use HTML formatting to avoid parsing issues
+    // For payment totals, use user's preferred currency for consistency  
+    const totalFormatted = await i18n.formatPrice(userId, total.toString());
     let message = `💳 <b>${paymentMethod.name} Payment</b>
 
 <b>Order Number:</b> ${orderNumber}
-<b>Total Amount:</b> $${total.toFixed(2)}`;
+<b>Total Amount:</b> ${totalFormatted}`;
 
     if (paymentMethod.description) {
       message += `\n\n${paymentMethod.description}`;

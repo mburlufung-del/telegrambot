@@ -648,33 +648,16 @@ export class I18nService {
       // Import currency service dynamically to avoid circular dependency
       const { currencyService } = await import('./currency-service.js');
       
-      // Get user preferences
-      const preferences = await storage.getUserPreferences(telegramUserId);
-      const userCurrency = preferences?.currencyCode || 'USD';
+      // Get product's actual currency or fallback to USD
+      const productCurrency = product.currencyCode || 'USD';
       
-      // Convert price if needed
-      if (userCurrency === 'USD') {
-        // No conversion needed
-        const formattedPrice = await this.formatPrice(telegramUserId, product.price);
-        return {
-          formattedPrice,
-          originalPrice: product.price.toString(),
-          currencyCode: 'USD'
-        };
-      } else {
-        // Convert from USD to user currency
-        const priceResult = await currencyService.getProductPriceForUser(
-          product.price,
-          'USD',
-          telegramUserId
-        );
-        
-        return {
-          formattedPrice: priceResult.formattedPrice,
-          originalPrice: product.price.toString(),
-          currencyCode: userCurrency
-        };
-      }
+      // Always use the product's actual currency for display
+      const formattedPrice = await this.formatPrice(telegramUserId, product.price, productCurrency);
+      return {
+        formattedPrice,
+        originalPrice: product.price.toString(),
+        currencyCode: productCurrency
+      };
     } catch (error) {
       console.error('Error getting product price:', error);
       // Use user's preferred currency even in error cases
