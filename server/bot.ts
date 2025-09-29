@@ -201,7 +201,7 @@ export class TeleShopBot {
             
             try {
               await this.bot!.sendPhoto(chatId, fullImageUrl, {
-                caption: message,
+                caption: this.mdToHtml(message),
                 parse_mode: 'HTML'
               });
             } catch (photoError: any) {
@@ -209,19 +209,19 @@ export class TeleShopBot {
               // Fallback to sending as document if photo fails
               try {
                 await this.bot!.sendDocument(chatId, fullImageUrl, {
-                  caption: message,
+                  caption: this.mdToHtml(message),
                   parse_mode: 'HTML'
                 });
               } catch (docError) {
                 console.log(`Document also failed, sending text only:`, docError);
-                await this.bot!.sendMessage(chatId, `${message}\n\n[Image could not be sent - ${fullImageUrl}]`, {
+                await this.bot!.sendMessage(chatId, `${this.mdToHtml(message)}\n\n[Image could not be sent - ${fullImageUrl}]`, {
                   parse_mode: 'HTML'
                 });
               }
             }
           } else {
             // Send text message only
-            await this.bot!.sendMessage(chatId, message, {
+            await this.bot!.sendMessage(chatId, this.mdToHtml(message), {
               parse_mode: 'HTML'
             });
           }
@@ -1545,7 +1545,7 @@ ${businessHours}
     }
 
     if (activeProducts.length === 0) {
-      const message = `📂 *${this.escapeMarkdown(category.name)}*\n\nNo products available in this category at the moment.`;
+      const message = `📂 <b>${this.escapeHtml(category.name)}</b>\n\nNo products available in this category at the moment.`;
       const keyboard = {
         inline_keyboard: [
           [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
@@ -1559,7 +1559,7 @@ ${businessHours}
       return;
     }
 
-    let productsMessage = `📂 *${this.escapeMarkdown(category.name)}*\n\n`;
+    let productsMessage = `📂 <b>${this.escapeHtml(category.name)}</b>\n\n`;
     
     const productButtons: Array<Array<{text: string, callback_data: string}>> = [];
     
@@ -1573,15 +1573,15 @@ ${businessHours}
         : null;
       
       const priceDisplay = formattedComparePrice 
-        ? `~~${formattedComparePrice}~~ *${formattedPrice}*`
-        : `*${formattedPrice}*`;
+        ? `<s>${this.escapeHtml(formattedComparePrice)}</s> <b>${this.escapeHtml(formattedPrice)}</b>`
+        : `<b>${this.escapeHtml(formattedPrice)}</b>`;
       
-      productsMessage += `${index + 1}. *${this.escapeMarkdown(product.name)}* ${stockStatus}\n`;
+      productsMessage += `${index + 1}. <b>${this.escapeHtml(product.name)}</b> ${stockStatus}\n`;
       productsMessage += `   ${priceDisplay}\n`;
       
       // Safe description handling - ensure description exists and handle potential undefined
       const description = product.description || 'No description available';
-      const escapedDescription = this.escapeMarkdown(description);
+      const escapedDescription = this.escapeHtml(description);
       productsMessage += `   ${escapedDescription.substring(0, 60)}${escapedDescription.length > 60 ? '...' : ''}\n\n`;
       
       // Create product buttons in rows of 2
