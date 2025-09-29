@@ -7,6 +7,32 @@ export class TeleShopBot {
   private userMessages: Map<number, number[]> = new Map();
   private autoVanishTimers: Map<number, NodeJS.Timeout> = new Map();
 
+  // HTML utility functions for iOS Telegram compatibility
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  // Convert lightweight Markdown to HTML (for admin/broadcast content)
+  private mdToHtml(text: string): string {
+    // First escape HTML characters
+    let html = this.escapeHtml(text);
+    
+    // Convert bold: text or *text* to <b>text</b>
+    html = html.replace(/\*\*([^\*]+?)\*\*/g, '<b>$1</b>');
+    html = html.replace(/\*([^\*]+?)\*/g, '<b>$1</b>');
+    
+    // Convert strikethrough: ~~text~~ to <s>text</s>
+    html = html.replace(/~~([^~]+?)~~/g, '<s>$1</s>');
+    
+    // Convert inline code: `text` to <code>text</code>
+    html = html.replace(/`([^`]+?)`/g, '<code>$1</code>');
+    
+    return html;
+  }
+
   async initialize(token?: string) {
     if (this.bot) {
       await this.shutdown();
@@ -176,7 +202,7 @@ export class TeleShopBot {
             try {
               await this.bot!.sendPhoto(chatId, fullImageUrl, {
                 caption: message,
-                parse_mode: 'Markdown'
+                parse_mode: 'HTML'
               });
             } catch (photoError: any) {
               console.log(`Failed to send photo, trying as document:`, photoError?.message);
@@ -184,19 +210,19 @@ export class TeleShopBot {
               try {
                 await this.bot!.sendDocument(chatId, fullImageUrl, {
                   caption: message,
-                  parse_mode: 'Markdown'
+                  parse_mode: 'HTML'
                 });
               } catch (docError) {
                 console.log(`Document also failed, sending text only:`, docError);
                 await this.bot!.sendMessage(chatId, `${message}\n\n[Image could not be sent - ${fullImageUrl}]`, {
-                  parse_mode: 'Markdown'
+                  parse_mode: 'HTML'
                 });
               }
             }
           } else {
             // Send text message only
             await this.bot!.sendMessage(chatId, message, {
-              parse_mode: 'Markdown'
+              parse_mode: 'HTML'
             });
           }
           
@@ -515,7 +541,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const customResponse = await this.handleCustomCommands(messageText);
       if (customResponse) {
         console.log(`[MESSAGE] Custom command matched! Response: ${customResponse}`);
-        await this.sendAutoVanishMessage(chatId, customResponse, { parse_mode: 'Markdown' });
+        await this.sendAutoVanishMessage(chatId, this.mdToHtml(customResponse), { parse_mode: 'HTML' });
         return;
       }
       console.log('[MESSAGE] No custom command matched');
@@ -730,7 +756,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
     await this.sendAutoVanishMessage(chatId, welcomeMessage, {
       reply_markup: keyboard,
-      parse_mode: 'Markdown'
+      parse_mode: 'HTML'
     });
   }
 
@@ -774,9 +800,9 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     
     const categoryButtons: Array<Array<{text: string, callback_data: string}>> = [];
     categoriesWithProducts.forEach((category, index) => {
-      categoriesMessage += `${index + 1}. *${category.name}* (${category.productCount} products)\n`;
+      categoriesMessage += `${index + 1}. <b>${this.escapeHtml(category.name)}</b> (${category.productCount} products)\n`;
       if (category.description) {
-        categoriesMessage += `   ${category.description}\n`;
+        categoriesMessage += `   ${this.escapeHtml(category.description)}\n`;
       }
       categoriesMessage += '\n';
       
@@ -798,7 +824,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     const keyboard = { inline_keyboard: categoryButtons };
 
     await this.sendAutoVanishMessage(chatId, categoriesMessage, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: keyboard
     });
   }
@@ -821,7 +847,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         };
         
         await this.sendAutoVanishMessage(chatId, message, {
-          parse_mode: 'Markdown',
+          parse_mode: 'HTML',
           reply_markup: keyboard
         });
         return;
@@ -853,7 +879,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
           const itemTotalFormatted = await i18n.formatPrice(userId, (effectivePrice * item.quantity).toString(), product.currencyCode);
           totalAmount += effectivePrice * item.quantity;
           
-          cartMessage += `${i + 1}. *${product.name}*\n`;
+          cartMessage += `${i + 1}. <b>${this.escapeHtml(product.name)}</b>\n`;
           cartMessage += `   ${await i18n.t(userId, 'cart.quantity', {
             quantity: item.quantity.toString(),
             price: formattedPrice,
@@ -904,13 +930,13 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const keyboard = { inline_keyboard: cartButtons };
       
       await this.sendAutoVanishMessage(chatId, cartMessage, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
       
     } catch (error) {
       console.error('Error fetching cart:', error);
-      const message = '🛒 *Your Shopping Cart*\n\nUnable to load cart. Please try again.';
+      const message = '🛒 <b>Your Shopping Cart</b>\n\nUnable to load cart. Please try again.';
       const keyboard = {
         inline_keyboard: [
           [{ text: '📋 Listings', callback_data: 'listings' }],
@@ -919,7 +945,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       };
       
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
     }
@@ -931,7 +957,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       console.log(`Raw orders for user ${userId}:`, userOrders.length);
       
       if (userOrders.length === 0) {
-        const message = '📦 *Your Orders*\n\nYou have no orders yet.\n\nStart shopping to create your first order!';
+        const message = '📦 <b>Your Orders</b>\n\nYou have no orders yet.\n\nStart shopping to create your first order!';
         const keyboard = {
           inline_keyboard: [
             [{ text: '📋 Listings', callback_data: 'listings' }],
@@ -940,7 +966,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         };
         
         await this.sendAutoVanishMessage(chatId, message, {
-          parse_mode: 'Markdown',
+          parse_mode: 'HTML',
           reply_markup: keyboard
         });
         return;
@@ -978,13 +1004,13 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       
       console.log(`Sending orders message for user ${userId}: ${message.length} chars`);
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
       
     } catch (error) {
       console.error('Error fetching user orders:', error);
-      const message = '📦 *Your Orders*\n\nUnable to load orders. Please try again.';
+      const message = '📦 <b>Your Orders</b>\n\nUnable to load orders. Please try again.';
       const keyboard = {
         inline_keyboard: [
           [{ text: '📋 Listings', callback_data: 'listings' }],
@@ -993,7 +1019,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       };
       
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
     }
@@ -1004,7 +1030,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const wishlistItems = await storage.getWishlist(userId);
       
       if (wishlistItems.length === 0) {
-        const message = '❤️ *Your Wishlist*\n\nYour wishlist is empty.\n\nBrowse products and add items you love to your wishlist!';
+        const message = '❤️ <b>Your Wishlist</b>\n\nYour wishlist is empty.\n\nBrowse products and add items you love to your wishlist!';
         const keyboard = {
           inline_keyboard: [
             [{ text: '📋 Listings', callback_data: 'listings' }],
@@ -1013,13 +1039,13 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         };
         
         await this.sendAutoVanishMessage(chatId, message, {
-          parse_mode: 'Markdown',
+          parse_mode: 'HTML',
           reply_markup: keyboard
         });
         return;
       }
 
-      let message = '❤️ *Your Wishlist*\n\n';
+      let message = '❤️ <b>Your Wishlist</b>\n\n';
       
       for (let i = 0; i < wishlistItems.length; i++) {
         const item = wishlistItems[i];
@@ -1043,7 +1069,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       };
       
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
       
@@ -1059,7 +1085,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     console.log('Weekly ratings found:', weeklyRatings.length);
     
     if (weeklyRatings.length === 0) {
-      const message = '⭐ *Weekly Product Ratings*\n\nNo products have been rated this week yet.\n\nBe the first to rate a product! Browse our catalog and share your experience.';
+      const message = '⭐ <b>Weekly Product Ratings</b>\n\nNo products have been rated this week yet.\n\nBe the first to rate a product! Browse our catalog and share your experience.';
       
       const keyboard = {
         inline_keyboard: [
@@ -1069,13 +1095,13 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       };
 
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
       return;
     }
 
-    let message = '⭐ *Weekly Product Ratings*\n\nProducts rated in the past 7 days:\n\n';
+    let message = '⭐ <b>Weekly Product Ratings</b>\n\nProducts rated in the past 7 days:\n\n';
     
     console.log('Processing ratings for display:', weeklyRatings);
     weeklyRatings.slice(0, 10).forEach((rating: any, index: number) => {
@@ -1113,7 +1139,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     };
 
     await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: keyboard
     });
   }
@@ -1138,7 +1164,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       };
       
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
       return;
@@ -1149,7 +1175,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     
     let operatorInfo = '';
     if (activeOperators.length > 0) {
-      operatorInfo = `\n👥 *Available Operators:*\n`;
+      operatorInfo = `\n👥 <b>Available Operators:</b>\n`;
       for (const operator of activeOperators.slice(0, 3)) { // Show max 3 operators
         operatorInfo += `• ${operator.name}`;
         if (operator.telegramUsername) {
@@ -1167,7 +1193,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     }
 
     // Show support options for new session
-    const message = `👨‍💼 *Customer Support Options*\n\n` +
+    const message = `👨‍💼 <b>Customer Support Options</b>\n\n` +
       `Choose how you'd like to get support:${operatorInfo}`;
       
     const keyboard = {
@@ -1180,15 +1206,15 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     };
     
     await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: keyboard
     });
   }
 
   private async handleStartLiveSupport(chatId: number, userId: string) {
-    const message = `💬 *Start Live Support Session*\n\n` +
+    const message = `💬 <b>Start Live Support Session</b>\n\n` +
       `Please describe your issue or question. An operator will be assigned to help you.\n\n` +
-      `*Categories:*\n` +
+      `<b>Categories:</b>\n` +
       `• General questions\n` +
       `• Order inquiries\n` +
       `• Product support\n` +
@@ -1203,7 +1229,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
     };
     
     await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: keyboard
     });
     
@@ -1236,7 +1262,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         messageType: 'text'
       });
 
-      const confirmationMessage = `✅ *Support Session Created*\n\n` +
+      const confirmationMessage = `✅ <b>Support Session Created</b>\n\n` +
         `Session ID: \`${session.id}\`\n` +
         `Status: ⏳ Waiting for operator\n` +
         `Priority: ${session.priority}\n\n` +
@@ -1251,7 +1277,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       };
       
       await this.sendAutoVanishMessage(chatId, confirmationMessage, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
 
@@ -1278,7 +1304,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       
       let messageHistory = '';
       if (recentMessages.length > 0) {
-        messageHistory = '\n\n*Recent Messages:*\n';
+        messageHistory = '\n\n<b>Recent Messages:</b>\n';
         recentMessages.forEach(msg => {
           const time = new Date(msg.createdAt).toLocaleTimeString();
           const sender = msg.senderType === 'customer' ? 'You' : `${msg.senderName}`;
@@ -1290,7 +1316,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
                        : session.status === 'active' ? '👨‍💼 Active with operator'
                        : '✅ Resolved';
 
-      const message = `💬 *Support Session Details*\n\n` +
+      const message = `💬 <b>Support Session Details</b>\n\n` +
         `Session ID: \`${session.id}\`\n` +
         `Status: ${statusText}\n` +
         `Priority: ${session.priority}\n` +
@@ -1308,7 +1334,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       };
       
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
 
@@ -1326,7 +1352,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         return;
       }
 
-      const message = `✅ *Support Session Ended*\n\n` +
+      const message = `✅ <b>Support Session Ended</b>\n\n` +
         `Session ID: \`${sessionId}\`\n` +
         `Status: Resolved\n\n` +
         `Thank you for using our support service!`;
@@ -1339,7 +1365,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       };
       
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
 
@@ -1527,7 +1553,7 @@ ${businessHours}
       };
       
       await this.sendAutoVanishMessage(chatId, message, { 
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard 
       });
       return;
@@ -1580,7 +1606,7 @@ ${businessHours}
     const keyboard = { inline_keyboard: productButtons };
 
     await this.sendAutoVanishMessage(chatId, productsMessage, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: keyboard
     });
   }
@@ -1621,8 +1647,8 @@ ${businessHours}
         const localizedPrice = await i18n.getProductPrice(userId, product);
         
         const sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
-          caption: `📦 *${product.name}*\n💰 *${localizedPrice.formattedPrice}*`,
-          parse_mode: 'Markdown'
+          caption: `📦 <b>${this.escapeHtml(product.name)}</b>\n💰 <b>${this.escapeHtml(localizedPrice.formattedPrice)}</b>`,
+          parse_mode: 'HTML'
         });
         
         // Add to auto-vanish tracking
@@ -1639,11 +1665,11 @@ ${businessHours}
     }
     
     // Build comprehensive product message
-    let message = `🏷️ *${product.name}*\n\n`;
+    let message = `🏷️ <b>${this.escapeHtml(product.name)}</b>\n\n`;
     
     // Enhanced description display
     if (product.description) {
-      message += `📝 *Description:*\n${product.description}\n\n`;
+      message += `📝 <b>Description:</b>\n${this.escapeHtml(product.description)}\n\n`;
     }
     
     // Price information with currency conversion
@@ -1651,7 +1677,7 @@ ${businessHours}
     
     if (product.compareAtPrice) {
       const localizedComparePrice = await i18n.getProductPrice(userId, { price: product.compareAtPrice });
-      message += `💰 *Price:* ~~${localizedComparePrice.formattedPrice}~~ *${localizedCurrentPrice.formattedPrice}*\n`;
+      message += `💰 <b>Price:</b> <s>${this.escapeHtml(localizedComparePrice.formattedPrice)}</s> <b>${this.escapeHtml(localizedCurrentPrice.formattedPrice)}</b>\n`;
       
       // Calculate savings in user's currency  
       const userPreferences = await storage.getUserPreferences(userId);
@@ -1661,26 +1687,26 @@ ${businessHours}
       const savings = (comparePriceNum - currentPriceNum).toFixed(2);
       const formattedSavings = await i18n.formatPrice(userId, savings, product.currencyCode);
       
-      message += `💸 *You Save:* ${formattedSavings}\n\n`;
+      message += `💸 <b>You Save:</b> ${this.escapeHtml(formattedSavings)}\n\n`;
     } else {
-      message += `💰 *Price:* ${localizedCurrentPrice.formattedPrice}\n\n`;
+      message += `💰 <b>Price:</b> ${this.escapeHtml(localizedCurrentPrice.formattedPrice)}\n\n`;
     }
 
     // Stock and availability
     const stockStatus = product.stock > 0 ? `✅ In Stock (${product.stock} available)` : '❌ Out of Stock';
-    message += `📦 *Stock:* ${stockStatus}\n`;
+    message += `📦 <b>Stock:</b> ${stockStatus}\n`;
     
     if (category) {
-      message += `📂 *Category:* ${category.name}\n`;
+      message += `📂 <b>Category:</b> ${this.escapeHtml(category.name)}\n`;
     }
 
     // Specifications if available
     if (product.specifications) {
       try {
         const specs = JSON.parse(product.specifications);
-        message += `\n🔬 *Specifications:*\n`;
+        message += `\n🔬 <b>Specifications:</b>\n`;
         Object.entries(specs).forEach(([key, value]) => {
-          message += `• *${key}:* ${value}\n`;
+          message += `• <b>${this.escapeHtml(key)}:</b> ${this.escapeHtml(String(value))}\n`;
         });
       } catch (error) {
         // Ignore parsing errors
@@ -1716,7 +1742,7 @@ ${businessHours}
 
     // Send product details message without clearing the image
     const detailsMessage = await this.bot?.sendMessage(chatId, message, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: keyboard
     });
 
@@ -1742,13 +1768,13 @@ ${businessHours}
       }
 
       if (product.stock < quantity) {
-        const message = `❌ *Not enough stock*\n\nRequested: ${quantity}\nAvailable: ${product.stock}`;
+        const message = `❌ <b>Not enough stock</b>\n\nRequested: ${quantity}\nAvailable: ${product.stock}`;
         const keyboard = {
           inline_keyboard: [[{ text: '🔙 Back to Product', callback_data: `product_${productId}` }]]
         };
         
         await this.sendAutoVanishMessage(chatId, message, {
-          parse_mode: 'Markdown',
+          parse_mode: 'HTML',
           reply_markup: keyboard
         });
         return;
@@ -1780,10 +1806,10 @@ ${businessHours}
         const tierPriceForFinal = await storage.getProductPriceForQuantity(productId, finalQuantity);
         const effectiveFinalPrice = tierPriceForFinal || product.price;
         const itemTotalFormatted = await i18n.formatPrice(userId, (parseFloat(effectiveFinalPrice) * finalQuantity).toFixed(2), product.currencyCode);
-        message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Added: ${quantity}\n• Total in cart: ${finalQuantity}\n• Item total: ${itemTotalFormatted}`;
+        message = `✅ <b>Added to Cart!</b>\n\n• ${product.name}\n• Added: ${quantity}\n• Total in cart: ${finalQuantity}\n• Item total: ${itemTotalFormatted}`;
       } else {
         const totalFormatted = await i18n.formatPrice(userId, total, product.currencyCode);
-        message = `✅ *Added to Cart!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Total: ${totalFormatted}`;
+        message = `✅ <b>Added to Cart!</b>\n\n• ${product.name}\n• Quantity: ${quantity}\n• Total: ${totalFormatted}`;
       }
       
       const keyboard = {
@@ -1799,7 +1825,7 @@ ${businessHours}
       };
 
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
       
@@ -1828,10 +1854,10 @@ ${businessHours}
 
       // Show success message and auto-return to main menu
       const formattedPrice = await i18n.formatPrice(userId, product.price, product.currencyCode);
-      const message = `❤️ *Added to Wishlist!*\n\n• ${product.name}\n• Quantity: ${quantity}\n• Price: ${formattedPrice} each\n\nReturning to main menu...`;
+      const message = `❤️ <b>Added to Wishlist!</b>\n\n• ${product.name}\n• Quantity: ${quantity}\n• Price: ${formattedPrice} each\n\nReturning to main menu...`;
       
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown'
+        parse_mode: 'HTML'
       });
 
       // Auto-return to main menu after 2 seconds
@@ -1856,7 +1882,7 @@ ${businessHours}
 
     if (!rating) {
       // Show rating selection
-      const message = `⭐ *Rate: ${product.name}*\n\nHow would you rate this product?`;
+      const message = `⭐ <b>Rate: ${this.escapeHtml(product.name)}</b>\n\nHow would you rate this product?`;
       
       const keyboard = {
         inline_keyboard: [
@@ -1876,7 +1902,7 @@ ${businessHours}
       };
 
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
     } else {
@@ -1892,7 +1918,7 @@ ${businessHours}
 
         // Process the rating
         const stars = '⭐'.repeat(rating);
-        const message = `${stars} *Thank you for rating!*\n\nYou gave *${product.name}* a ${rating}-star rating.\n\nYour feedback helps other customers!`;
+        const message = `${stars} <b>Thank you for rating!</b>\n\nYou gave <b>${this.escapeHtml(product.name)}</b> a ${rating}-star rating.\n\nYour feedback helps other customers!`;
         
         const keyboard = {
           inline_keyboard: [
@@ -1904,7 +1930,7 @@ ${businessHours}
         };
 
         await this.sendAutoVanishMessage(chatId, message, {
-          parse_mode: 'Markdown',
+          parse_mode: 'HTML',
           reply_markup: keyboard
         });
       } catch (error) {
@@ -1919,7 +1945,7 @@ ${businessHours}
   private async handleClearCart(chatId: number, userId: string) {
     try {
       await storage.clearCart(userId);
-      const message = '🗑️ *Cart Cleared*\n\nAll items have been removed from your cart.';
+      const message = '🗑️ <b>Cart Cleared</b>\n\nAll items have been removed from your cart.';
       const keyboard = {
         inline_keyboard: [
           [{ text: '📋 Listings', callback_data: 'listings' }],
@@ -1928,7 +1954,7 @@ ${businessHours}
       };
       
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
     } catch (error) {
@@ -1979,7 +2005,7 @@ ${businessHours}
 
       // For cart totals, use user's preferred currency since cart may contain mixed currencies
       const cartTotalFormatted = await i18n.formatPrice(userId, total.toString());
-      let message = `📦 *Choose Delivery Method*\n\n**Order Number:** ${orderNumber}\n**Cart Total:** ${cartTotalFormatted}\n\nSelect your preferred delivery option:`;
+      let message = `📦 <b>Choose Delivery Method</b>\n\n<b>Order Number:</b> ${orderNumber}\n<b>Cart Total:</b> ${cartTotalFormatted}\n\nSelect your preferred delivery option:`;
 
       const keyboard = {
         inline_keyboard: [] as any[]
@@ -1990,7 +2016,7 @@ ${businessHours}
         const cost = parseFloat(method.price);
         const finalTotal = (total + cost).toFixed(2);
         
-        message += `\n\n📦 **${method.name}**`;
+        message += `\n\n📦 ${method.name}`;
         if (method.description) {
           message += ` - ${method.description}`;
         }
@@ -1999,7 +2025,7 @@ ${businessHours}
         const costFormatted = cost === 0 ? 'Free' : await i18n.formatPrice(userId, cost.toString());
         const finalTotalFormatted = await i18n.formatPrice(userId, finalTotal.toString());
         message += `\n💰 Cost: ${costFormatted}`;
-        message += `\n💵 **Total with delivery: ${finalTotalFormatted}**`;
+        message += `\n💵 <b>Total with delivery: ${finalTotalFormatted}`;
         
         keyboard.inline_keyboard.push([{
           text: `📦 ${method.name} - ${finalTotalFormatted}`,
@@ -2011,7 +2037,7 @@ ${businessHours}
       keyboard.inline_keyboard.push([{ text: '🔙 Back to Cart', callback_data: 'cart' }]);
 
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: keyboard
       });
 
@@ -2047,12 +2073,12 @@ ${businessHours}
     
     const priceFormatted = await i18n.formatPrice(userId, effectivePrice, product.currencyCode);
     const totalFormatted = await i18n.formatPrice(userId, totalPrice, product.currencyCode);
-    const message = `🔢 *Quantity Selection*\n\n📦 *${product.name}*\n\n` +
+    const message = `🔢 <b>Quantity Selection</b>\n\n📦 *${product.name}*\n\n` +
                    `Current Selection: *${currentQty}*\n` +
                    `💰 Price: ${priceFormatted} each\n` +
                    `💵 Total: ${totalFormatted}\n` +
                    `📦 Available: ${product.stock}` +
-                   (tierPrice ? `\n\n💡 *Bulk pricing applied!*` : '');
+                   (tierPrice ? `\n\n💡 <b>Bulk pricing applied!</b>` : '');
 
     // Create quantity control buttons with +/- system
     const quantityControls = [];
@@ -2090,7 +2116,7 @@ ${businessHours}
     const keyboard = { inline_keyboard: quantityControls };
 
     await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: keyboard
     });
   }
@@ -2211,17 +2237,17 @@ ${businessHours}
       }
       
       const customerInfo = username ? `${customerName} (@${username})` : customerName;
-      const notificationMessage = `🔔 *New Customer Inquiry*
+      const notificationMessage = `🔔 <b>New Customer Inquiry</b>
 
-👤 **Customer:** ${customerInfo}
-🆔 **Telegram ID:** ${userId}
-📝 **Message:** ${message}
+👤 Customer: ${customerInfo}
+🆔 Telegram ID: ${userId}
+📝 Message: ${message}
 
 Please respond to this customer inquiry from the admin dashboard.`;
 
       // Send notification to operator
       await this.bot.sendMessage(operatorId, notificationMessage, {
-        parse_mode: 'Markdown'
+        parse_mode: 'HTML'
       });
       
       console.log(`[INQUIRY-NOTIFY] Sent notification to operator ${operatorUsername} (ID: ${operatorId})`);
@@ -2240,15 +2266,15 @@ Please respond to this customer inquiry from the admin dashboard.`;
     const operatorContact = operatorContactSetting?.value || '@murzion';
     const responseTime = responseTimeSetting?.value || '2-4 hours';
     
-    const message = `💬 *Send Message to Support*
+    const message = `💬 <b>Send Message to Support</b>
 
 Please describe your issue or question. Our support team will respond within ${responseTime}.
 
-📞 **Direct Contact:**
+📞 Direct Contact:
 • Contact ${operatorContact} directly on Telegram
 • Your User ID: ${userId}
 
-📝 **What to include:**
+📝 What to include:
 • Order number (if applicable)
 • Product name (if applicable)
 • Detailed description of your issue
@@ -2257,7 +2283,7 @@ Please describe your issue or question. Our support team will respond within ${r
 Type your message below and send it:`;
 
     await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
           [{ text: '🔙 Back to Operator Menu', callback_data: 'operator' }],
@@ -2283,13 +2309,13 @@ Type your message below and send it:`;
     const operatorEmail = operatorEmailSetting?.value || 'support@teleshop.com';
     const responseTime = responseTimeSetting?.value || '2-4 hours';
     
-    const message = `📧 *Email Support*
+    const message = `📧 <b>Email Support</b>
 
 You can reach our support team directly at:
 
-**Email:** ${operatorEmail}
+Email: ${operatorEmail}
 
-📋 **Email Template:**
+📋 Email Template:
 Copy and paste this template for faster assistance:
 
 \`\`\`
@@ -2306,10 +2332,10 @@ Additional Details:
 [Any additional information]
 \`\`\`
 
-⚡ **Response Time:** ${responseTime} during business hours`;
+⚡ Response Time: ${responseTime} during business hours`;
 
     await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
           [{ text: '💬 Send Message Instead', callback_data: 'send_support_message' }],
@@ -2321,38 +2347,38 @@ Additional Details:
   }
 
   private async handleFAQ(chatId: number, userId: string) {
-    const message = `❓ *Frequently Asked Questions*
+    const message = `❓ <b>Frequently Asked Questions</b>
 
-**🛒 Ordering:**
+🛒 Ordering:
 • Q: How do I place an order?
 • A: Browse products, add to cart, then checkout
 
 • Q: Can I modify my order?
 • A: Contact support within 1 hour of ordering
 
-**📦 Shipping:**
+📦 Shipping:
 • Q: How long does shipping take?
 • A: 3-7 business days for standard shipping
 
 • Q: Do you ship internationally?
 • A: Currently shipping within the US only
 
-**💳 Payment:**
+💳 Payment:
 • Q: What payment methods do you accept?
 • A: Credit cards, PayPal, bank transfer, and crypto
 
-**🔄 Returns:**
+🔄 Returns:
 • Q: What's your return policy?
 • A: 30-day returns for unopened products
 
-**📱 Technical:**
+📱 Technical:
 • Q: Bot not responding?
 • A: Try /start command or contact support
 
 Need more help? Contact our support team!`;
 
     await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
           [{ text: '💬 Contact Support', callback_data: 'send_support_message' }],
@@ -2383,20 +2409,20 @@ Need more help? Contact our support team!`;
       const operatorContact = operatorContactSetting?.value || '@murzion';
       const responseTime = responseTimeSetting?.value || '2-4 hours';
       
-      const confirmMessage = `✅ *Message Sent Successfully!*
+      const confirmMessage = `✅ <b>Message Sent Successfully!</b>
 
 Your support request has been received. Our team will respond within ${responseTime}.
 
-**Your message:** "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"
+Your message: "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"
 
-**Contact ${operatorContact} directly:** You can also message ${operatorContact} on Telegram${username ? ` mentioning your username @${username}` : ` with your User ID: ${userId}`}
+Contact ${operatorContact} directly: You can also message ${operatorContact} on Telegram${username ? ` mentioning your username @${username}` : ` with your User ID: ${userId}`}
 
-**Ticket ID:** #${Date.now().toString().slice(-6)}
+Ticket ID: #${Date.now().toString().slice(-6)}
 
 You can continue shopping while we prepare your response.`;
 
       await this.sendAutoVanishMessage(chatId, confirmMessage, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
             [{ text: '📋 Listings', callback_data: 'listings' }],
@@ -2439,22 +2465,22 @@ You can continue shopping while we prepare your response.`;
       // Skip address for methods that don't require it (e.g., pickup)
       await this.handlePaymentMethodSelection(chatId, userId, methodId, orderNumber);
     } else {
-      const message = `📍 *Customer Information & Delivery Address*
+      const message = `📍 <b>Customer Information & Delivery Address</b>
 
-**Order Number:** ${orderNumber}
-**Selected:** ${deliveryInfo.name} (${deliveryInfo.time})
-**Cost:** ${deliveryInfo.cost === 0 ? 'Free' : `$${deliveryInfo.cost}`}
+<b>Order Number:</b> ${orderNumber}
+Selected: ${deliveryInfo.name} (${deliveryInfo.time})
+Cost: ${deliveryInfo.cost === 0 ? 'Free' : `$${deliveryInfo.cost}`}
 
 Please provide your information in this format:
 
-📝 **Required Format:**
+📝 Required Format:
 Full Name
 Phone Number
 Street Address
 City, State ZIP
 Country
 
-**Example:**
+Example:
 John Smith
 +1 (555) 123-4567
 123 Main Street
@@ -2464,7 +2490,7 @@ United States
 Type your complete information below:`;
 
       await this.sendAutoVanishMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
             [{ text: '🔙 Change Delivery Method', callback_data: 'start_checkout' }]
@@ -2534,12 +2560,12 @@ Is this information correct?`;
 
   // Handle order confirmation when user clicks "Confirm Information"
   private async handleOrderConfirmation(chatId: number, userId: string, deliveryMethod: string, orderNumber: string) {
-    const confirmMessage = `✅ **Information Confirmed!**
+    const confirmMessage = `✅ Information Confirmed!
 
 Thank you for confirming your order details. Now please select your payment method:`;
 
     await this.sendAutoVanishMessage(chatId, confirmMessage, {
-      parse_mode: 'Markdown'
+      parse_mode: 'HTML'
     });
 
     // Proceed to payment method selection
@@ -2550,10 +2576,10 @@ Thank you for confirming your order details. Now please select your payment meth
     // Get active payment methods from database
     const paymentMethods = await storage.getActivePaymentMethods();
     
-    let message = `💳 *Choose Payment Method*
+    let message = `💳 <b>Choose Payment Method</b>
 
-**Order Number:** ${orderNumber}
-**Customer:** ${customerName || `User ${userId}`}
+<b>Order Number:</b> ${orderNumber}
+Customer: ${customerName || `User ${userId}`}
 
 Select your preferred payment option:`;
 
@@ -2563,7 +2589,7 @@ Select your preferred payment option:`;
 
     // Add payment methods from database
     for (const method of paymentMethods) {
-      message += `\n💳 **${method.name}**`;
+      message += `\n💳 ${method.name}`;
       if (method.description) {
         message += ` - ${method.description}`;
       }
@@ -2578,7 +2604,7 @@ Select your preferred payment option:`;
     keyboard.inline_keyboard.push([{ text: '🔙 Back to Delivery', callback_data: 'start_checkout' }]);
 
     await this.sendAutoVanishMessage(chatId, message, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       reply_markup: keyboard
     });
   }
@@ -2767,7 +2793,7 @@ Thank you for shopping with us! 🛍️`;
     const message = `${settingsTitle}\n\n` +
                    `🌐 Current Language: ${currentLanguage.toUpperCase()}\n` +
                    `💱 Current Currency: ${currentCurrency}\n\n` +
-                   `💡 *Tip:* Use the main menu to change your language and currency preferences.\n\n` +
+                   `💡 <b>Tip:</b> Use the main menu to change your language and currency preferences.\n\n` +
                    `Other settings and preferences will be available here in future updates.`;
     
     const keyboard = {
@@ -2780,7 +2806,7 @@ Thank you for shopping with us! 🛍️`;
 
     await this.sendAutoVanishMessage(chatId, message, {
       reply_markup: keyboard,
-      parse_mode: 'Markdown'
+      parse_mode: 'HTML'
     });
   }
 
@@ -2810,7 +2836,7 @@ Thank you for shopping with us! 🛍️`;
 
     await this.sendAutoVanishMessage(chatId, title, {
       reply_markup: keyboard,
-      parse_mode: 'Markdown'
+      parse_mode: 'HTML'
     });
   }
 
@@ -2844,7 +2870,7 @@ Thank you for shopping with us! 🛍️`;
 
     await this.sendAutoVanishMessage(chatId, title, {
       reply_markup: keyboard,
-      parse_mode: 'Markdown'
+      parse_mode: 'HTML'
     });
   }
 
