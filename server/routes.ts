@@ -2308,6 +2308,53 @@ railway run npm run db:push</pre>
     }
   });
 
+  // Support Settings routes
+  app.get('/api/support/settings', async (req, res) => {
+    try {
+      const settings = await storage.getBotSettings();
+      const supportSettings = settings.filter(s => s.key.startsWith('support_'));
+      
+      const result: any = {
+        autoAssign: true,
+        supportHours: true,
+        maxSessions: 5,
+        responseTime: 5
+      };
+      
+      supportSettings.forEach(setting => {
+        const key = setting.key.replace('support_', '');
+        if (key === 'auto_assign') result.autoAssign = setting.value === 'true';
+        else if (key === 'support_hours') result.supportHours = setting.value === 'true';
+        else if (key === 'max_sessions') result.maxSessions = parseInt(setting.value);
+        else if (key === 'response_time') result.responseTime = parseInt(setting.value);
+      });
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error fetching support settings:', error);
+      res.status(500).json({ message: 'Failed to fetch support settings' });
+    }
+  });
+
+  app.put('/api/support/settings', async (req, res) => {
+    try {
+      const { autoAssign, supportHours, maxSessions, responseTime } = req.body;
+      
+      await storage.setBotSetting({ key: 'support_auto_assign', value: String(autoAssign) });
+      await storage.setBotSetting({ key: 'support_support_hours', value: String(supportHours) });
+      await storage.setBotSetting({ key: 'support_max_sessions', value: String(maxSessions) });
+      await storage.setBotSetting({ key: 'support_response_time', value: String(responseTime) });
+      
+      res.json({ 
+        success: true,
+        settings: { autoAssign, supportHours, maxSessions, responseTime }
+      });
+    } catch (error) {
+      console.error('Error updating support settings:', error);
+      res.status(500).json({ message: 'Failed to update support settings' });
+    }
+  });
+
   // Currency Management routes
   app.get("/api/currencies", async (req, res) => {
     try {
