@@ -17,6 +17,7 @@ import type {
   Operator,
   OperatorSession,
   SupportMessage,
+  AiChatSuggestion,
   TrackedUser,
   Broadcast,
   Language,
@@ -40,6 +41,7 @@ import type {
   InsertOperator,
   InsertOperatorSession,
   InsertSupportMessage,
+  InsertAiChatSuggestion,
   InsertTrackedUser,
   InsertBroadcast,
   InsertLanguage,
@@ -65,6 +67,7 @@ import {
   operators,
   operatorSessions,
   supportMessages,
+  aiChatSuggestions,
   trackedUsers,
   broadcasts,
   languages,
@@ -209,6 +212,11 @@ export interface IStorage {
   // Support Messages
   addSupportMessage(message: InsertSupportMessage): Promise<SupportMessage>;
   getSupportMessages(sessionId: string): Promise<SupportMessage[]>;
+  
+  // AI Chat Suggestions
+  createAiSuggestion(suggestion: InsertAiChatSuggestion): Promise<AiChatSuggestion>;
+  getLatestAiSuggestion(sessionId: string): Promise<AiChatSuggestion | undefined>;
+  markAiSuggestionAsUsed(suggestionId: string): Promise<boolean>;
   
   // Operator Management
   assignOperator(sessionId: string, operatorName: string): Promise<boolean>;
@@ -1133,6 +1141,29 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date(),
       })
       .where(eq(operatorSessions.id, sessionId));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async createAiSuggestion(suggestion: InsertAiChatSuggestion): Promise<AiChatSuggestion> {
+    const result = await db.insert(aiChatSuggestions)
+      .values(suggestion)
+      .returning();
+    return result[0];
+  }
+
+  async getLatestAiSuggestion(sessionId: string): Promise<AiChatSuggestion | undefined> {
+    const results = await db.select()
+      .from(aiChatSuggestions)
+      .where(eq(aiChatSuggestions.sessionId, sessionId))
+      .orderBy(desc(aiChatSuggestions.createdAt))
+      .limit(1);
+    return results[0];
+  }
+
+  async markAiSuggestionAsUsed(suggestionId: string): Promise<boolean> {
+    const result = await db.update(aiChatSuggestions)
+      .set({ wasUsed: true })
+      .where(eq(aiChatSuggestions.id, suggestionId));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
