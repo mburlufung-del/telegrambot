@@ -19,6 +19,7 @@ import {
   insertOperatorSchema,
   insertUserPreferencesSchema,
   insertLanguageSchema,
+  insertCurrencySchema,
   type PaymentMethod
 } from "@shared/schema";
 import { z } from "zod";
@@ -2354,6 +2355,71 @@ railway run npm run db:push</pre>
     }
   });
 
+  app.post("/api/currencies", async (req, res) => {
+    try {
+      const validation = insertCurrencySchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid currency data",
+          errors: validation.error.errors
+        });
+      }
+
+      const currency = await storage.createCurrency(validation.data);
+      res.status(201).json(currency);
+    } catch (error) {
+      console.error('Error creating currency:', error);
+      res.status(500).json({ message: "Failed to create currency" });
+    }
+  });
+
+  app.put("/api/currencies/:code", async (req, res) => {
+    try {
+      // Prevent code changes
+      if (req.body.code && req.body.code !== req.params.code) {
+        return res.status(400).json({ message: "Cannot change currency code" });
+      }
+      
+      const validation = insertCurrencySchema.partial().omit({ code: true }).safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid currency data",
+          errors: validation.error.errors
+        });
+      }
+
+      const currency = await storage.updateCurrency(req.params.code, validation.data);
+      if (!currency) {
+        return res.status(404).json({ message: "Currency not found" });
+      }
+      res.json(currency);
+    } catch (error) {
+      console.error('Error updating currency:', error);
+      res.status(500).json({ message: "Failed to update currency" });
+    }
+  });
+
+  app.delete("/api/currencies/:code", async (req, res) => {
+    try {
+      // Check if this is the default currency
+      const defaultCurrency = await storage.getDefaultCurrency();
+      if (defaultCurrency?.code === req.params.code) {
+        return res.status(400).json({ message: "Cannot delete the default currency. Set another currency as default first." });
+      }
+      
+      const success = await storage.deleteCurrency(req.params.code);
+      if (!success) {
+        return res.status(404).json({ message: "Currency not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting currency:', error);
+      res.status(500).json({ message: "Failed to delete currency" });
+    }
+  });
+
   // Language Management routes
   app.get("/api/languages", async (req, res) => {
     try {
@@ -2422,7 +2488,12 @@ railway run npm run db:push</pre>
 
   app.put("/api/languages/:code", async (req, res) => {
     try {
-      const validation = insertLanguageSchema.partial().safeParse(req.body);
+      // Prevent code changes
+      if (req.body.code && req.body.code !== req.params.code) {
+        return res.status(400).json({ message: "Cannot change language code" });
+      }
+      
+      const validation = insertLanguageSchema.partial().omit({ code: true }).safeParse(req.body);
       
       if (!validation.success) {
         return res.status(400).json({ 
@@ -2444,6 +2515,12 @@ railway run npm run db:push</pre>
 
   app.delete("/api/languages/:code", async (req, res) => {
     try {
+      // Check if this is the default language
+      const defaultLanguage = await storage.getDefaultLanguage();
+      if (defaultLanguage?.code === req.params.code) {
+        return res.status(400).json({ message: "Cannot delete the default language. Set another language as default first." });
+      }
+      
       const success = await storage.deleteLanguage(req.params.code);
       if (!success) {
         return res.status(404).json({ message: "Language not found" });
@@ -2452,6 +2529,65 @@ railway run npm run db:push</pre>
     } catch (error) {
       console.error('Error deleting language:', error);
       res.status(500).json({ message: "Failed to delete language" });
+    }
+  });
+
+  app.get("/api/languages/stats", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const usersByLanguage: Record<string, number> = {};
+      
+      for (const user of users) {
+        const prefs = await storage.getUserPreferences(user.chatId);
+        if (prefs?.languageCode) {
+          usersByLanguage[prefs.languageCode] = (usersByLanguage[prefs.languageCode] || 0) + 1;
+        }
+      }
+      
+      res.json({
+        totalUsers: users.length,
+        usersByLanguage
+      });
+    } catch (error) {
+      console.error('Error fetching language stats:', error);
+      res.status(500).json({ message: "Failed to fetch language stats" });
+    }
+  });
+
+  app.get("/api/currencies/stats", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const usersByCurrency: Record<string, number> = {};
+      
+      for (const user of users) {
+        const prefs = await storage.getUserPreferences(user.chatId);
+        if (prefs?.currencyCode) {
+          usersByCurrency[prefs.currencyCode] = (usersByCurrency[prefs.currencyCode] || 0) + 1;
+        }
+      }
+      
+      res.json({
+        totalUsers: users.length,
+        usersByCurrency
+      });
+    } catch (error) {
+      console.error('Error fetching currency stats:', error);
+      res.status(500).json({ message: "Failed to fetch currency stats" });
+    }
+  });
+
+  app.get("/api/currency/rates", async (req, res) => {
+    try {
+      // Return current exchange rates - for now just return empty/placeholder
+      // This would typically fetch from an external API
+      res.json({
+        base: "USD",
+        rates: {},
+        lastUpdated: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error fetching currency rates:', error);
+      res.status(500).json({ message: "Failed to fetch currency rates" });
     }
   });
 
