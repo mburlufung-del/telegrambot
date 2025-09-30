@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { teleShopBot } from "./bot";
 import { SimpleObjectStorageService } from "./simpleObjectStorage";
 import { currencyService } from "./services/currency-service";
+import { aiChatService } from "./services/ai-chat-service";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
@@ -1489,6 +1490,162 @@ function registerAllRoutes(app: Express): void {
     } catch (error) {
       console.error("Error deleting operator:", error);
       res.status(500).json({ message: "Failed to delete operator" });
+    }
+  });
+
+  // Live chat and AI assistance routes
+  app.get("/api/chat/sessions", async (req, res) => {
+    try {
+      const { status } = req.query;
+      const sessions = await storage.getOperatorSessions(status as string);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching chat sessions:", error);
+      res.status(500).json({ message: "Failed to fetch chat sessions" });
+    }
+  });
+
+  app.get("/api/chat/sessions/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const session = await storage.getOperatorSession(id);
+      
+      if (!session) {
+        return res.status(404).json({ message: "Chat session not found" });
+      }
+
+      res.json(session);
+    } catch (error) {
+      console.error("Error fetching chat session:", error);
+      res.status(500).json({ message: "Failed to fetch chat session" });
+    }
+  });
+
+  app.get("/api/chat/sessions/:id/messages", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const messages = await storage.getSupportMessages(id);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ message: "Failed to fetch chat messages" });
+    }
+  });
+
+  app.post("/api/chat/sessions/:id/messages", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { message, senderType, senderName } = req.body;
+
+      if (!message || !senderType || !senderName) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const newMessage = await storage.addSupportMessage({
+        sessionId: id,
+        senderType,
+        senderName,
+        message,
+        messageType: "text",
+      });
+
+      await storage.updateOperatorSession(id, {
+        lastMessage: message,
+        lastActivityAt: new Date(),
+      });
+
+      res.status(201).json(newMessage);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  app.post("/api/chat/sessions/:id/ai-suggest", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const session = await storage.getOperatorSession(id);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+
+      const messages = await storage.getSupportMessages(id);
+      
+      const aiResult = await aiChatService.generateSuggestion(messages, session);
+
+      const suggestion = await storage.createAiSuggestion({
+        sessionId: id,
+        suggestion: aiResult.suggestion,
+        context: aiResult.context,
+        confidence: aiResult.confidence.toString(),
+        wasUsed: false,
+      });
+
+      res.json(suggestion);
+    } catch (error) {
+      console.error("Error generating AI suggestion:", error);
+      res.status(500).json({ message: "Failed to generate AI suggestion" });
+    }
+  });
+
+  app.post("/api/chat/sessions/:id/use-suggestion", async (req, res) => {
+    try {
+      const { suggestionId } = req.body;
+
+      if (!suggestionId) {
+        return res.status(400).json({ message: "Suggestion ID required" });
+      }
+
+      const success = await storage.markAiSuggestionAsUsed(suggestionId);
+
+      if (!success) {
+        return res.status(404).json({ message: "Suggestion not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking suggestion as used:", error);
+      res.status(500).json({ message: "Failed to mark suggestion as used" });
+    }
+  });
+
+  app.put("/api/chat/sessions/:id/assign", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { operatorName } = req.body;
+
+      if (!operatorName) {
+        return res.status(400).json({ message: "Operator name required" });
+      }
+
+      const success = await storage.assignOperator(id, operatorName);
+
+      if (!success) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+
+      const updatedSession = await storage.getOperatorSession(id);
+      res.json(updatedSession);
+    } catch (error) {
+      console.error("Error assigning operator:", error);
+      res.status(500).json({ message: "Failed to assign operator" });
+    }
+  });
+
+  app.put("/api/chat/sessions/:id/close", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.closeOperatorSession(id);
+
+      if (!success) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error closing session:", error);
+      res.status(500).json({ message: "Failed to close session" });
     }
   });
 
