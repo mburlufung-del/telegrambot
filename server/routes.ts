@@ -2578,16 +2578,54 @@ railway run npm run db:push</pre>
 
   app.get("/api/currency/rates", async (req, res) => {
     try {
-      // Return current exchange rates - for now just return empty/placeholder
-      // This would typically fetch from an external API
+      const exchangeRates = await storage.getExchangeRates();
+      const ratesMap: Record<string, string> = {};
+      
+      for (const rate of exchangeRates) {
+        ratesMap[rate.currencyCode] = rate.rate;
+      }
+      
+      const mostRecent = exchangeRates.reduce((latest, current) => {
+        return !latest || current.lastUpdated > latest.lastUpdated ? current : latest;
+      }, exchangeRates[0]);
+      
       res.json({
         base: "USD",
-        rates: {},
-        lastUpdated: new Date().toISOString()
+        rates: ratesMap,
+        lastUpdated: mostRecent?.lastUpdated?.toISOString() || new Date().toISOString()
       });
     } catch (error) {
       console.error('Error fetching currency rates:', error);
       res.status(500).json({ message: "Failed to fetch currency rates" });
+    }
+  });
+
+  app.post("/api/currency/rates/update", async (req, res) => {
+    try {
+      const activeCurrencies = await storage.getActiveCurrencies();
+      const rates: any[] = [];
+      
+      for (const currency of activeCurrencies) {
+        if (currency.code === 'USD') {
+          rates.push({ currencyCode: 'USD', rate: '1.0' });
+        } else {
+          const exchangeRates = await currencyService.getExchangeRates('USD');
+          const rate = exchangeRates.rates[currency.code];
+          if (rate) {
+            rates.push({ currencyCode: currency.code, rate: rate.toString() });
+          }
+        }
+      }
+      
+      await storage.updateExchangeRates(rates);
+      
+      res.json({ 
+        message: "Exchange rates updated successfully",
+        updatedCount: rates.length
+      });
+    } catch (error) {
+      console.error('Error updating currency rates:', error);
+      res.status(500).json({ message: "Failed to update currency rates" });
     }
   });
 
