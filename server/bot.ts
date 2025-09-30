@@ -521,6 +521,34 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       console.log(`[MESSAGE] Processing text: "${messageText}"`);
       await storage.incrementMessageCount();
       
+      // Check if user has active support session
+      const activeSession = await storage.getUserActiveSession(userId);
+      if (activeSession && activeSession.status === 'active' && msg.text) {
+        // Add message to active support session
+        await storage.addSupportMessage({
+          sessionId: activeSession.id,
+          senderType: 'customer',
+          senderName: msg.from?.first_name || 'Customer',
+          message: msg.text,
+          messageType: 'text',
+        });
+        
+        await storage.updateOperatorSession(activeSession.id, {
+          lastMessage: msg.text,
+        });
+        
+        await this.sendAutoVanishMessage(chatId, '✅ Message sent to operator!', {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '📋 View Session', callback_data: `view_session_${activeSession.id}` }],
+              [{ text: '❌ End Session', callback_data: `end_session_${activeSession.id}` }],
+              [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
+            ]
+          }
+        });
+        return;
+      }
+      
       // Create customer inquiry if it's not a command or known keyword
       if (!messageText.startsWith('/') && messageText !== 'menu' && messageText !== 'main menu') {
         try {
@@ -2225,6 +2253,22 @@ ${businessHours}
         // Ignore errors when stopping polling
       }
       this.bot = null;
+    }
+  }
+
+  async sendMessageToCustomer(telegramUserId: string, message: string) {
+    if (!this.bot) {
+      throw new Error('Bot not initialized');
+    }
+    
+    try {
+      await this.bot.sendMessage(parseInt(telegramUserId), message, {
+        parse_mode: 'HTML'
+      });
+      return true;
+    } catch (error) {
+      console.error(`Failed to send message to user ${telegramUserId}:`, error);
+      throw error;
     }
   }
 

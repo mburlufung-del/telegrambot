@@ -1541,6 +1541,11 @@ function registerAllRoutes(app: Express): void {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
+      const session = await storage.getOperatorSession(id);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+
       const newMessage = await storage.addSupportMessage({
         sessionId: id,
         senderType,
@@ -1552,6 +1557,16 @@ function registerAllRoutes(app: Express): void {
       await storage.updateOperatorSession(id, {
         lastMessage: message,
       });
+
+      if (senderType === "operator") {
+        try {
+          await teleShopBot.sendMessageToCustomer(session.telegramUserId, 
+            `💬 <b>${senderName}:</b>\n\n${message}`
+          );
+        } catch (error) {
+          console.error("Failed to send message to customer:", error);
+        }
+      }
 
       res.status(201).json(newMessage);
     } catch (error) {
