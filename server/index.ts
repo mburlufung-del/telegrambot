@@ -36,8 +36,11 @@ function log(message: string, source: string = 'express') {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
-// Start server first, then initialize bot
-app.listen({
+// Create HTTP server and start it
+import { createServer } from 'http';
+const server = createServer(app);
+
+server.listen({
   port,
   host: "0.0.0.0", 
   reusePort: true,
@@ -47,11 +50,11 @@ app.listen({
   log(`🔍 Bot initialization starting in background...`);
   
   // Initialize bot after server is listening
-  initializeBotWithTimeout();
+  initializeBotWithTimeout(server);
 });
 
 // Initialize bot with timeout and error handling
-async function initializeBotWithTimeout() {
+async function initializeBotWithTimeout(server: any) {
   const timeout = 30000; // 30 second timeout
   
   try {
@@ -60,7 +63,7 @@ async function initializeBotWithTimeout() {
     
     // Race between initialization and timeout
     await Promise.race([
-      autoInitializeBot(),
+      autoInitializeBot(server),
       new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Bot initialization timeout')), timeout)
       )
@@ -79,7 +82,7 @@ async function initializeBotWithTimeout() {
   }
 }
 
-async function autoInitializeBot() {
+async function autoInitializeBot(server: any) {
   try {
     const settings = await storage.getBotSettings();
     const tokenSetting = settings.find(s => s.key === 'bot_token');
@@ -92,15 +95,21 @@ async function autoInitializeBot() {
       log('✅ Bot token auto-configured from environment');
     }
     
-    // Setup dashboard
-    const { setupSimpleDashboard } = await import("./simple-dashboard");
-    setupSimpleDashboard(app);
-    log('🖥️  Admin dashboard interface ready');
-
-    // Register all routes for admin dashboard
+    // Register API routes first (before static files)
     const { registerApiRoutes } = await import("./routes");
     await registerApiRoutes(app);
     log('✅ Admin dashboard API routes registered');
+    
+    // Setup static file serving for built React app
+    const path = await import('path');
+    const distPath = path.resolve(process.cwd(), 'dist', 'public');
+    app.use(express.static(distPath));
+    
+    // Fallback to index.html for client-side routing
+    app.use('*', (_req, res) => {
+      res.sendFile(path.resolve(distPath, 'index.html'));
+    });
+    log('🖥️  Admin dashboard (React app) ready');
 
     // Initialize the bot (this can fail or timeout)
     if (tokenSetting?.value || process.env.TELEGRAM_BOT_TOKEN) {
