@@ -1551,7 +1551,6 @@ function registerAllRoutes(app: Express): void {
 
       await storage.updateOperatorSession(id, {
         lastMessage: message,
-        lastActivityAt: new Date(),
       });
 
       res.status(201).json(newMessage);

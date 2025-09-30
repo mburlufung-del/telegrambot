@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Bot, Package, MessageSquare, Settings, BarChart3, Activity, Folder, ShoppingCart, TrendingUp, Send, CreditCard, Truck, Headphones, Globe, DollarSign, X } from "lucide-react";
+import { Bot, Package, MessageSquare, Settings, BarChart3, Activity, Folder, ShoppingCart, TrendingUp, Send, CreditCard, Truck, Headphones, Globe, DollarSign, X, MessageCircle } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 const navigation = [
@@ -16,6 +16,7 @@ const navigation = [
   { name: "Broadcast", href: "/broadcast", icon: Send },
   { name: "Analytics", href: "/analytics", icon: TrendingUp },
   { name: "Operator Support", href: "/operator-support", icon: Headphones },
+  { name: "Live Chat (AI)", href: "/live-chat", icon: MessageCircle },
   { name: "Bot Settings", href: "/bot-settings", icon: Settings },
 ];
 

@@ -15,6 +15,7 @@ import DeliveryMethods from './pages/delivery-methods'
 import Languages from './pages/languages'
 import Currencies from './pages/currencies'
 import OperatorSupport from './pages/operator-support'
+import LiveChat from './pages/live-chat'
 import NotFound from './pages/not-found'
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
             <Route path="/broadcast" component={Broadcast} />
             <Route path="/bot-settings" component={BotSettings} />
             <Route path="/operator-support" component={OperatorSupport} />
+            <Route path="/live-chat" component={LiveChat} />
             <Route component={NotFound} />
           </Switch>
         </main>
