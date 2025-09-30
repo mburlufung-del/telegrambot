@@ -95,15 +95,21 @@ async function autoInitializeBot(server: any) {
       log('✅ Bot token auto-configured from environment');
     }
     
-    // Setup admin dashboard
-    const { setupSimpleDashboard } = await import("./simple-dashboard");
-    setupSimpleDashboard(app);
-    log('🖥️  Admin dashboard ready');
-    
-    // Register API routes
+    // Register API routes first (before static files)
     const { registerApiRoutes } = await import("./routes");
     await registerApiRoutes(app);
     log('✅ API routes registered');
+    
+    // Setup static file serving for built React app
+    const path = await import('path');
+    const distPath = path.resolve(process.cwd(), 'dist', 'public');
+    app.use(express.static(distPath));
+    
+    // Fallback to index.html for client-side routing
+    app.use('*', (_req, res) => {
+      res.sendFile(path.resolve(distPath, 'index.html'));
+    });
+    log('🖥️  Admin dashboard (React v2) ready');
 
     // Initialize the bot (this can fail or timeout)
     if (tokenSetting?.value || process.env.TELEGRAM_BOT_TOKEN) {
