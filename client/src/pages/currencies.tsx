@@ -130,6 +130,28 @@ export default function Currencies() {
     }
   })
 
+  const updateExchangeRatesMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('/api/currency/rates/update', {
+        method: 'POST'
+      })
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/currency/rates'] })
+      toast({
+        title: "Success",
+        description: `Exchange rates updated successfully. ${data.updatedCount} currencies synced.`,
+      })
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update exchange rates",
+        variant: "destructive",
+      })
+    }
+  })
+
   const resetForm = () => {
     setFormData({
       code: '',
@@ -178,15 +200,12 @@ export default function Currencies() {
   }
 
   const getExchangeRate = (currencyCode: string) => {
-    return exchangeRates?.rates?.[currencyCode] || 'N/A'
+    const rate = exchangeRates?.rates?.[currencyCode]
+    return rate ? parseFloat(rate).toFixed(4) : 'N/A'
   }
 
   const refreshRates = () => {
-    queryClient.invalidateQueries({ queryKey: ['/api/currency/rates'] })
-    toast({
-      title: "Refreshing",
-      description: "Exchange rates are being updated...",
-    })
+    updateExchangeRatesMutation.mutate()
   }
 
   if (isLoading) {
