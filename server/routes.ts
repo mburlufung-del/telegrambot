@@ -18,6 +18,7 @@ import {
   insertPaymentMethodSchema,
   insertOperatorSchema,
   insertUserPreferencesSchema,
+  insertLanguageSchema,
   type PaymentMethod
 } from "@shared/schema";
 import { z } from "zod";
@@ -2397,6 +2398,60 @@ railway run npm run db:push</pre>
     } catch (error) {
       console.error('Error setting default language:', error);
       res.status(500).json({ message: "Failed to set default language" });
+    }
+  });
+
+  app.post("/api/languages", async (req, res) => {
+    try {
+      const validation = insertLanguageSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid language data",
+          errors: validation.error.errors
+        });
+      }
+
+      const language = await storage.createLanguage(validation.data);
+      res.status(201).json(language);
+    } catch (error) {
+      console.error('Error creating language:', error);
+      res.status(500).json({ message: "Failed to create language" });
+    }
+  });
+
+  app.put("/api/languages/:code", async (req, res) => {
+    try {
+      const validation = insertLanguageSchema.partial().safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid language data",
+          errors: validation.error.errors
+        });
+      }
+
+      const language = await storage.updateLanguage(req.params.code, validation.data);
+      if (!language) {
+        return res.status(404).json({ message: "Language not found" });
+      }
+      res.json(language);
+    } catch (error) {
+      console.error('Error updating language:', error);
+      res.status(500).json({ message: "Failed to update language" });
+    }
+  });
+
+  app.delete("/api/languages/:code", async (req, res) => {
+    try {
+      const success = await storage.deleteLanguage(req.params.code);
+      if (!success) {
+        return res.status(404).json({ message: "Language not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting language:', error);
+      res.status(500).json({ message: "Failed to delete language" });
     }
   });
 
