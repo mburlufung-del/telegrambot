@@ -107,11 +107,24 @@ export const operatorSessions = pgTable("operator_sessions", {
 export const supportMessages = pgTable("support_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   sessionId: varchar("session_id").notNull().references(() => operatorSessions.id),
-  senderType: text("sender_type").notNull(), // customer, operator, system
+  senderType: text("sender_type").notNull(), // customer, operator, system, ai
   senderName: text("sender_name").notNull(),
   message: text("message").notNull(),
   messageType: text("message_type").default("text"), // text, image, file, system
   metadata: text("metadata"), // JSON for additional data
+  isAiSuggestion: boolean("is_ai_suggestion").notNull().default(false), // Track AI-generated suggestions
+  aiContext: text("ai_context"), // AI reasoning or context for the suggestion
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+// AI chat suggestions for operators
+export const aiChatSuggestions = pgTable("ai_chat_suggestions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => operatorSessions.id),
+  suggestion: text("suggestion").notNull(), // AI-generated response suggestion
+  context: text("context").notNull(), // Conversation context used
+  confidence: decimal("confidence", { precision: 3, scale: 2 }), // 0.00 to 1.00
+  wasUsed: boolean("was_used").notNull().default(false), // Track if operator used the suggestion
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
@@ -351,10 +364,17 @@ export const insertSupportMessageSchema = createInsertSchema(supportMessages).om
   createdAt: true,
 });
 
+export const insertAiChatSuggestionSchema = createInsertSchema(aiChatSuggestions).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type OperatorSession = typeof operatorSessions.$inferSelect;
 export type InsertOperatorSession = z.infer<typeof insertOperatorSessionSchema>;
 export type SupportMessage = typeof supportMessages.$inferSelect;
 export type InsertSupportMessage = z.infer<typeof insertSupportMessageSchema>;
+export type AiChatSuggestion = typeof aiChatSuggestions.$inferSelect;
+export type InsertAiChatSuggestion = z.infer<typeof insertAiChatSuggestionSchema>;
 export type TrackedUser = typeof trackedUsers.$inferSelect;
 export type InsertTrackedUser = z.infer<typeof insertTrackedUserSchema>;
 export type Broadcast = typeof broadcasts.$inferSelect;
