@@ -21,6 +21,7 @@ import type {
   Broadcast,
   Language,
   Currency,
+  ExchangeRate,
   UserPreferences,
   ProductTranslation,
   CategoryTranslation,
@@ -43,6 +44,7 @@ import type {
   InsertBroadcast,
   InsertLanguage,
   InsertCurrency,
+  InsertExchangeRate,
   InsertUserPreferences,
   InsertProductTranslation,
   InsertCategoryTranslation,
@@ -67,6 +69,7 @@ import {
   broadcasts,
   languages,
   currencies,
+  exchangeRates,
   userPreferences,
   productTranslations,
   categoryTranslations,
@@ -230,6 +233,12 @@ export interface IStorage {
   updateCurrency(code: string, currency: Partial<InsertCurrency>): Promise<Currency | undefined>;
   deleteCurrency(code: string): Promise<boolean>;
   setDefaultCurrency(code: string): Promise<boolean>;
+
+  // Exchange Rates
+  getExchangeRates(): Promise<ExchangeRate[]>;
+  getExchangeRate(currencyCode: string): Promise<ExchangeRate | undefined>;
+  setExchangeRate(rate: InsertExchangeRate): Promise<ExchangeRate>;
+  updateExchangeRates(rates: InsertExchangeRate[]): Promise<void>;
 
   // User Preferences
   getUserPreferences(telegramUserId: string): Promise<UserPreferences | undefined>;
@@ -1223,6 +1232,37 @@ export class DatabaseStorage implements IStorage {
       .set({ isDefault: true })
       .where(eq(currencies.code, code));
     return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Exchange Rates implementation
+  async getExchangeRates(): Promise<ExchangeRate[]> {
+    return await db.select().from(exchangeRates);
+  }
+
+  async getExchangeRate(currencyCode: string): Promise<ExchangeRate | undefined> {
+    const result = await db.select().from(exchangeRates).where(eq(exchangeRates.currencyCode, currencyCode));
+    return result[0];
+  }
+
+  async setExchangeRate(rate: InsertExchangeRate): Promise<ExchangeRate> {
+    const existing = await this.getExchangeRate(rate.currencyCode);
+    
+    if (existing) {
+      const result = await db.update(exchangeRates)
+        .set({ rate: rate.rate, lastUpdated: new Date() })
+        .where(eq(exchangeRates.currencyCode, rate.currencyCode))
+        .returning();
+      return result[0];
+    } else {
+      const result = await db.insert(exchangeRates).values(rate).returning();
+      return result[0];
+    }
+  }
+
+  async updateExchangeRates(rates: InsertExchangeRate[]): Promise<void> {
+    for (const rate of rates) {
+      await this.setExchangeRate(rate);
+    }
   }
 
   // User Preferences implementation

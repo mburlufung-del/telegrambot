@@ -383,6 +383,13 @@ export const currencies = pgTable("currencies", {
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
+// Exchange rates table (base currency is USD)
+export const exchangeRates = pgTable("exchange_rates", {
+  currencyCode: varchar("currency_code", { length: 3 }).primaryKey().references(() => currencies.code),
+  rate: decimal("rate", { precision: 20, scale: 10 }).notNull(), // Exchange rate relative to USD
+  lastUpdated: timestamp("last_updated").notNull().default(sql`now()`),
+});
+
 // User language and currency preferences
 export const userPreferences = pgTable("user_preferences", {
   telegramUserId: text("telegram_user_id").primaryKey(),
@@ -428,6 +435,10 @@ export const insertCurrencySchema = createInsertSchema(currencies).omit({
   createdAt: true,
 });
 
+export const insertExchangeRateSchema = createInsertSchema(exchangeRates).omit({
+  lastUpdated: true,
+});
+
 export const insertUserPreferencesSchema = createInsertSchema(userPreferences).omit({
   createdAt: true,
   updatedAt: true,
@@ -447,6 +458,8 @@ export const insertCategoryTranslationSchema = createInsertSchema(categoryTransl
 
 // Types for new tables
 export type Language = typeof languages.$inferSelect;
+export type ExchangeRate = typeof exchangeRates.$inferSelect;
+export type InsertExchangeRate = z.infer<typeof insertExchangeRateSchema>;
 export type InsertLanguage = z.infer<typeof insertLanguageSchema>;
 export type Currency = typeof currencies.$inferSelect;
 export type InsertCurrency = z.infer<typeof insertCurrencySchema>;
