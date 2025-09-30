@@ -65,6 +65,17 @@ export class TeleShopBot {
           console.log(`Telegram bot initialized with webhook: ${webhookUrl}`);
         }
       } else {
+        // First create a temporary bot instance to clear webhook and pending updates
+        const tempBot = new TelegramBot(token, { polling: false });
+        try {
+          // Use the raw API method to clear webhook with drop_pending_updates parameter
+          await tempBot.setWebHook('', { drop_pending_updates: true } as any);
+          console.log('Cleared webhook and pending updates');
+        } catch (error) {
+          console.log('No webhook to clear or already cleared');
+        }
+        
+        // Now create the actual bot with polling
         this.bot = new TelegramBot(token, { polling: true });
         if (process.env.NODE_ENV === 'development') {
           console.log('Telegram bot initialized with polling for development');
