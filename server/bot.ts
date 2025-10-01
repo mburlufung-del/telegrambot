@@ -2064,7 +2064,7 @@ ${businessHours}
         const costFormatted = cost === 0 ? 'Free' : await i18n.formatPrice(userId, cost.toString());
         const finalTotalFormatted = await i18n.formatPrice(userId, finalTotal.toString());
         message += `\n💰 Cost: ${costFormatted}`;
-        message += `\n💵 <b>Total with delivery: ${finalTotalFormatted}`;
+        message += `\n💵 <b>Total with delivery: ${finalTotalFormatted}</b>`;
         
         keyboard.inline_keyboard.push([{
           text: `📦 ${method.name} - ${finalTotalFormatted}`,
