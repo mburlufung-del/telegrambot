@@ -31,10 +31,13 @@ export default function OperatorSupport() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  const { data: operators = [], isLoading } = useQuery<Operator[]>({
+  const { data: operators = [], isLoading, error } = useQuery<Operator[]>({
     queryKey: ['/api/operators'],
     refetchInterval: 30000,
   })
+
+  // Debug logging
+  console.log('[OperatorSupport] operators:', operators, 'isLoading:', isLoading, 'error:', error)
 
   const { data: activeSessions = [] } = useQuery({
     queryKey: ['/api/operator-sessions'],
