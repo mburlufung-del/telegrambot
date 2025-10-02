@@ -1033,9 +1033,12 @@ export class DatabaseStorage implements IStorage {
 
   async saveBroadcast(broadcast: any): Promise<void> {
     const broadcastToInsert: InsertBroadcast = {
+      title: broadcast.title || 'Broadcast Message',
       message: broadcast.message,
       hasImage: broadcast.hasImage || false,
       recipientCount: broadcast.recipientCount || 0,
+      sentCount: broadcast.sentCount || 0,
+      status: broadcast.status || 'sent',
     };
     
     await db.insert(broadcasts).values(broadcastToInsert);

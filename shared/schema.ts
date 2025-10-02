@@ -298,9 +298,12 @@ export const insertTrackedUserSchema = createInsertSchema(trackedUsers).omit({
 // Broadcasts table for storing broadcast history
 export const broadcasts = pgTable("broadcasts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title"),
   message: text("message").notNull(),
   hasImage: boolean("has_image").notNull().default(false),
   recipientCount: integer("recipient_count").notNull().default(0),
+  sentCount: integer("sent_count").notNull().default(0),
+  status: varchar("status", { length: 20 }).notNull().default('sent'),
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 

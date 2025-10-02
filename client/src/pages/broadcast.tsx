@@ -48,33 +48,25 @@ export default function Broadcast() {
   const { toast} = useToast()
   const queryClient = useQueryClient()
 
-  // Mock data for broadcast history
+  // Fetch real broadcast history from database
   const { data: broadcastHistory = [] } = useQuery<BroadcastMessage[]>({
-    queryKey: ['/api/broadcasts'],
+    queryKey: ['/api/broadcast/history'],
     queryFn: async () => {
-      // Mock data - in real implementation, this would fetch from API
-      return [
-        {
-          id: '1',
-          title: 'Welcome New Customers',
-          message: 'Welcome to our TeleShop! Check out our latest products and special offers.',
-          targetAudience: 'new_users',
-          status: 'sent' as const,
-          sentCount: 245,
-          totalCount: 250,
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: '2',
-          title: 'Flash Sale Alert',
-          message: '🔥 24-hour flash sale! Get 30% off on all electronics. Use code FLASH30',
-          targetAudience: 'all',
-          status: 'sent' as const,
-          sentCount: 1234,
-          totalCount: 1250,
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-        }
-      ]
+      const response = await fetch('/api/broadcast/history');
+      if (!response.ok) throw new Error('Failed to fetch broadcast history');
+      const data = await response.json();
+      
+      // Map database fields to frontend interface
+      return data.map((broadcast: any) => ({
+        id: broadcast.id,
+        title: broadcast.title || 'Broadcast Message',
+        message: broadcast.message,
+        targetAudience: 'all', // Default value since we don't store this
+        status: (broadcast.status || 'sent') as 'draft' | 'sending' | 'sent' | 'failed',
+        sentCount: broadcast.sentCount || 0,
+        totalCount: broadcast.recipientCount || 0,
+        createdAt: broadcast.createdAt
+      }));
     },
     refetchInterval: 30000
   })
@@ -89,7 +81,7 @@ export default function Broadcast() {
       return response.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/broadcasts'] })
+      queryClient.invalidateQueries({ queryKey: ['/api/broadcast/history'] })
       setFormData({ title: '', message: '', targetAudience: 'all' })
       setSelectedImage(null)
       setImagePreview('')
