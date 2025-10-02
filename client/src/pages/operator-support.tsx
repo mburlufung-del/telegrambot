@@ -501,7 +501,7 @@ export default function OperatorSupport() {
                     <div>
                       <h3 className="font-medium text-gray-900">{operator.name}</h3>
                       <div className="text-sm text-gray-500 space-y-1">
-                        <p>@{operator.telegramUsername}</p>
+                        <p>{operator.telegramUsername}</p>
                         {operator.email && <p>{operator.email}</p>}
                         {operator.role && (
                           <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">
