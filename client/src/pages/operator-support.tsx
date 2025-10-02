@@ -33,6 +33,13 @@ export default function OperatorSupport() {
 
   const { data: operators = [], isLoading, error } = useQuery<Operator[]>({
     queryKey: ['/api/operators'],
+    queryFn: async () => {
+      const response = await fetch('/api/operators');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch operators: ${response.status}`);
+      }
+      return response.json();
+    },
     refetchInterval: 30000,
   })
 
