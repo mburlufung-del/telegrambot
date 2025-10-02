@@ -36,9 +36,6 @@ export default function OperatorSupport() {
     refetchInterval: 30000,
   })
 
-  // Debug logging
-  console.log('[OperatorSupport] operators:', operators, 'isLoading:', isLoading, 'error:', error)
-
   const { data: activeSessions = [] } = useQuery({
     queryKey: ['/api/operator-sessions'],
     queryFn: async () => {
@@ -195,13 +192,21 @@ export default function OperatorSupport() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Clean up form data - convert empty strings to undefined
+    const cleanedData = {
+      ...formData,
+      email: formData.email?.trim() || undefined,
+      role: formData.role?.trim() || undefined,
+      telegramUsername: formData.telegramUsername.trim(),
+    }
+    
     if (editingOperator) {
       updateOperatorMutation.mutate({
         id: editingOperator.id,
-        data: formData
+        data: cleanedData
       })
     } else {
-      createOperatorMutation.mutate(formData)
+      createOperatorMutation.mutate(cleanedData)
     }
   }
 
@@ -218,8 +223,14 @@ export default function OperatorSupport() {
   const activeOperators = operators.filter(op => op.active)
   const waitingSessions = activeSessions.filter((s: any) => s.status === 'waiting').length
 
+  console.log('DEBUG - operators:', operators, 'length:', operators?.length, 'isLoading:', isLoading, 'error:', error)
+
   if (isLoading) {
     return <div className="p-6">Loading operators...</div>
+  }
+
+  if (error) {
+    return <div className="p-6">Error loading operators: {error.message}</div>
   }
 
   return (
