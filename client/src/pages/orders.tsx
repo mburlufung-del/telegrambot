@@ -44,11 +44,11 @@ export default function Orders() {
   }
 
   return (
-    <div className="space-y-4 lg:space-y-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold">Order Management</h1>
-          <p className="text-gray-600 mt-1 lg:mt-2">View and manage customer orders from Telegram bot</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Order Management</h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">View and manage customer orders from Telegram bot</p>
         </div>
         <div className="text-center sm:text-right">
           <div className="text-2xl font-bold text-blue-600">{orders.length}</div>

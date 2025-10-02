@@ -168,15 +168,16 @@ export default function Languages() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Language Management</h1>
-          <p className="text-gray-600 mt-2">Configure supported languages for your Telegram bot</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Language Management</h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Configure supported languages for your Telegram bot</p>
         </div>
         <Button 
           onClick={() => setIsAddingLanguage(true)}
-          className="bg-telegram hover:bg-blue-700"
+          className="bg-telegram hover:bg-blue-700 w-full sm:w-auto"
+          data-testid="button-add-language"
         >
           <Plus className="mr-2 h-4 w-4" />
           Add Language

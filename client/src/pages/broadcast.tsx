@@ -159,61 +159,58 @@ export default function Broadcast() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-          <Megaphone className="w-6 h-6 text-green-600" />
-        </div>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Broadcast to Users</h1>
-          <p className="text-gray-600">Send announcements and promotions to your customers</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Broadcast to Users</h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Send announcements and promotions to your customers</p>
         </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-100 text-sm font-medium">Total Users</p>
-                <p className="text-3xl font-bold">1,250</p>
+                <p className="text-blue-100 text-xs md:text-sm font-medium">Total Users</p>
+                <p className="text-2xl md:text-3xl font-bold">1,250</p>
                 <p className="text-blue-100 text-xs">Active bot users</p>
               </div>
-              <Users className="w-8 h-8 text-blue-200" />
+              <Users className="w-6 h-6 md:w-8 md:h-8 text-blue-200" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-100 text-sm font-medium">Messages Sent</p>
-                <p className="text-3xl font-bold">2,479</p>
+                <p className="text-green-100 text-xs md:text-sm font-medium">Messages Sent</p>
+                <p className="text-2xl md:text-3xl font-bold">2,479</p>
                 <p className="text-green-100 text-xs">This month</p>
               </div>
-              <Send className="w-8 h-8 text-green-200" />
+              <Send className="w-6 h-6 md:w-8 md:h-8 text-green-200" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-100 text-sm font-medium">Delivery Rate</p>
-                <p className="text-3xl font-bold">98.5%</p>
+                <p className="text-purple-100 text-xs md:text-sm font-medium">Delivery Rate</p>
+                <p className="text-2xl md:text-3xl font-bold">98.5%</p>
                 <p className="text-purple-100 text-xs">Average success rate</p>
               </div>
-              <Target className="w-8 h-8 text-purple-200" />
+              <Target className="w-6 h-6 md:w-8 md:h-8 text-purple-200" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Send New Broadcast */}
         <Card>
           <CardHeader>

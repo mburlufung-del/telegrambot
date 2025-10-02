@@ -213,20 +213,21 @@ export default function Currencies() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Currency Management</h1>
-          <p className="text-gray-600 mt-2">Configure supported currencies and exchange rates for your Telegram bot</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Currency Management</h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Configure supported currencies and exchange rates for your Telegram bot</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           <Button 
             variant="outline"
             onClick={refreshRates}
-            className="mr-2"
+            className="flex-1 sm:flex-none"
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh Rates
+            <span className="hidden sm:inline">Refresh Rates</span>
+            <span className="sm:hidden">Refresh</span>
           </Button>
           <Button 
             onClick={() => setIsAddingCurrency(true)}

@@ -173,15 +173,16 @@ export default function Categories() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Product Categories</h1>
-          <p className="text-gray-600 mt-2">Manage and organize your product categories ({categories.length} total)</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Product Categories</h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Manage and organize your product categories ({categories.length} total)</p>
         </div>
         <Button 
           onClick={() => setIsAddingCategory(true)}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+          data-testid="button-add-category"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add New Category

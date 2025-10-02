@@ -258,15 +258,15 @@ export default function PaymentMethods() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Payment Methods</h1>
-          <p className="text-gray-600 mt-1">Configure payment options for your customers</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Payment Methods</h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1">Configure payment options for your customers</p>
         </div>
         <Button 
           onClick={() => setIsAddingMethod(true)}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
           data-testid="button-add-payment-method"
         >
           <Plus className="w-4 h-4 mr-2" />
