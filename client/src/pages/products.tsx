@@ -37,6 +37,12 @@ export default function Products() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
+  // Helper function to get currency symbol from currency code
+  const getCurrencySymbol = (currencyCode: string) => {
+    const currency = currencies.find((c: any) => c.code === currencyCode)
+    return currency?.symbol || '$'
+  }
+
   const { data: products = [], isLoading, refetch: refetchProducts } = useQuery<Product[]>({
     queryKey: ['/api/products'],
     staleTime: 0,
@@ -507,7 +513,7 @@ export default function Products() {
                             />
                           </div>
                           <div className="flex-1">
-                            <Label className="text-sm font-semibold text-gray-700">Price per Unit ($)</Label>
+                            <Label className="text-sm font-semibold text-gray-700">Price per Unit ({getCurrencySymbol(formData.currencyCode)})</Label>
                             <Input
                               type="number"
                               step="0.01"
@@ -648,7 +654,7 @@ export default function Products() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <DollarSign className="w-4 h-4 text-green-600 mr-1" />
-                    <span className="font-semibold">${product.price}</span>
+                    <span className="font-semibold">{getCurrencySymbol(product.currencyCode || 'USD')}{product.price}</span>
                   </div>
                   <div className="flex items-center">
                     <Package className="w-4 h-4 text-blue-600 mr-1" />

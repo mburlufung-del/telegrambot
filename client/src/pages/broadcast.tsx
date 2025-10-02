@@ -246,11 +246,8 @@ export default function Broadcast() {
                     <SelectValue placeholder="Select audience" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Users (1,250)</SelectItem>
-                    <SelectItem value="active">Active Users (980)</SelectItem>
-                    <SelectItem value="new_users">New Users (120)</SelectItem>
-                    <SelectItem value="customers">Customers with Orders (340)</SelectItem>
-                    <SelectItem value="inactive">Inactive Users (270)</SelectItem>
+                    <SelectItem value="all">All Users</SelectItem>
+                    <SelectItem value="recent">Recent Users (Last 30 Days)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
