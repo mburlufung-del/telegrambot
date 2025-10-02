@@ -485,6 +485,9 @@ export default function OperatorSupport() {
           <CardTitle>Support Team ({operators.length})</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 rounded">
+            DEBUG: operators.length = {operators.length}, Array.isArray = {Array.isArray(operators).toString()}
+          </div>
           {operators.length === 0 ? (
             <div className="text-center py-8">
               <Users className="mx-auto h-12 w-12 text-gray-400" />
