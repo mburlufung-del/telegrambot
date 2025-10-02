@@ -496,21 +496,26 @@ export default function Products() {
                             <Label className="text-sm font-semibold text-gray-700">Min Quantity</Label>
                             <Input
                               type="number"
-                              min="1"
+                              step="0.1"
+                              min="0.1"
                               value={tier.minQuantity}
-                              onChange={(e) => updatePricingTier(index, 'minQuantity', parseInt(e.target.value) || 1)}
-                              placeholder="1"
+                              onChange={(e) => updatePricingTier(index, 'minQuantity', parseFloat(e.target.value) || 0.1)}
+                              placeholder="1.0"
                               className="mt-2 border-blue-200 focus:border-blue-400"
+                              data-testid={`input-tier-min-${index}`}
                             />
                           </div>
                           <div className="flex-1">
                             <Label className="text-sm font-semibold text-gray-700">Max Quantity</Label>
                             <Input
                               type="number"
+                              step="0.1"
+                              min="0.1"
                               value={tier.maxQuantity || ''}
-                              onChange={(e) => updatePricingTier(index, 'maxQuantity', e.target.value ? parseInt(e.target.value) : undefined)}
+                              onChange={(e) => updatePricingTier(index, 'maxQuantity', e.target.value ? parseFloat(e.target.value) : undefined)}
                               placeholder="Unlimited"
                               className="mt-2 border-blue-200 focus:border-blue-400"
+                              data-testid={`input-tier-max-${index}`}
                             />
                           </div>
                           <div className="flex-1">

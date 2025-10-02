@@ -1922,10 +1922,8 @@ ${businessHours}
         parse_mode: 'HTML'
       });
 
-      // Auto-return to main menu after 2 seconds
-      setTimeout(async () => {
-        await this.sendMainMenu(chatId);
-      }, 2000);
+      // Auto-return to main menu immediately for faster response
+      await this.sendMainMenu(chatId);
       
     } catch (error) {
       console.error('Error adding to wishlist:', error);
@@ -2038,7 +2036,7 @@ ${businessHours}
       if (cartItems.length === 0) {
         const message = '🛒 Your cart is empty. Add items before checkout.';
         await this.sendAutoVanishMessage(chatId, message);
-        setTimeout(() => this.sendMainMenu(chatId), 2000);
+        await this.sendMainMenu(chatId);
         return;
       }
 
@@ -2107,7 +2105,7 @@ ${businessHours}
       console.error('Error during checkout start:', error);
       const message = '❌ Checkout failed. Please try again or contact support.';
       await this.sendAutoVanishMessage(chatId, message);
-      setTimeout(() => this.sendMainMenu(chatId), 2000);
+      await this.sendMainMenu(chatId);
     }
   }
 
