@@ -919,17 +919,23 @@ function registerAllRoutes(app: Express): void {
 
       let imageUrl = '';
       if (imageFile) {
+        console.log(`[BROADCAST] Uploading image: ${imageFile.originalname}, size: ${imageFile.size} bytes`);
         // Upload image to object storage
         const uploadedUrl = await uploadToObjectStorage(imageFile.buffer, imageFile.originalname);
         imageUrl = uploadedUrl;
+        console.log(`[BROADCAST] Image uploaded successfully to: ${imageUrl}`);
       }
 
+      console.log(`[BROADCAST] Sending broadcast with message length: ${message.length}, hasImage: ${!!imageFile}, targetType: ${targetType}`);
+      
       // Use the bot's broadcastMessage method
       const result = await teleShopBot.broadcastMessage({
         message,
         imageUrl,
         targetType,
       });
+      
+      console.log(`[BROADCAST] Broadcast completed. Sent: ${result.sentCount}/${result.totalTargeted}`);
 
       // Save broadcast record
       const broadcastRecord = {
