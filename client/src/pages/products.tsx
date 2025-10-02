@@ -19,6 +19,7 @@ export default function Products() {
     name: '',
     description: '',
     price: '',
+    currencyCode: 'USD',
     stock: '',
     unit: 'piece',
     categoryId: '',
@@ -63,6 +64,15 @@ export default function Products() {
       }
       const data = await response.json();
       return data;
+    }
+  })
+
+  const { data: currencies = [] } = useQuery({
+    queryKey: ['/api/currencies'],
+    queryFn: async () => {
+      const response = await fetch('/api/currencies');
+      if (!response.ok) throw new Error('Failed to fetch currencies');
+      return response.json();
     }
   })
 
@@ -161,6 +171,7 @@ export default function Products() {
       name: '',
       description: '',
       price: '',
+      currencyCode: 'USD',
       stock: '',
       unit: 'piece',
       categoryId: '',
@@ -181,6 +192,7 @@ export default function Products() {
       name: formData.name,
       description: formData.description,
       price: parseFloat(formData.price),
+      currencyCode: formData.currencyCode,
       stock: parseInt(formData.stock),
       unit: formData.unit,
       categoryId: formData.categoryId || null,
@@ -240,6 +252,7 @@ export default function Products() {
       name: product.name,
       description: product.description || '',
       price: product.price.toString(),
+      currencyCode: product.currencyCode || 'USD',
       stock: product.stock.toString(),
       unit: (product as any).unit || 'piece',
       categoryId: product.categoryId || '',
@@ -336,7 +349,7 @@ export default function Products() {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="price">Base Price ($)</Label>
+                  <Label htmlFor="price">Base Price</Label>
                   <Input
                     id="price"
                     type="number"
@@ -348,6 +361,27 @@ export default function Products() {
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     Default price when no bulk pricing tiers apply
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="currency">Currency</Label>
+                  <Select
+                    value={formData.currencyCode}
+                    onValueChange={(value) => setFormData({...formData, currencyCode: value})}
+                  >
+                    <SelectTrigger data-testid="select-currency">
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currencies.map((currency: any) => (
+                        <SelectItem key={currency.code} value={currency.code}>
+                          {currency.code} - {currency.name} ({currency.symbol})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Currency for pricing display
                   </p>
                 </div>
                 <div>
