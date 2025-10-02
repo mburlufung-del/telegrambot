@@ -42,8 +42,10 @@ export default function Broadcast() {
     message: '',
     targetAudience: 'all'
   })
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>('')
 
-  const { toast } = useToast()
+  const { toast} = useToast()
   const queryClient = useQueryClient()
 
   // Mock data for broadcast history
@@ -78,11 +80,10 @@ export default function Broadcast() {
   })
 
   const sendBroadcastMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
+    mutationFn: async (formDataToSend: FormData) => {
       const response = await fetch('/api/broadcast/send', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: formDataToSend
       })
       if (!response.ok) throw new Error('Failed to send broadcast')
       return response.json()
@@ -90,6 +91,8 @@ export default function Broadcast() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/broadcasts'] })
       setFormData({ title: '', message: '', targetAudience: 'all' })
+      setSelectedImage(null)
+      setImagePreview('')
       toast({ 
         title: 'Broadcast sent successfully!', 
         description: 'Your message is being delivered to users' 
@@ -104,6 +107,18 @@ export default function Broadcast() {
     }
   })
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedImage(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.title.trim() || !formData.message.trim()) {
@@ -113,7 +128,16 @@ export default function Broadcast() {
       })
       return
     }
-    sendBroadcastMutation.mutate(formData)
+    
+    const formDataToSend = new FormData()
+    formDataToSend.append('title', formData.title)
+    formDataToSend.append('message', formData.message)
+    formDataToSend.append('targetAudience', formData.targetAudience)
+    if (selectedImage) {
+      formDataToSend.append('image', selectedImage)
+    }
+    
+    sendBroadcastMutation.mutate(formDataToSend)
   }
 
   const getStatusColor = (status: string) => {
@@ -246,6 +270,34 @@ export default function Broadcast() {
                 <div className="text-xs text-gray-500 mt-1">
                   {formData.message.length}/4096 characters
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="image">Image (optional)</Label>
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  data-testid="input-broadcast-image"
+                />
+                {imagePreview && (
+                  <div className="mt-2 relative">
+                    <img src={imagePreview} alt="Preview" className="max-h-40 rounded-lg" />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => {
+                        setSelectedImage(null)
+                        setImagePreview('')
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

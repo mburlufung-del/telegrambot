@@ -66,6 +66,31 @@ const upload = multer({
   }
 });
 
+// Helper function to upload buffer to object storage
+async function uploadToObjectStorage(buffer: Buffer, filename: string): Promise<string> {
+  const objectStorageService = new SimpleObjectStorageService();
+  
+  // Get presigned upload URL
+  const uploadUrl = await objectStorageService.getObjectEntityUploadURL();
+  
+  // Upload the file buffer to the presigned URL
+  const uploadResponse = await fetch(uploadUrl, {
+    method: 'PUT',
+    body: buffer,
+    headers: {
+      'Content-Type': 'image/jpeg', // Default to JPEG, could be improved with mime-type detection
+    },
+  });
+  
+  if (!uploadResponse.ok) {
+    throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+  }
+  
+  // Extract the public URL from the presigned URL (remove query params)
+  const url = new URL(uploadUrl);
+  return `${url.origin}${url.pathname}`;
+}
+
 // Helper function with all route definitions
 function registerAllRoutes(app: Express): void {
 
@@ -875,6 +900,59 @@ function registerAllRoutes(app: Express): void {
       res.json(broadcasts);
     } catch (error) {
       res.status(500).json({ message: 'Error getting broadcast history' });
+    }
+  });
+
+  // Send broadcast endpoint (called by frontend broadcast.tsx)
+  app.post('/api/broadcast/send', upload.single('image'), async (req, res) => {
+    try {
+      const { message, targetAudience, title } = req.body;
+      const imageFile = req.file;
+      
+      if (!message || message.trim() === '') {
+        return res.status(400).json({ message: 'Message is required' });
+      }
+
+      // Map frontend targetAudience to backend targetType
+      const targetType = targetAudience === 'all' ? 'all' : 
+                         targetAudience === 'recent' ? 'recent' : 'all';
+
+      let imageUrl = '';
+      if (imageFile) {
+        // Upload image to object storage
+        const uploadedUrl = await uploadToObjectStorage(imageFile.buffer, imageFile.originalname);
+        imageUrl = uploadedUrl;
+      }
+
+      // Use the bot's broadcastMessage method
+      const result = await teleShopBot.broadcastMessage({
+        message,
+        imageUrl,
+        targetType,
+      });
+
+      // Save broadcast record
+      const broadcastRecord = {
+        title: title || 'Broadcast Message',
+        message,
+        hasImage: !!imageFile,
+        recipientCount: result.totalTargeted,
+        sentCount: result.sentCount,
+        createdAt: new Date()
+      };
+      await storage.saveBroadcast(broadcastRecord);
+
+      res.json({ 
+        sentCount: result.sentCount,
+        totalTargeted: result.totalTargeted,
+        message: 'Broadcast sent successfully'
+      });
+    } catch (error) {
+      console.error('Broadcast send error:', error);
+      res.status(500).json({ 
+        message: 'Error sending broadcast',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
