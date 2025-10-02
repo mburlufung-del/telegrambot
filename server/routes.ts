@@ -76,7 +76,7 @@ async function uploadToObjectStorage(buffer: Buffer, filename: string): Promise<
   // Upload the file buffer to the presigned URL
   const uploadResponse = await fetch(uploadUrl, {
     method: 'PUT',
-    body: buffer,
+    body: new Uint8Array(buffer),
     headers: {
       'Content-Type': 'image/jpeg', // Default to JPEG, could be improved with mime-type detection
     },
