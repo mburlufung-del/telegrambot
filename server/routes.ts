@@ -1510,15 +1510,12 @@ function registerAllRoutes(app: Express): void {
 
   app.post("/api/operators", async (req, res) => {
     try {
-      console.log("[OPERATOR] Creating operator with data:", JSON.stringify(req.body, null, 2));
       const validatedData = insertOperatorSchema.parse(req.body);
       const operator = await storage.createOperator(validatedData);
       res.status(201).json(operator);
     } catch (error: any) {
       console.error("Error creating operator:", error);
-      console.error("Request body was:", JSON.stringify(req.body, null, 2));
       if (error.name === 'ZodError') {
-        console.error("Zod validation errors:", JSON.stringify(error.errors, null, 2));
         return res.status(400).json({ error: "Invalid data", details: error.errors });
       }
       if (error.message && error.message.includes('unique')) {

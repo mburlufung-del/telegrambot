@@ -230,14 +230,18 @@ export default function OperatorSupport() {
   const activeOperators = operators.filter(op => op.active)
   const waitingSessions = activeSessions.filter((s: any) => s.status === 'waiting').length
 
-  console.log('DEBUG - operators:', operators, 'length:', operators?.length, 'isLoading:', isLoading, 'error:', error)
-
   if (isLoading) {
     return <div className="p-6">Loading operators...</div>
   }
 
   if (error) {
-    return <div className="p-6">Error loading operators: {error.message}</div>
+    return (
+      <div className="p-6">
+        <div className="text-center py-8">
+          <p className="text-red-600">Failed to load operators. Please refresh the page.</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -492,9 +496,6 @@ export default function OperatorSupport() {
           <CardTitle>Support Team ({operators.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 rounded">
-            DEBUG: operators.length = {operators.length}, Array.isArray = {Array.isArray(operators).toString()}
-          </div>
           {operators.length === 0 ? (
             <div className="text-center py-8">
               <Users className="mx-auto h-12 w-12 text-gray-400" />

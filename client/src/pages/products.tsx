@@ -444,7 +444,7 @@ export default function Products() {
                   <ObjectUploader
                     onComplete={(imageUrl) => {
                       setUploadedImageUrl(imageUrl);
-                      setFormData({...formData, imageUrl});
+                      setFormData({...formData, imageUrl: imageUrl});
                     }}
                     currentImageUrl={uploadedImageUrl || formData.imageUrl}
                   >
