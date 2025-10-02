@@ -36,6 +36,8 @@ export class TeleShopBot {
   async initialize(token?: string) {
     if (this.bot) {
       await this.shutdown();
+      // Wait a bit to ensure the previous instance is fully stopped
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     try {
@@ -65,18 +67,39 @@ export class TeleShopBot {
           console.log(`Telegram bot initialized with webhook: ${webhookUrl}`);
         }
       } else {
-        // First create a temporary bot instance to clear webhook and pending updates
-        const tempBot = new TelegramBot(token, { polling: false });
+        // Create bot without auto-starting polling so we can attach error handlers first
+        this.bot = new TelegramBot(token, { 
+          polling: {
+            interval: 300,
+            autoStart: false,
+            params: {
+              timeout: 10
+            }
+          }
+        });
+        
+        // Handle polling errors gracefully (409 conflicts are common during restarts)
+        this.bot.on('polling_error', (error: any) => {
+          // Ignore 409 Conflict errors - they happen during bot restarts and don't affect functionality
+          if (error.code === 'ETELEGRAM' && error.message.includes('409 Conflict')) {
+            // Silently ignore - bot will continue working
+            return;
+          }
+          // Log other errors
+          console.error('Bot polling error:', error);
+        });
+        
+        // Delete any existing webhook to prevent conflicts
         try {
-          // Use the raw API method to clear webhook with drop_pending_updates parameter
-          await tempBot.setWebHook('', { drop_pending_updates: true } as any);
-          console.log('Cleared webhook and pending updates');
+          await this.bot.deleteWebHook();
+          console.log('Cleared webhook');
         } catch (error) {
           console.log('No webhook to clear or already cleared');
         }
         
-        // Now create the actual bot with polling
-        this.bot = new TelegramBot(token, { polling: true });
+        // Now start polling after error handlers are attached
+        await this.bot.startPolling();
+        
         if (process.env.NODE_ENV === 'development') {
           console.log('Telegram bot initialized with polling for development');
         }
