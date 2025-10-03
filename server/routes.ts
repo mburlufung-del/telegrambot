@@ -911,16 +911,7 @@ function registerAllRoutes(app: Express): void {
   });
 
   // Send broadcast endpoint (called by frontend broadcast.tsx)
-  app.post('/api/broadcast/send', (req, res, next) => {
-    console.log('[BROADCAST] Endpoint hit, processing upload...');
-    upload.single('image')(req, res, (err) => {
-      if (err) {
-        console.error('[BROADCAST] Multer error:', err);
-        return res.status(500).json({ error: 'File upload error', details: err.message });
-      }
-      next();
-    });
-  }, async (req, res) => {
+  app.post('/api/broadcast/send', upload.single('image'), async (req, res) => {
     console.log('[BROADCAST] ===== BROADCAST REQUEST STARTED =====');
     try {
       console.log('[BROADCAST] Step 1: Parsing request body');
@@ -1019,16 +1010,7 @@ function registerAllRoutes(app: Express): void {
   });
 
   // Test broadcast endpoint with dummy data
-  app.post('/api/broadcast/test', (req, res, next) => {
-    console.log('[TEST BROADCAST] Endpoint hit, processing upload...');
-    upload.single('image')(req, res, (err) => {
-      if (err) {
-        console.error('[TEST BROADCAST] Multer error:', err);
-        return res.status(500).json({ success: false, error: 'File upload error', details: err.message });
-      }
-      next();
-    });
-  }, async (req, res) => {
+  app.post('/api/broadcast/test', upload.single('image'), async (req, res) => {
     try {
       const { message, title } = req.body;
       const imageFile = req.file;

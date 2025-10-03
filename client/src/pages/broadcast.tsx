@@ -71,6 +71,26 @@ export default function Broadcast() {
     refetchInterval: 30000
   })
 
+  // Fetch real user count
+  const { data: trackedUsers = [] } = useQuery({
+    queryKey: ['/api/debug/tracked-users'],
+    queryFn: async () => {
+      const response = await fetch('/api/debug/tracked-users');
+      if (!response.ok) throw new Error('Failed to fetch users');
+      const data = await response.json();
+      return data.users || [];
+    },
+    refetchInterval: 30000
+  })
+
+  // Calculate real stats
+  const totalUsers = trackedUsers.length
+  const totalMessagesSent = broadcastHistory.reduce((sum, b) => sum + (b.sentCount || 0), 0)
+  const deliveryRate = broadcastHistory.length > 0
+    ? (broadcastHistory.reduce((sum, b) => sum + (b.sentCount || 0), 0) / 
+       broadcastHistory.reduce((sum, b) => sum + (b.totalCount || 0), 0) * 100).toFixed(1)
+    : '0'
+
   const sendBroadcastMutation = useMutation({
     mutationFn: async (formDataToSend: FormData) => {
       const response = await fetch('/api/broadcast/send', {
@@ -208,7 +228,7 @@ export default function Broadcast() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-blue-100 text-xs md:text-sm font-medium">Total Users</p>
-                <p className="text-2xl md:text-3xl font-bold">1,250</p>
+                <p className="text-2xl md:text-3xl font-bold">{totalUsers.toLocaleString()}</p>
                 <p className="text-blue-100 text-xs">Active bot users</p>
               </div>
               <Users className="w-6 h-6 md:w-8 md:h-8 text-blue-200" />
@@ -221,8 +241,8 @@ export default function Broadcast() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-green-100 text-xs md:text-sm font-medium">Messages Sent</p>
-                <p className="text-2xl md:text-3xl font-bold">2,479</p>
-                <p className="text-green-100 text-xs">This month</p>
+                <p className="text-2xl md:text-3xl font-bold">{totalMessagesSent.toLocaleString()}</p>
+                <p className="text-green-100 text-xs">All time</p>
               </div>
               <Send className="w-6 h-6 md:w-8 md:h-8 text-green-200" />
             </div>
@@ -234,7 +254,7 @@ export default function Broadcast() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-purple-100 text-xs md:text-sm font-medium">Delivery Rate</p>
-                <p className="text-2xl md:text-3xl font-bold">98.5%</p>
+                <p className="text-2xl md:text-3xl font-bold">{deliveryRate}%</p>
                 <p className="text-purple-100 text-xs">Average success rate</p>
               </div>
               <Target className="w-6 h-6 md:w-8 md:h-8 text-purple-200" />
