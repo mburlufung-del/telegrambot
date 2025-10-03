@@ -77,7 +77,10 @@ export default function Broadcast() {
         method: 'POST',
         body: formDataToSend
       })
-      if (!response.ok) throw new Error('Failed to send broadcast')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to send broadcast')
+      }
       return response.json()
     },
     onSuccess: () => {
@@ -90,10 +93,37 @@ export default function Broadcast() {
         description: 'Your message is being delivered to users' 
       })
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({ 
         title: 'Failed to send broadcast', 
-        description: 'Please try again later',
+        description: error.message || 'Please try again later',
+        variant: 'destructive' 
+      })
+    }
+  })
+
+  const testBroadcastMutation = useMutation({
+    mutationFn: async (formDataToSend: FormData) => {
+      const response = await fetch('/api/broadcast/test', {
+        method: 'POST',
+        body: formDataToSend
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Test broadcast failed')
+      }
+      return response.json()
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: 'Test broadcast completed!', 
+        description: `Sent to ${data.sentCount}/${data.totalTargeted} users. ${data.imageUrl ? 'Image uploaded successfully.' : ''}` 
+      })
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: 'Test broadcast failed', 
+        description: error.message,
         variant: 'destructive' 
       })
     }
@@ -130,6 +160,17 @@ export default function Broadcast() {
     }
     
     sendBroadcastMutation.mutate(formDataToSend)
+  }
+
+  const handleTestBroadcast = () => {
+    const formDataToSend = new FormData()
+    formDataToSend.append('title', formData.title || 'Test Broadcast')
+    formDataToSend.append('message', formData.message || 'This is a test broadcast message')
+    if (selectedImage) {
+      formDataToSend.append('image', selectedImage)
+    }
+    
+    testBroadcastMutation.mutate(formDataToSend)
   }
 
   const getStatusColor = (status: string) => {
@@ -298,24 +339,47 @@ export default function Broadcast() {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={sendBroadcastMutation.isPending}
-                data-testid="button-send-broadcast"
-              >
-                {sendBroadcastMutation.isPending ? (
-                  <>
-                    <Clock className="w-4 h-4 mr-2 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    Send Broadcast
-                  </>
-                )}
-              </Button>
+              <div className="space-y-2">
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={sendBroadcastMutation.isPending}
+                  data-testid="button-send-broadcast"
+                >
+                  {sendBroadcastMutation.isPending ? (
+                    <>
+                      <Clock className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Send Broadcast
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  type="button"
+                  variant="outline"
+                  className="w-full" 
+                  onClick={handleTestBroadcast}
+                  disabled={testBroadcastMutation.isPending}
+                  data-testid="button-test-broadcast"
+                >
+                  {testBroadcastMutation.isPending ? (
+                    <>
+                      <Clock className="w-4 h-4 mr-2 animate-spin" />
+                      Testing...
+                    </>
+                  ) : (
+                    <>
+                      <Megaphone className="w-4 h-4 mr-2" />
+                      Test Broadcast (with image)
+                    </>
+                  )}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>

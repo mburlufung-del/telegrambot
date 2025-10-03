@@ -954,10 +954,12 @@ function registerAllRoutes(app: Express): void {
         message: 'Broadcast sent successfully'
       });
     } catch (error) {
-      console.error('Broadcast send error:', error);
+      console.error('[BROADCAST] Full error details:', error);
+      console.error('[BROADCAST] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       res.status(500).json({ 
         message: 'Error sending broadcast',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: error instanceof Error ? error.stack : String(error)
       });
     }
   });
@@ -972,6 +974,74 @@ function registerAllRoutes(app: Express): void {
       });
     } catch (error) {
       res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Test broadcast endpoint with dummy data
+  app.post('/api/broadcast/test', upload.single('image'), async (req, res) => {
+    try {
+      const { message, title } = req.body;
+      const imageFile = req.file;
+      
+      console.log('[TEST BROADCAST] Starting test broadcast');
+      console.log('[TEST BROADCAST] Message:', message);
+      console.log('[TEST BROADCAST] Has image:', !!imageFile);
+      
+      let imageUrl = '';
+      if (imageFile) {
+        console.log(`[TEST BROADCAST] Processing image: ${imageFile.originalname}, size: ${imageFile.size} bytes`);
+        try {
+          const uploadedUrl = await uploadToObjectStorage(imageFile.buffer, imageFile.originalname);
+          imageUrl = uploadedUrl;
+          console.log(`[TEST BROADCAST] Image uploaded to: ${imageUrl}`);
+        } catch (uploadError) {
+          console.error('[TEST BROADCAST] Image upload failed:', uploadError);
+          return res.status(500).json({ 
+            success: false, 
+            error: 'Image upload failed',
+            details: uploadError instanceof Error ? uploadError.message : String(uploadError)
+          });
+        }
+      }
+      
+      // Get tracked users to test with
+      const trackedUsers = await storage.getTrackedUsers();
+      console.log(`[TEST BROADCAST] Found ${trackedUsers.length} tracked users`);
+      
+      if (trackedUsers.length === 0) {
+        return res.json({
+          success: true,
+          message: 'No users to test with. Please interact with the bot first.',
+          sentCount: 0,
+          totalTargeted: 0,
+          imageUrl
+        });
+      }
+      
+      // Test broadcast to actual users
+      const result = await teleShopBot.broadcastMessage({
+        message: message || 'Test broadcast message',
+        imageUrl,
+        targetType: 'all'
+      });
+      
+      console.log(`[TEST BROADCAST] Result: ${result.sentCount}/${result.totalTargeted} sent`);
+      
+      res.json({
+        success: true,
+        sentCount: result.sentCount,
+        totalTargeted: result.totalTargeted,
+        imageUrl,
+        message: 'Test broadcast completed successfully'
+      });
+    } catch (error) {
+      console.error('[TEST BROADCAST] Error:', error);
+      console.error('[TEST BROADCAST] Stack:', error instanceof Error ? error.stack : 'No stack');
+      res.status(500).json({ 
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : String(error)
+      });
     }
   });
 
