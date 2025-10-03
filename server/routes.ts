@@ -101,6 +101,12 @@ function registerAllRoutes(app: Express): void {
     next();
   });
 
+  // Simple test route to verify routing works
+  app.get('/api/broadcast/ping', (req, res) => {
+    console.log('[BROADCAST PING] Route hit successfully');
+    res.json({ message: 'Broadcast routes are working', timestamp: new Date().toISOString() });
+  });
+
   // Products routes
   app.get("/api/products", async (req, res) => {
     try {
@@ -912,6 +918,7 @@ function registerAllRoutes(app: Express): void {
 
   // Send broadcast endpoint (called by frontend broadcast.tsx)
   app.post('/api/broadcast/send', upload.single('image'), async (req, res) => {
+    console.log('[BROADCAST] ===== ENDPOINT HIT =====');
     console.log('[BROADCAST] ===== BROADCAST REQUEST STARTED =====');
     try {
       console.log('[BROADCAST] Step 1: Parsing request body');

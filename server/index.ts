@@ -100,6 +100,19 @@ async function autoInitializeBot(server: any) {
     await registerApiRoutes(app);
     log('✅ API routes registered');
     
+    // Add global error handler for debugging
+    app.use((err: any, req: any, res: any, next: any) => {
+      console.error('[ERROR HANDLER] Error occurred:', err);
+      console.error('[ERROR HANDLER] Stack:', err.stack);
+      if (!res.headersSent) {
+        res.status(500).json({ 
+          error: 'Internal server error', 
+          message: err.message,
+          stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
+      }
+    });
+    
     // Setup static file serving for built React app
     const path = await import('path');
     const distPath = path.resolve(process.cwd(), 'dist', 'public');
