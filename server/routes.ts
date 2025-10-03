@@ -905,28 +905,45 @@ function registerAllRoutes(app: Express): void {
 
   // Send broadcast endpoint (called by frontend broadcast.tsx)
   app.post('/api/broadcast/send', upload.single('image'), async (req, res) => {
+    console.log('[BROADCAST] ===== BROADCAST REQUEST STARTED =====');
     try {
+      console.log('[BROADCAST] Step 1: Parsing request body');
       const { message, targetAudience, title } = req.body;
       const imageFile = req.file;
+      console.log('[BROADCAST] Request data:', { 
+        hasMessage: !!message, 
+        messageLength: message?.length,
+        targetAudience, 
+        title, 
+        hasImage: !!imageFile 
+      });
       
       if (!message || message.trim() === '') {
+        console.log('[BROADCAST] Error: Message is empty');
         return res.status(400).json({ message: 'Message is required' });
       }
 
       // Map frontend targetAudience to backend targetType
       const targetType = targetAudience === 'all' ? 'all' : 
                          targetAudience === 'recent' ? 'recent' : 'all';
+      console.log('[BROADCAST] Step 2: Target type mapped to:', targetType);
 
       let imageUrl = '';
       if (imageFile) {
-        console.log(`[BROADCAST] Uploading image: ${imageFile.originalname}, size: ${imageFile.size} bytes`);
-        // Upload image to object storage
-        const uploadedUrl = await uploadToObjectStorage(imageFile.buffer, imageFile.originalname);
-        imageUrl = uploadedUrl;
-        console.log(`[BROADCAST] Image uploaded successfully to: ${imageUrl}`);
+        console.log(`[BROADCAST] Step 3: Image processing - ${imageFile.originalname}, size: ${imageFile.size} bytes`);
+        try {
+          const uploadedUrl = await uploadToObjectStorage(imageFile.buffer, imageFile.originalname);
+          imageUrl = uploadedUrl;
+          console.log(`[BROADCAST] Step 3: Image uploaded successfully to: ${imageUrl}`);
+        } catch (uploadError) {
+          console.error('[BROADCAST] Step 3: Image upload FAILED:', uploadError);
+          throw uploadError;
+        }
+      } else {
+        console.log('[BROADCAST] Step 3: No image to upload');
       }
 
-      console.log(`[BROADCAST] Sending broadcast with message length: ${message.length}, hasImage: ${!!imageFile}, targetType: ${targetType}`);
+      console.log(`[BROADCAST] Step 4: Calling bot broadcastMessage - message: ${message.length} chars, imageUrl: ${imageUrl}, targetType: ${targetType}`);
       
       // Use the bot's broadcastMessage method
       const result = await teleShopBot.broadcastMessage({
@@ -935,9 +952,10 @@ function registerAllRoutes(app: Express): void {
         targetType,
       });
       
-      console.log(`[BROADCAST] Broadcast completed. Sent: ${result.sentCount}/${result.totalTargeted}`);
+      console.log(`[BROADCAST] Step 5: Broadcast completed. Sent: ${result.sentCount}/${result.totalTargeted}`);
 
       // Save broadcast record
+      console.log('[BROADCAST] Step 6: Saving broadcast record to database');
       const broadcastRecord = {
         title: title || 'Broadcast Message',
         message,
@@ -947,15 +965,22 @@ function registerAllRoutes(app: Express): void {
         createdAt: new Date()
       };
       await storage.saveBroadcast(broadcastRecord);
+      console.log('[BROADCAST] Step 6: Broadcast record saved successfully');
 
+      console.log('[BROADCAST] Step 7: Sending success response');
       res.json({ 
         sentCount: result.sentCount,
         totalTargeted: result.totalTargeted,
         message: 'Broadcast sent successfully'
       });
+      console.log('[BROADCAST] ===== BROADCAST REQUEST COMPLETED =====');
     } catch (error) {
-      console.error('[BROADCAST] Full error details:', error);
-      console.error('[BROADCAST] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('[BROADCAST] ===== ERROR OCCURRED =====');
+      console.error('[BROADCAST] Error type:', error?.constructor?.name);
+      console.error('[BROADCAST] Error message:', error instanceof Error ? error.message : String(error));
+      console.error('[BROADCAST] Full error:', error);
+      console.error('[BROADCAST] Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('[BROADCAST] ===== ERROR END =====');
       res.status(500).json({ 
         message: 'Error sending broadcast',
         error: error instanceof Error ? error.message : 'Unknown error',
