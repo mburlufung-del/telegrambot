@@ -455,14 +455,14 @@ export default function Products() {
                   </p>
                 </div>
                 {/* Bulk Pricing Tiers Section - Prominently positioned */}
-                <div className="col-span-2 space-y-4 p-5 border-2 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300">
-                  <div className="flex justify-between items-start">
+                <div className="col-span-1 md:col-span-2 space-y-4 p-4 md:p-5 border-2 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                     <div className="space-y-1">
-                      <Label className="text-lg font-bold text-blue-900 flex items-center">
+                      <Label className="text-base md:text-lg font-bold text-blue-900 flex items-center">
                         <DollarSign className="w-5 h-5 mr-2" />
                         Bulk Pricing Tiers
                       </Label>
-                      <p className="text-sm text-blue-700">Create quantity-based pricing for wholesale customers</p>
+                      <p className="text-xs md:text-sm text-blue-700">Create quantity-based pricing for wholesale customers</p>
                       <p className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded inline-block">
                         Perfect for B2B sales and bulk orders
                       </p>
@@ -472,7 +472,7 @@ export default function Products() {
                       variant="default"
                       size="default"
                       onClick={addPricingTier}
-                      className="bg-blue-600 hover:bg-blue-700 shadow-lg"
+                      className="bg-blue-600 hover:bg-blue-700 shadow-lg w-full sm:w-auto"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Add Pricing Tier
@@ -491,7 +491,7 @@ export default function Products() {
                   ) : (
                     <div className="space-y-3">
                       {pricingTiers.map((tier, index) => (
-                        <div key={index} className="flex items-center space-x-4 bg-white p-5 rounded-xl border-2 border-blue-200 shadow-sm">
+                        <div key={index} className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 bg-white p-4 md:p-5 rounded-xl border-2 border-blue-200 shadow-sm">
                           <div className="flex-1">
                             <Label className="text-sm font-semibold text-gray-700">Min Quantity</Label>
                             <Input
@@ -530,7 +530,7 @@ export default function Products() {
                               className="mt-2 border-blue-200 focus:border-blue-400"
                             />
                           </div>
-                          <div className="flex flex-col items-center space-y-2 pt-6">
+                          <div className="flex flex-row md:flex-col items-center justify-between md:justify-center gap-2 md:gap-2 md:pt-6">
                             <div className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">
                               Tier {index + 1}
                             </div>
@@ -704,17 +704,17 @@ export default function Products() {
       {/* Products summary */}
       {products.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
               <h3 className="text-sm font-medium text-blue-900">
                 {products.length} Product{products.length !== 1 ? 's' : ''} in Catalog
               </h3>
-              <p className="text-blue-700 text-sm mt-1">
+              <p className="text-blue-700 text-xs md:text-sm mt-1">
                 Active products: {products.filter(p => p.isActive).length} | 
                 Total stock: {products.reduce((sum, p) => sum + p.stock, 0)} units
               </p>
             </div>
-            <Package className="w-8 h-8 text-blue-600" />
+            <Package className="w-7 h-7 md:w-8 md:h-8 text-blue-600 flex-shrink-0" />
           </div>
         </div>
       )}
