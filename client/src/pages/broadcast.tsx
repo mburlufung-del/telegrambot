@@ -420,30 +420,30 @@ export default function Broadcast() {
                 <p className="text-gray-600">Your broadcast history will appear here</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 {broadcastHistory.map((broadcast) => (
-                  <div key={broadcast.id} className="p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-gray-900">{broadcast.title}</h4>
-                      <Badge className={`${getStatusColor(broadcast.status)} text-xs`}>
+                  <div key={broadcast.id} className="p-3 md:p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h4 className="font-medium text-sm md:text-base text-gray-900 flex-1 min-w-0 truncate">{broadcast.title}</h4>
+                      <Badge className={`${getStatusColor(broadcast.status)} text-xs flex-shrink-0`}>
                         <span className="flex items-center gap-1">
                           {getStatusIcon(broadcast.status)}
-                          {broadcast.status}
+                          <span className="hidden sm:inline">{broadcast.status}</span>
                         </span>
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                    <p className="text-xs md:text-sm text-gray-600 mb-2 md:mb-3 line-clamp-2">
                       {broadcast.message}
                     </p>
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 text-xs text-gray-500">
+                      <span className="truncate">
                         Target: {broadcast.targetAudience.replace('_', ' ')}
                       </span>
-                      <span>
+                      <span className="flex-shrink-0">
                         {broadcast.sentCount}/{broadcast.totalCount} delivered
                       </span>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-gray-500 mt-1 truncate">
                       {new Date(broadcast.createdAt).toLocaleDateString()} at{' '}
                       {new Date(broadcast.createdAt).toLocaleTimeString()}
                     </div>
@@ -457,14 +457,14 @@ export default function Broadcast() {
 
       {/* Tips Section */}
       <Card className="bg-amber-50 border-amber-200">
-        <CardContent className="p-6">
+        <CardContent className="p-4 md:p-6">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-7 h-7 md:w-8 md:h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <MessageSquare className="w-4 h-4 text-amber-600" />
             </div>
-            <div>
-              <h3 className="font-medium text-amber-900 mb-2">Broadcast Tips</h3>
-              <ul className="text-sm text-amber-800 space-y-1">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-sm md:text-base text-amber-900 mb-2">Broadcast Tips</h3>
+              <ul className="text-xs md:text-sm text-amber-800 space-y-1">
                 <li>• Keep messages concise and clear</li>
                 <li>• Use emojis to make messages more engaging</li>
                 <li>• Include clear call-to-action buttons when relevant</li>
