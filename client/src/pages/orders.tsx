@@ -129,19 +129,19 @@ export default function Orders() {
             return (
               <Card key={order.id}>
                 <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">Order #{order.id.slice(0, 8)}</CardTitle>
-                      <div className="flex items-center text-sm text-gray-500 mt-1">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        {new Date(order.createdAt).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString()}
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-base md:text-lg truncate">Order #{order.id.slice(0, 8)}</CardTitle>
+                      <div className="flex items-center text-xs md:text-sm text-gray-500 mt-1 min-w-0">
+                        <Calendar className="w-4 h-4 mr-1 flex-shrink-0" />
+                        <span className="truncate">{new Date(order.createdAt).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString()}</span>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1">
                       <Badge className={getStatusColor(order.status)}>
                         {order.status}
                       </Badge>
-                      <div className="text-lg font-bold text-green-600 mt-1">
+                      <div className="text-lg font-bold text-green-600">
                         ${Number(order.totalAmount).toFixed(2)}
                       </div>
                     </div>
@@ -149,30 +149,30 @@ export default function Orders() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <div className="flex items-center text-sm text-gray-600 mb-2">
-                        <User className="w-4 h-4 mr-1" />
-                        Customer ID: {order.telegramUserId}
+                    <div className="space-y-2">
+                      <div className="flex items-center text-xs md:text-sm text-gray-600 min-w-0">
+                        <User className="w-4 h-4 mr-1 flex-shrink-0" />
+                        <span className="truncate">Customer ID: {order.telegramUserId}</span>
                       </div>
                       {order.shippingAddress && order.shippingAddress !== 'TBD' && (
-                        <div className="flex items-start text-sm text-gray-600 mb-2">
-                          <MapPin className="w-4 h-4 mr-1 mt-0.5" />
-                          {order.shippingAddress}
+                        <div className="flex items-start text-xs md:text-sm text-gray-600">
+                          <MapPin className="w-4 h-4 mr-1 mt-0.5 flex-shrink-0" />
+                          <span className="break-words">{order.shippingAddress}</span>
                         </div>
                       )}
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-gray-700 mb-2">Order Items:</h4>
+                      <h4 className="font-medium text-xs md:text-sm text-gray-700 mb-2">Order Items:</h4>
                       {items.length > 0 ? (
                         <div className="space-y-1">
                           {items.map((item: any, index: number) => (
-                            <div key={index} className="text-sm text-gray-600">
+                            <div key={index} className="text-xs md:text-sm text-gray-600 break-words">
                               • Product {item.productId?.slice(0, 8)} × {item.quantity} = ${(item.price * item.quantity).toFixed(2)}
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="text-sm text-gray-500">Order details not available</div>
+                        <div className="text-xs md:text-sm text-gray-500">Order details not available</div>
                       )}
                     </div>
                   </div>
