@@ -58,27 +58,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-// Setup multer for file uploads
+// Setup multer for file uploads with image validation
 const upload = multer({ 
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 10 * 1024 * 1024 // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept only images
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Invalid file type: ${file.mimetype}. Only images are allowed.`));
+    }
   }
 });
 
-// Helper function to upload buffer to object storage
-async function uploadToObjectStorage(buffer: Buffer, filename: string): Promise<string> {
+// Helper function to upload buffer to object storage with content validation
+async function uploadToObjectStorage(buffer: Buffer, filename: string, mimeType?: string): Promise<string> {
   const objectStorageService = new SimpleObjectStorageService();
+  
+  console.log(`[UPLOAD] Uploading file: ${filename}, claimed type: ${mimeType}, size: ${buffer.length} bytes`);
+  
+  // Dynamically import file-type (ESM module)
+  const { fileTypeFromBuffer } = await import('file-type');
+  
+  // Validate file content using magic bytes (not just headers)
+  const fileType = await fileTypeFromBuffer(buffer);
+  
+  if (!fileType) {
+    throw new Error('Unable to determine file type from content');
+  }
+  
+  if (!fileType.mime.startsWith('image/')) {
+    throw new Error(`Invalid file content: detected ${fileType.mime}. Only images are allowed.`);
+  }
+  
+  console.log(`[UPLOAD] Content validated: ${fileType.mime} (${fileType.ext})`);
   
   // Get presigned upload URL
   const uploadUrl = await objectStorageService.getObjectEntityUploadURL();
   
-  // Upload the file buffer to the presigned URL
+  // Upload the file buffer to the presigned URL with validated MIME type
   const uploadResponse = await fetch(uploadUrl, {
     method: 'PUT',
     body: new Uint8Array(buffer),
     headers: {
-      'Content-Type': 'image/jpeg', // Default to JPEG, could be improved with mime-type detection
+      'Content-Type': fileType.mime,
     },
   });
   
@@ -88,7 +114,9 @@ async function uploadToObjectStorage(buffer: Buffer, filename: string): Promise<
   
   // Extract the public URL from the presigned URL (remove query params)
   const url = new URL(uploadUrl);
-  return `${url.origin}${url.pathname}`;
+  const publicUrl = `${url.origin}${url.pathname}`;
+  console.log(`[UPLOAD] File uploaded successfully to: ${publicUrl}`);
+  return publicUrl;
 }
 
 // Helper function with all route definitions
@@ -944,14 +972,21 @@ function registerAllRoutes(app: Express): void {
 
       let imageUrl = '';
       if (imageFile) {
-        console.log(`[BROADCAST] Step 3: Image processing - ${imageFile.originalname}, size: ${imageFile.size} bytes`);
+        console.log(`[BROADCAST] Step 3: Image processing - ${imageFile.originalname}, type: ${imageFile.mimetype}, size: ${imageFile.size} bytes`);
         try {
-          const uploadedUrl = await uploadToObjectStorage(imageFile.buffer, imageFile.originalname);
+          const uploadedUrl = await uploadToObjectStorage(
+            imageFile.buffer, 
+            imageFile.originalname,
+            imageFile.mimetype
+          );
           imageUrl = uploadedUrl;
           console.log(`[BROADCAST] Step 3: Image uploaded successfully to: ${imageUrl}`);
         } catch (uploadError) {
           console.error('[BROADCAST] Step 3: Image upload FAILED:', uploadError);
-          throw uploadError;
+          return res.status(400).json({ 
+            message: 'Failed to upload image',
+            error: uploadError instanceof Error ? uploadError.message : 'Unknown error'
+          });
         }
       } else {
         console.log('[BROADCAST] Step 3: No image to upload');
@@ -1028,14 +1063,18 @@ function registerAllRoutes(app: Express): void {
       
       let imageUrl = '';
       if (imageFile) {
-        console.log(`[TEST BROADCAST] Processing image: ${imageFile.originalname}, size: ${imageFile.size} bytes`);
+        console.log(`[TEST BROADCAST] Processing image: ${imageFile.originalname}, type: ${imageFile.mimetype}, size: ${imageFile.size} bytes`);
         try {
-          const uploadedUrl = await uploadToObjectStorage(imageFile.buffer, imageFile.originalname);
+          const uploadedUrl = await uploadToObjectStorage(
+            imageFile.buffer, 
+            imageFile.originalname,
+            imageFile.mimetype
+          );
           imageUrl = uploadedUrl;
           console.log(`[TEST BROADCAST] Image uploaded to: ${imageUrl}`);
         } catch (uploadError) {
           console.error('[TEST BROADCAST] Image upload failed:', uploadError);
-          return res.status(500).json({ 
+          return res.status(400).json({ 
             success: false, 
             error: 'Image upload failed',
             details: uploadError instanceof Error ? uploadError.message : String(uploadError)
@@ -3173,6 +3212,24 @@ railway run npm run db:push</pre>
       console.error('Error getting product price for user:', error);
       res.status(500).json({ message: "Failed to get product price" });
     }
+  });
+
+  // Error handling middleware for multer file upload errors
+  app.use((error: any, req: any, res: any, next: any) => {
+    if (error instanceof multer.MulterError) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'File upload error',
+        details: error.message 
+      });
+    } else if (error && error.message && error.message.includes('Invalid file type')) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid file type',
+        details: error.message 
+      });
+    }
+    next(error);
   });
 }
 
