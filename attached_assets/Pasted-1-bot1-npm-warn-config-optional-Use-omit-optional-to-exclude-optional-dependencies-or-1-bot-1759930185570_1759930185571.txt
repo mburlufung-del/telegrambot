@@ -1,0 +1,897 @@
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
+1|bot1  | /var/www/bot1/server/db.ts:9
+1|bot1  |   throw new Error(
+1|bot1  |         ^
+1|bot1  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+1|bot1  |     at ws (/var/www/bot1/server/db.ts:9:9)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at product (/var/www/bot1/server/storage.ts:3:20)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+1|bot1  |     at require (node:internal/modules/helpers:182:18)
+1|bot1  |     at message (/var/www/bot1/server/bot.ts:2:25)
+1|bot1  |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+1|bot1  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+1|bot1  |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+1|bot1  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+1|bot1  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+1|bot1  | Node.js v20.19.5
+1|bot1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+1|bot1  | npm warn config `--include=optional` to include them.
+1|bot1  | npm warn config
+1|bot1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+1|bot1  | > workspace@1.0.0 start
+1|bot1  | > NODE_ENV=production tsx server/index.ts
