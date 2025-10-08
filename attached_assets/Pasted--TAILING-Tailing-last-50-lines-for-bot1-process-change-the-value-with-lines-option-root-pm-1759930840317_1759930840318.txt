@@ -1,0 +1,53 @@
+[TAILING] Tailing last 50 lines for [bot1] process (change the value with --lines option)
+/root/.pm2/logs/bot1-error.log last 50 lines:
+2|bot1     |     at message (/var/www/bot1/server/bot.ts:2:25)
+2|bot1     |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+2|bot1     |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+2|bot1     |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+2|bot1     |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+2|bot1     |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+2|bot1     | 
+2|bot1     | Node.js v20.19.5
+2|bot1     | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+2|bot1     | npm warn config `--include=optional` to include them.
+2|bot1     | npm warn config
+2|bot1     | npm warn config       Default value does install optional deps unless otherwise omitted.
+2|bot1     | /var/www/bot1/server/db.ts:9
+2|bot1     |   throw new Error(
+2|bot1     |         ^
+2|bot1     | 
+2|bot1     | 
+2|bot1     | Error: DATABASE_URL must be set. Did you forget to provision a database?
+2|bot1     |     at ws (/var/www/bot1/server/db.ts:9:9)
+2|bot1     |     at Object.<anonymous> (/var/www/bot1/server/db.ts:26:51)
+2|bot1     |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+2|bot1     |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+2|bot1     |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+2|bot1     |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+2|bot1     |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+2|bot1     |     at require (node:internal/modules/helpers:182:18)
+2|bot1     |     at product (/var/www/bot1/server/storage.ts:3:20)
+2|bot1     |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+2|bot1     |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+2|bot1     |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+2|bot1     |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+2|bot1     |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+2|bot1     |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+2|bot1     |     at require (node:internal/modules/helpers:182:18)
+2|bot1     |     at message (/var/www/bot1/server/bot.ts:2:25)
+2|bot1     |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+2|bot1     |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+2|bot1     |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+2|bot1     |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+2|bot1     |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+2|bot1     | 
+2|bot1     | Node.js v20.19.5
+2|bot1     | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+2|bot1     | npm warn config `--include=optional` to include them.
+2|bot1     | npm warn config
+2|bot1     | npm warn config       Default value does install optional deps unless otherwise omitted.
+2|bot1     | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+2|bot1     | npm warn config `--include=optional` to include them.
+2|bot1     | npm warn config
+2|bot1     | npm warn config       Default value does install optional deps unless otherwise omitted.
+
