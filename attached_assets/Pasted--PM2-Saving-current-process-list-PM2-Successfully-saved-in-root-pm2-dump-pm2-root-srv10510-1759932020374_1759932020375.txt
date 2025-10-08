@@ -1,0 +1,76 @@
+[PM2] Saving current process list...
+[PM2] Successfully saved in /root/.pm2/dump.pm2
+root@srv1051051:/var/www/bot1# 
+root@srv1051051:/var/www/bot1# pm2 list
+pm2 logs bot1 --lines 30
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 4  │ bot1               │ fork     │ 0    │ online    │ 0%       │ 54.1mb   │
+│ 0  │ bot2               │ fork     │ 3623 │ online    │ 0%       │ 61.1mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[TAILING] Tailing last 30 lines for [bot1] process (change the value with --lines option)
+/root/.pm2/logs/bot1-error.log last 30 lines:
+4|bot1     |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+4|bot1     |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+4|bot1     |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+4|bot1     |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+4|bot1     |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+4|bot1     |     at require (node:internal/modules/helpers:182:18)
+4|bot1     |     at product (/var/www/bot1/server/storage.ts:3:20)
+4|bot1     |     at Object.<anonymous> (/var/www/bot1/server/storage.ts:1428:28)
+4|bot1     |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+4|bot1     |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+4|bot1     |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+4|bot1     |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+4|bot1     |     at Module.require (node:internal/modules/cjs/loader:1289:19)
+4|bot1     |     at require (node:internal/modules/helpers:182:18)
+4|bot1     |     at message (/var/www/bot1/server/bot.ts:2:25)
+4|bot1     |     at Object.<anonymous> (/var/www/bot1/server/bot.ts:3036:32)
+4|bot1     |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+4|bot1     |     at Object.transformer (/var/www/bot1/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+4|bot1     |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+4|bot1     |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+4|bot1     | 
+4|bot1     | Node.js v20.19.5
+4|bot1     | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+4|bot1     | npm warn config `--include=optional` to include them.
+4|bot1     | npm warn config
+4|bot1     | npm warn config       Default value does install optional deps unless otherwise omitted.
+4|bot1     | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+4|bot1     | npm warn config `--include=optional` to include them.
+4|bot1     | npm warn config
+4|bot1     | npm warn config       Default value does install optional deps unless otherwise omitted.
+
+/root/.pm2/logs/bot1-out.log last 30 lines:
+4|bot1     | 
+4|bot1     | > workspace@1.0.0 start
+4|bot1     | > NODE_ENV=production tsx server/index.ts
+4|bot1     | 
+4|bot1     | 
+4|bot1     | > workspace@1.0.0 start
+4|bot1     | > NODE_ENV=production tsx server/index.ts
+4|bot1     | 
+4|bot1     | 
+4|bot1     | > workspace@1.0.0 start
+4|bot1     | > NODE_ENV=production tsx server/index.ts
+4|bot1     | 
+4|bot1     | 09:37:39 AM [express] 🚀 Server started on port 5001
+4|bot1     | 09:37:39 AM [express] ✅ Health check available at /health
+4|bot1     | 09:37:39 AM [express] 🔍 Bot initialization starting in background...
+4|bot1     | 09:37:39 AM [express] ❌ Bot initialization step failed: [object Object]
+4|bot1     | 09:37:39 AM [express] ❌ Bot initialization failed: [object Object]
+4|bot1     | 09:37:39 AM [express] 🔄 Server continues running with admin dashboard only
+4|bot1     | 09:45:58 AM [express] 🚀 Server started on port 5001
+4|bot1     | 09:45:58 AM [express] ✅ Health check available at /health
+4|bot1     | 09:45:58 AM [express] 🔍 Bot initialization starting in background...
+4|bot1     | 09:45:58 AM [express] ❌ Bot initialization step failed: [object Object]
+4|bot1     | 09:45:58 AM [express] ❌ Bot initialization failed: [object Object]
+4|bot1     | 09:45:58 AM [express] 🔄 Server continues running with admin dashboard only
+4|bot1     | 09:56:48 AM [express] 🚀 Server started on port 5001
+4|bot1     | 09:56:48 AM [express] ✅ Health check available at /health
+4|bot1     | 09:56:48 AM [express] 🔍 Bot initialization starting in background...
+4|bot1     | 09:56:48 AM [express] ❌ Bot initialization step failed: [object Object]
+4|bot1     | 09:56:48 AM [express] ❌ Bot initialization failed: [object Object]
+4|bot1     | 09:56:48 AM [express] 🔄 Server continues running with admin dashboard only
+
