@@ -1,0 +1,395 @@
+  command 'pmw' from deb pmw (1:5.22-1)
+  command 'pmg' from deb python3-pymatgen (2023.06.23+dfsg1-2build1)
+Try: apt install <deb name>
+Command 'pm2' not found, did you mean:
+  command 'pm' from deb powerman (2.3.27-4)
+  command 'tpm2' from deb tpm2-tools (5.4-1)
+  command 'wm2' from deb wm2 (4+svn20090216-4build1)
+  command 'pmw' from deb pmw (1:5.22-1)
+  command 'pom2' from deb libpod-pom-perl (2.01-4)
+  command 'gm2' from deb gm2 (4:13.2.0-2ubuntu1)
+  command 'pms' from deb pms (0.42-1.1)
+  command 'pmg' from deb python3-pymatgen (2023.06.23+dfsg1-2build1)
+  command 'pmc' from deb linuxptp (4.0-1)
+Try: apt install <deb name>
+root@srv1051051:/var/www/telegrambot# ^C
+root@srv1051051:/var/www/telegrambot# curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs
+npm install -g pm2
+2025-10-08 12:45:32 - Installing pre-requisites
+Get:1 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-backports InRelease [126 kB]
+Hit:2 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble InRelease     
+Get:3 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-security InRelease [126 kB]
+Get:4 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-updates InRelease [126 kB]
+Hit:5 http://archive.ubuntu.com/ubuntu noble InRelease                         
+Get:6 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-backports/main amd64 Components [7156 B]
+Get:7 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-backports/restricted amd64 Components [216 B]
+Get:8 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-backports/universe amd64 Components [11.0 kB]
+Get:9 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-backports/multiverse amd64 Components [212 B]
+Hit:10 https://repository.monarx.com/repository/ubuntu-noble noble InRelease   
+Get:11 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:12 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-security/main amd64 Components [21.5 kB]
+Get:13 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-security/restricted amd64 Components [212 B]
+Get:14 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-security/universe amd64 Components [52.3 kB]
+Get:15 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-security/multiverse amd64 Components [212 B]
+Get:16 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-updates/main amd64 Packages [1490 kB]
+Get:17 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-updates/main amd64 Components [175 kB]
+Get:18 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-updates/restricted amd64 Components [212 B]
+Get:19 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-updates/universe amd64 Packages [1487 kB]
+Get:20 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-updates/universe amd64 Components [378 kB]
+Get:21 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-updates/multiverse amd64 Components [940 B]
+Hit:22 http://archive.ubuntu.com/ubuntu noble-backports InRelease              
+Hit:23 http://archive.ubuntu.com/ubuntu noble-security InRelease
+Get:24 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1490 kB]
+Get:25 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1487 kB]
+Fetched 7104 kB in 1s (5696 kB/s)                           
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+ca-certificates is already the newest version (20240203).
+ca-certificates set to manually installed.
+curl is already the newest version (8.5.0-2ubuntu10.6).
+gnupg is already the newest version (2.4.4-2ubuntu17.3).
+The following NEW packages will be installed:
+  apt-transport-https
+0 upgraded, 1 newly installed, 0 to remove and 13 not upgraded.
+Need to get 3970 B of archives.
+After this operation, 36.9 kB of additional disk space will be used.
+Get:1 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-updates/universe amd64 apt-transport-https all 2.8.3 [3970 B]
+Fetched 3970 B in 0s (0 B/s)                  
+Selecting previously unselected package apt-transport-https.
+(Reading database ... 109296 files and directories currently installed.)
+Preparing to unpack .../apt-transport-https_2.8.3_all.deb ...
+Unpacking apt-transport-https (2.8.3) ...
+Setting up apt-transport-https (2.8.3) ...
+Scanning processes...                                                           
+Scanning candidates...                                                          
+Scanning linux images...                                                        
+
+Pending kernel upgrade!
+Running kernel version:
+  6.8.0-79-generic
+Diagnostics:
+  The currently running kernel version is not the expected kernel version
+6.8.0-85-generic.
+
+Restarting the system to load the new kernel will not be handled automatically,
+so you should consider rebooting.
+
+Restarting services...
+
+Service restarts being deferred:
+ /etc/needrestart/restart.d/dbus.service
+ systemctl restart getty@tty1.service
+ systemctl restart serial-getty@ttyS0.service
+ systemctl restart systemd-logind.service
+ systemctl restart unattended-upgrades.service
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+Hit:1 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-backports InRelease
+Hit:2 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble InRelease     
+Hit:3 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-security InRelease
+Hit:4 http://mirrors.ukfast.co.uk/sites/archive.ubuntu.com noble-updates InRelease
+Get:5 https://deb.nodesource.com/node_20.x nodistro InRelease [12.1 kB]        
+Hit:6 https://repository.monarx.com/repository/ubuntu-noble noble InRelease    
+Hit:7 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:8 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:9 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Hit:10 http://archive.ubuntu.com/ubuntu noble-security InRelease
+Get:11 https://deb.nodesource.com/node_20.x nodistro/main amd64 Packages [12.8 kB]
+Fetched 25.0 kB in 1s (31.4 kB/s)
+Reading package lists... Done
+2025-10-08 12:45:40 - Repository configured successfully.
+2025-10-08 12:45:40 - To install Node.js, run: apt-get install nodejs -y
+2025-10-08 12:45:40 - You can use N|solid Runtime as a node.js alternative
+2025-10-08 12:45:40 - To install N|solid Runtime, run: apt-get install nsolid -y 
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  libcares2 node-busboy node-cjs-module-lexer node-undici node-xtend
+Use 'apt autoremove' to remove them.
+The following packages will be REMOVED:
+  libnode109 node-acorn nodejs-doc
+The following packages will be upgraded:
+  nodejs
+1 upgraded, 0 newly installed, 3 to remove and 13 not upgraded.
+Need to get 32.0 MB of archives.
+After this operation, 128 MB of additional disk space will be used.
+Get:1 https://deb.nodesource.com/node_20.x nodistro/main amd64 nodejs amd64 20.19.5-1nodesource1 [32.0 MB]
+Fetched 32.0 MB in 0s (90.9 MB/s)
+(Reading database ... 109300 files and directories currently installed.)
+Removing nodejs-doc (18.19.1+dfsg-6ubuntu5) ...
+dpkg: libnode109:amd64: dependency problems, but removing anyway as you requested:
+ nodejs depends on libnode109 (= 18.19.1+dfsg-6ubuntu5).
+
+Removing libnode109:amd64 (18.19.1+dfsg-6ubuntu5) ...
+(Reading database ... 109091 files and directories currently installed.)
+Preparing to unpack .../nodejs_20.19.5-1nodesource1_amd64.deb ...
+Unpacking nodejs (20.19.5-1nodesource1) over (18.19.1+dfsg-6ubuntu5) ...
+(Reading database ... 114313 files and directories currently installed.)
+Removing node-acorn (8.8.1+ds+~cs25.17.7-2) ...
+Setting up nodejs (20.19.5-1nodesource1) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.6) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Scanning processes...                                                           
+Scanning candidates...                                                          
+Scanning linux images...                                                        
+
+Pending kernel upgrade!
+Running kernel version:
+  6.8.0-79-generic
+Diagnostics:
+  The currently running kernel version is not the expected kernel version
+6.8.0-85-generic.
+
+Restarting the system to load the new kernel will not be handled automatically,
+so you should consider rebooting.
+
+Restarting services...
+
+Service restarts being deferred:
+ /etc/needrestart/restart.d/dbus.service
+ systemctl restart getty@tty1.service
+ systemctl restart serial-getty@ttyS0.service
+ systemctl restart systemd-logind.service
+ systemctl restart unattended-upgrades.service
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+
+added 133 packages in 6s
+
+13 packages are looking for funding
+  run `npm fund` for details
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.6.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.1
+npm notice To update run: npm install -g npm@11.6.1
+npm notice
+root@srv1051051:/var/www/telegrambot# sudo -u postgres psql -c "CREATE DATABASE teleshop;"
+sudo -u postgres psql -c "CREATE USER teleshopuser WITH PASSWORD 'SecurePass123!';"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE teleshop TO teleshopuser;"
+ERROR:  database "teleshop" already exists
+-bash: !': event not found
+ERROR:  role "teleshopuser" does not exist
+root@srv1051051:/var/www/telegrambot# ^[[200~# Bot 1
+#: command not found
+root@srv1051051:/var/www/telegrambot# cd /var/www
+root@srv1051051:/var/www# git clone https://github.com/mburlufung-del/telegrambot.git bot1
+Cloning into 'bot1'...
+remote: Enumerating objects: 2955, done.
+remote: Counting objects: 100% (2955/2955), done.
+remote: Compressing objects: 100% (574/574), done.
+remote: Total 2955 (delta 2352), reused 2955 (delta 2352), pack-reused 0 (from 0)
+Receiving objects: 100% (2955/2955), 32.38 MiB | 34.39 MiB/s, done.
+Resolving deltas: 100% (2352/2352), done.
+root@srv1051051:/var/www# cd bot1
+root@srv1051051:/var/www/bot1# cat > .env << 'EOF'
+> NODE_ENV=production
+> PORT=5001
+> TELEGRAM_BOT_TOKEN=YOUR_BOT_1_TOKEN_HERE
+> DATABASE_URL=postgresql://teleshopuser:SecurePass123!@localhost:5432/teleshop_bot1
+> EOF
+root@srv1051051:/var/www/bot1# npm install
+npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+npm warn config `--include=optional` to include them.
+npm warn config
+npm warn config       Default value does install optional deps unless otherwise omitted.
+npm warn deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+npm warn deprecated request-promise@4.2.6: request-promise has been deprecated because it extends the now deprecated request package, see https://github.com/request/request/issues/3142
+npm warn deprecated request@2.88.2: request has been deprecated, see https://github.com/request/request/issues/3142
+npm warn deprecated har-validator@5.1.5: this library is no longer supported
+npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+
+added 672 packages, and audited 673 packages in 8s
+
+11 vulnerabilities (1 low, 8 moderate, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+root@srv1051051:/var/www/bot1# npm run build
+npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+npm warn config `--include=optional` to include them.
+npm warn config
+npm warn config       Default value does install optional deps unless otherwise omitted.
+
+> workspace@1.0.0 build
+> tsc && vite build
+
+vite v7.1.3 building for production...
+✓ 1903 modules transformed.
+../dist/public/index.html                   0.46 kB │ gzip:   0.31 kB
+../dist/public/assets/index-BexzrsHE.css   70.88 kB │ gzip:  11.94 kB
+../dist/public/assets/index-CENJn6p1.js   616.17 kB │ gzip: 170.31 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.88s
+root@srv1051051:/var/www/bot1# sudo -u postgres psql -c "CREATE DATABASE teleshop_bot1;"
+npm run db:push --force
+pm2 start npm --name "bot1" -- start^[[201~CREATE DATABASE
+root@srv1051051:/var/www/bot1# # Bot 2
+cd /var/www
+git clone https://github.com/mburlufung-del/telegrambot.git bot2
+cd bot2
+cat > .env << 'EOF'
+NODE_ENV=production
+PORT=5002
+TELEGRAM_BOT_TOKEN=YOUR_BOT_2_TOKEN_HERE
+DATABASE_URL=postgresql://teleshopuser:SecurePass123!@localhost:5432/teleshop_bot2
+EOF
+npm install
+npm run build
+sudo -u postgres psql -c "CREATE DATABASE teleshop_bot2;"
+npm run db:push --force
+pm2 start npm --name "bot2" -- start
+Cloning into 'bot2'...
+remote: Enumerating objects: 2955, done.
+remote: Counting objects: 100% (2955/2955), done.
+remote: Compressing objects: 100% (574/574), done.
+remote: Total 2955 (delta 2352), reused 2955 (delta 2352), pack-reused 0 (from 0)
+Receiving objects: 100% (2955/2955), 32.38 MiB | 33.19 MiB/s, done.
+Resolving deltas: 100% (2352/2352), done.
+npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+npm warn config `--include=optional` to include them.
+npm warn config
+npm warn config       Default value does install optional deps unless otherwise omitted.
+npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+npm warn deprecated har-validator@5.1.5: this library is no longer supported
+npm warn deprecated request-promise@4.2.6: request-promise has been deprecated because it extends the now deprecated request package, see https://github.com/request/request/issues/3142
+npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+npm warn deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+npm warn deprecated request@2.88.2: request has been deprecated, see https://github.com/request/request/issues/3142
+
+added 672 packages, and audited 673 packages in 6s
+
+11 vulnerabilities (1 low, 8 moderate, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+npm warn config `--include=optional` to include them.
+npm warn config
+npm warn config       Default value does install optional deps unless otherwise omitted.
+
+> workspace@1.0.0 build
+> tsc && vite build
+
+vite v7.1.3 building for production...
+✓ 1903 modules transformed.
+../dist/public/index.html                   0.46 kB │ gzip:   0.31 kB
+../dist/public/assets/index-BexzrsHE.css   70.88 kB │ gzip:  11.94 kB
+../dist/public/assets/index-CENJn6p1.js   616.17 kB │ gzip: 170.31 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.87s
+CREATE DATABASE
+npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+npm warn config `--include=optional` to include them.
+npm warn config
+npm warn config       Default value does install optional deps unless otherwise omitted.
+npm warn using --force Recommended protections disabled.
+
+> workspace@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/var/www/bot2/drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] Pulling schema from database...
+error: password authentication failed for user "teleshopuser"
+    at /var/www/bot2/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Object.query (/var/www/bot2/node_modules/drizzle-kit/bin.cjs:80601:26)
+    at async fromDatabase2 (/var/www/bot2/node_modules/drizzle-kit/bin.cjs:19253:25) {
+  length: 108,
+  severity: 'FATAL',
+  code: '28P01',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'auth.c',
+  line: '331',
+  routine: 'auth_failed'
+}
+
+                        -------------
+
+__/\\\\\\\\\\\\\____/\\\\____________/\\\\____/\\\\\\\\\_____
+ _\/\\\/////////\\\_\/\\\\\\________/\\\\\\__/\\\///////\\\___
+  _\/\\\_______\/\\\_\/\\\//\\\____/\\\//\\\_\///______\//\\\__
+   _\/\\\\\\\\\\\\\/__\/\\\\///\\\/\\\/_\/\\\___________/\\\/___
+    _\/\\\/////////____\/\\\__\///\\\/___\/\\\________/\\\//_____
+     _\/\\\_____________\/\\\____\///_____\/\\\_____/\\\//________
+      _\/\\\_____________\/\\\_____________\/\\\___/\\\/___________
+       _\/\\\_____________\/\\\_____________\/\\\__/\\\\\\\\\\\\\\\_
+        _\///______________\///______________\///__\///////////////__
+
+
+                          Runtime Edition
+
+        PM2 is a Production Process Manager for Node.js applications
+                     with a built-in Load Balancer.
+
+                Start and Daemonize any application:
+                $ pm2 start app.js
+
+                Load Balance 4 instances of api.js:
+                $ pm2 start api.js -i 4
+
+                Monitor in production:
+                $ pm2 monitor
+
+                Make pm2 auto-boot at server restart:
+                $ pm2 startup
+
+                To go further checkout:
+                http://pm2.io/
+
+
+                        -------------
+
+[PM2] Spawning PM2 daemon with pm2_home=/root/.pm2
+[PM2] PM2 Successfully daemonized
+[PM2] Starting /usr/bin/npm in fork_mode (1 instance)
+[PM2] Done.
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ bot2               │ fork     │ 0    │ online    │ 0%       │ 29.6mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv1051051:/var/www/bot2# Connection closed
