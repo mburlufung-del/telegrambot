@@ -1,0 +1,34 @@
+root@srv1051051:/var/www/telegrambot# docker cp server/index.ts telegrambot-bot1-1:/app/server/index.ts
+Successfully copied 6.14kB to telegrambot-bot1-1:/app/server/index.ts
+root@srv1051051:/var/www/telegrambot# docker-compose restart bot1
+[+] Restarting 1/1
+ ✔ Container telegrambot-bot1-1  Starte...                                0.3s 
+root@srv1051051:/var/www/telegrambot# docker-compose logs -f bot1
+telegrambot-bot1-1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot1-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot1-1  | npm warn config
+telegrambot-bot1-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | > workspace@1.0.0 start
+telegrambot-bot1-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | 07:01:16 PM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1  | 07:01:16 PM [express] ✅ Health check available at /health
+telegrambot-bot1-1  | 07:01:16 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1  | 07:01:16 PM [express] ❌ Bot initialization step failed: [object Object]
+telegrambot-bot1-1  | 07:01:16 PM [express] ❌ Bot initialization failed: [object Object]
+telegrambot-bot1-1  | 07:01:16 PM [express] 🔄 Server continues running with admin dashboard only
+telegrambot-bot1-1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot1-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot1-1  | npm warn config
+telegrambot-bot1-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | > workspace@1.0.0 start
+telegrambot-bot1-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | 07:06:38 PM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1  | 07:06:38 PM [express] ✅ Health check available at /health
+telegrambot-bot1-1  | 07:06:38 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1  | 07:06:38 PM [express] ❌ Bot initialization step failed: [object Object]
+telegrambot-bot1-1  | 07:06:38 PM [express] ❌ Bot initialization failed: [object Object]
+telegrambot-bot1-1  | 07:06:38 PM [express] 🔄 Server continues running with admin dashboard only
