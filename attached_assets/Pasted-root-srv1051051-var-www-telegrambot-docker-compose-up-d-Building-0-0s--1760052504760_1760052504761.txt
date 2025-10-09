@@ -1,0 +1,43 @@
+root@srv1051051:/var/www/telegrambot# docker-compose up -d                     
+[+] Building 0.0s (0/0)                                         docker:default 
+[+] Running 3/3
+ ✔ Network telegrambot_default       Cre...                               0.0s 
+ ✔ Container telegrambot-postgres-1  Healthy                              0.0s 
+ ✔ Container telegrambot-bot1-1      St...                                0.0s 
+root@srv1051051:/var/www/telegrambot# docker-compose logs -f bot1
+telegrambot-bot1-1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot1-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot1-1  | npm warn config
+telegrambot-bot1-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | > workspace@1.0.0 start
+telegrambot-bot1-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | 07:27:22 PM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1  | 07:27:22 PM [express] ✅ Health check available at /health
+telegrambot-bot1-1  | 07:27:22 PM [express] ✅ API routes registered
+telegrambot-bot1-1  | 07:27:22 PM [express] 🖥️  Admin dashboard ready
+telegrambot-bot1-1  | 07:27:22 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1  | 07:27:22 PM [express] ✅ Bot token auto-configured from environment
+telegrambot-bot1-1  | Cleared webhook
+telegrambot-bot1-1  | 07:27:22 PM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot1-1  | 07:27:22 PM [express] ✅ Bot initialization completed successfully
+telegrambot-bot1-1  | [MESSAGE] Received message from chat 5394510012: "/start"
+telegrambot-bot1-1  | [USER TRACKING] User 5394510012 tracked: {
+telegrambot-bot1-1  |   chatId: '5394510012',
+telegrambot-bot1-1  |   username: 'terry2237',
+telegrambot-bot1-1  |   firstName: 'Terry',
+telegrambot-bot1-1  |   lastName: null,
+telegrambot-bot1-1  |   lastSeen: 2025-10-09T23:27:52.001Z
+telegrambot-bot1-1  | }
+telegrambot-bot1-1  | [MESSAGE] Skipping command: /start
+telegrambot-bot1-1  | [USER TRACKING] User 5394510012 tracked: {
+telegrambot-bot1-1  |   chatId: '5394510012',
+telegrambot-bot1-1  |   username: 'terry2237',
+telegrambot-bot1-1  |   firstName: 'Terry',
+telegrambot-bot1-1  |   lastName: null,
+telegrambot-bot1-1  |   lastSeen: 2025-10-09T23:27:52.002Z
+telegrambot-bot1-1  | }
+telegrambot-bot1-1  | [NEW USER] Welcome @terry2237 (ID: 5394510012) - updating dashboard stats
+telegrambot-bot1-1  | [INSTANT-VANISH] Cleared previous messages and sent new message 4 for user 5394510012
+telegrambot-bot1-1  | [INSTANT-VANISH] Cleared previous messages and sent new message 5 for user 5394510012

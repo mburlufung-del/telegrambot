@@ -27,10 +27,10 @@ Preferred communication style: Simple, everyday language.
 - **Development Mode**: Polling for development, webhook support for production deployment
 
 ### Database & ORM
-- **Database**: PostgreSQL (Neon serverless) for reliable data persistence
+- **Database**: PostgreSQL 16 for reliable data persistence
 - **ORM**: Drizzle ORM with TypeScript-first schema definitions
 - **Migration System**: Drizzle Kit for database schema migrations
-- **Connection**: Connection pooling with @neondatabase/serverless for optimal performance
+- **Connection**: Connection pooling with pg (node-postgres) driver for optimal performance
 - **Schema**: Comprehensive schema covering products, orders, categories, inquiries, bot settings, payment methods, delivery methods, and user analytics
 
 ### Data Models
@@ -53,12 +53,36 @@ Preferred communication style: Simple, everyday language.
 - **Bot Status Monitoring**: Live bot status tracking with automatic reconnection capabilities
 - **Activity Logging**: Comprehensive request/response logging for debugging and monitoring
 
+## Recent Changes (October 2025)
+
+### Multi-Bot Deployment System
+- **Date**: October 9, 2025
+- **Status**: Bot 1 deployed and operational (bots 2-10 pending)
+- **Infrastructure**: Docker-based deployment on Hostinger VPS (72.60.20.38)
+- **Database**: PostgreSQL 16 with standard pg driver (replaced Neon WebSocket driver)
+- **Critical Bug Fixed**: Server now serves dashboard regardless of bot initialization status
+- **Note**: All features described in this document currently apply to Bot 1. Multi-bot deployment in progress.
+
+### Deployment Architecture
+- **Hosting**: Hostinger VPS at 72.60.20.38
+- **Containerization**: Docker with docker-compose orchestration
+- **Bot Capacity**: Designed for 10 bots on ports 5001-5010
+- **Database**: Single PostgreSQL instance shared across all bots
+- **Bot 1**: ✅ Deployed and operational on port 5001 (@mdphpwelt_shopbot)
+- **Bots 2-10**: Ports 5002-5010 reserved for future deployment
+
+### VPS Configuration
+- **Location**: /var/www/telegrambot
+- **Docker Network**: telegrambot_default
+- **PostgreSQL**: telegrambot-postgres-1 (internal port 5432)
+- **Environment**: Production mode with tsx runtime
+
 ## External Dependencies
 
 ### Core Services
 - **Telegram Bot API**: Primary integration for bot functionality using official Telegram Bot API
-- **Neon PostgreSQL**: Serverless PostgreSQL database with WebSocket support for real-time connections
-- **Replit Object Storage**: File storage service with Google Cloud Storage backend for image uploads
+- **PostgreSQL**: Standard PostgreSQL database with pg driver for reliable connections
+- **Docker**: Containerization platform for isolated bot deployments
 
 ### Development Dependencies
 - **Vite Plugins**: Runtime error handling, development cartographer, and React support
