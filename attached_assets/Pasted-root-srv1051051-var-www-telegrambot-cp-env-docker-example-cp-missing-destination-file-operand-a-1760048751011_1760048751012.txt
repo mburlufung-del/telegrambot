@@ -1,0 +1,38 @@
+root@srv1051051:/var/www/telegrambot# cp .env.docker.example
+cp: missing destination file operand after '.env.docker.example'
+Try 'cp --help' for more information.
+root@srv1051051:/var/www/telegrambot# ls -la
+total 460
+drwxr-xr-x 8 root root   4096 Oct  9 21:33 .
+drwxr-xr-x 6 root root   4096 Oct  9 21:14 ..
+-rw-r--r-- 1 root root   1024 Oct  9 21:33 ..env.docker.swp
+-rw-r--r-- 1 root root    143 Oct  9 21:14 .dockerignore
+-rw-r--r-- 1 root root   2416 Oct  9 21:14 .env.example
+-rw-r--r-- 1 root root    667 Oct  9 21:14 .env.railway
+drwxr-xr-x 8 root root   4096 Oct  9 22:20 .git
+-rw-r--r-- 1 root root     67 Oct  9 21:14 .gitignore
+-rw-r--r-- 1 root root    662 Oct  9 21:14 .npmrc
+-rw-r--r-- 1 root root    112 Oct  9 21:14 .railwayignore
+-rw-r--r-- 1 root root   1676 Oct  9 21:14 .replit
+-rw-r--r-- 1 root root   1075 Oct  9 21:14 LICENSE
+drwxr-xr-x 2 root root   4096 Oct  9 21:14 attached_assets
+drwxr-xr-x 3 root root   4096 Oct  9 21:14 client
+-rw-r--r-- 1 root root    325 Oct  9 21:14 drizzle.config.ts
+-rw-r--r-- 1 root root 350748 Oct  9 21:14 package-lock.json
+-rw-r--r-- 1 root root  14992 Oct  9 21:14 package.json
+-rw-r--r-- 1 root root     81 Oct  9 21:14 postcss.config.js
+drwxr-xr-x 2 root root   4096 Oct  9 21:14 public
+-rw-r--r-- 1 root root   5005 Oct  9 21:14 replit.md
+drwxr-xr-x 3 root root   4096 Oct  9 21:14 server
+drwxr-xr-x 2 root root   4096 Oct  9 21:14 shared
+-rw-r--r-- 1 root root   3000 Oct  9 21:14 source-code-contents.txt
+-rw-r--r-- 1 root root   2919 Oct  9 21:14 tailwind.config.ts
+-rw-r--r-- 1 root root    699 Oct  9 21:14 tsconfig.json
+-rw-r--r-- 1 root root    580 Oct  9 21:14 vite.config.ts
+root@srv1051051:/var/www/telegrambot# git log --oneline -5
+38ea72a (HEAD -> main, origin/main, origin/HEAD) Add ability to manage decimal pricing tiers for products
+0188a30 Improve broadcast message handling for improved user engagement
+3745be7 Improve the broadcast page for better readability and mobile experience
+a33dfb1 Improve order details display for better mobile viewing
+08ace86 Improve product page layout and pricing tier display for better usability
+root@srv1051051:/var/www/telegrambot# 
