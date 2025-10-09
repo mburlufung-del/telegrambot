@@ -1,0 +1,61 @@
+root@srv1051051:/var/www/telegrambot# docker-compose logs -f bot1
+telegrambot-bot1-1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot1-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot1-1  | npm warn config
+telegrambot-bot1-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | > workspace@1.0.0 start
+telegrambot-bot1-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | 07:17:47 PM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1  | 07:17:47 PM [express] ✅ Health check available at /health
+telegrambot-bot1-1  | 07:17:47 PM [express] ✅ API routes registered
+telegrambot-bot1-1  | 07:17:47 PM [express] 🖥️  Admin dashboard ready
+telegrambot-bot1-1  | 07:17:47 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1  | 07:17:47 PM [express] ❌ Bot initialization step failed: {}
+telegrambot-bot1-1  | Full error: ErrorEvent {
+telegrambot-bot1-1  |   [Symbol(kTarget)]: WebSocket {
+telegrambot-bot1-1  |     _events: [Object: null prototype] {
+telegrambot-bot1-1  |       error: [Function],
+telegrambot-bot1-1  |       message: [Function],
+telegrambot-bot1-1  |       close: [Function],
+telegrambot-bot1-1  |       open: [Function]
+telegrambot-bot1-1  |     },
+telegrambot-bot1-1  |     _eventsCount: 4,
+telegrambot-bot1-1  |     _maxListeners: undefined,
+telegrambot-bot1-1  |     _binaryType: 'arraybuffer',
+telegrambot-bot1-1  |     _closeCode: 1006,
+telegrambot-bot1-1  |     _closeFrameReceived: false,
+telegrambot-bot1-1  |     _closeFrameSent: false,
+telegrambot-bot1-1  |     _closeMessage: <Buffer >,
+telegrambot-bot1-1  |     _closeTimer: null,
+telegrambot-bot1-1  |     _errorEmitted: true,
+telegrambot-bot1-1  |     _extensions: {},
+telegrambot-bot1-1  |     _paused: false,
+telegrambot-bot1-1  |     _protocol: '',
+telegrambot-bot1-1  |     _readyState: 3,
+telegrambot-bot1-1  |     _receiver: null,
+telegrambot-bot1-1  |     _sender: null,
+telegrambot-bot1-1  |     _socket: null,
+telegrambot-bot1-1  |     _bufferedAmount: 0,
+telegrambot-bot1-1  |     _isServer: false,
+telegrambot-bot1-1  |     _redirects: 0,
+telegrambot-bot1-1  |     _autoPong: true,
+telegrambot-bot1-1  |     _url: 'wss://postgres/v2',
+telegrambot-bot1-1  |     _req: null,
+telegrambot-bot1-1  |     [Symbol(shapeMode)]: false,
+telegrambot-bot1-1  |     [Symbol(kCapture)]: false
+telegrambot-bot1-1  |   },
+telegrambot-bot1-1  |   [Symbol(kType)]: 'error',
+telegrambot-bot1-1  |   [Symbol(kError)]: Error: connect ECONNREFUSED 172.18.0.2:443
+telegrambot-bot1-1  |       at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) {
+telegrambot-bot1-1  |     errno: -111,
+telegrambot-bot1-1  |     code: 'ECONNREFUSED',
+telegrambot-bot1-1  |     syscall: 'connect',
+telegrambot-bot1-1  |     address: '172.18.0.2',
+telegrambot-bot1-1  |     port: 443
+telegrambot-bot1-1  |   },
+telegrambot-bot1-1  |   [Symbol(kMessage)]: 'connect ECONNREFUSED 172.18.0.2:443'
+telegrambot-bot1-1  | }
+telegrambot-bot1-1  | 07:17:47 PM [express] ❌ Bot initialization failed: [object Object]
+telegrambot-bot1-1  | 07:17:47 PM [express] 🔄 Server continues running with admin dashboard only
