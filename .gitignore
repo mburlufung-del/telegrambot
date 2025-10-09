@@ -4,3 +4,7 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Docker environment files (contains secrets)
+.env.docker
+.env.production
