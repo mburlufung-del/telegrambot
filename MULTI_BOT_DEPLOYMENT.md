@@ -15,7 +15,6 @@ This guide explains how to deploy and manage 10 Telegram bots simultaneously on 
 ## Current Status
 
 - **Bot 1**: ✅ Deployed on port 5001
-  - Token: 8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw
   - Username: @mdphpwelt_shopbot
   - Dashboard: http://72.60.20.38:5001
 
@@ -48,16 +47,16 @@ nano .env.docker
 Add your bot tokens:
 
 ```env
-BOT1_TOKEN=8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw
-BOT2_TOKEN=your_bot_2_token_here
-BOT3_TOKEN=your_bot_3_token_here
-BOT4_TOKEN=your_bot_4_token_here
-BOT5_TOKEN=your_bot_5_token_here
-BOT6_TOKEN=your_bot_6_token_here
-BOT7_TOKEN=your_bot_7_token_here
-BOT8_TOKEN=your_bot_8_token_here
-BOT9_TOKEN=your_bot_9_token_here
-BOT10_TOKEN=your_bot_10_token_here
+BOT1_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz_example1
+BOT2_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz_example2
+BOT3_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz_example3
+BOT4_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz_example4
+BOT5_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz_example5
+BOT6_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz_example6
+BOT7_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz_example7
+BOT8_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz_example8
+BOT9_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz_example9
+BOT10_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz_example10
 ```
 
 Save and exit: `Ctrl+X`, then `Y`, then `Enter`
