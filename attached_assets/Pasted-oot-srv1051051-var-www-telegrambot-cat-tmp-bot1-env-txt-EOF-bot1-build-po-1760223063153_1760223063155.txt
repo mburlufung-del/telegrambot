@@ -1,0 +1,73 @@
+oot@srv1051051:/var/www/telegrambot# cat > /tmp/bot1_env.txt << 'EOF'
+  bot1:
+    build: .
+    ports:
+      - "5001:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      TELEGRAM_BOT_TOKEN: ${BOT1_TOKEN}
+      DATABASE_URL: postgresql://teleshopuser:SecurePass123@postgres:5432/teleshop
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:5001}
+      PRIVATE_OBJECT_DIR: ${PRIVATE_OBJECT_DIR:-/tmp/uploads}
+      PUBLIC_OBJECT_SEARCH_PATHS: ${PUBLIC_OBJECT_SEARCH_PATHS:-/tmp/uploads}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+EOF
+root@srv1051051:/var/www/telegrambot# sed -i '/^  bot1:/,/^  bot2:/{/^  bot2:/!d;}' docker-compose.yml
+root@srv1051051:/var/www/telegrambot# sed -i '/^  postgres:/r /tmp/bot1_env.txt' docker-compose.yml
+root@srv1051051:/var/www/telegrambot# echo "=== Updated bot1 config ==="
+=== Updated bot1 config ===
+root@srv1051051:/var/www/telegrambot# sed -n '/bot1:/,/bot2:/p' docker-compose.yml
+  bot1:
+    build: .
+    ports:
+      - "5001:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      TELEGRAM_BOT_TOKEN: ${BOT1_TOKEN}
+      DATABASE_URL: postgresql://teleshopuser:SecurePass123@postgres:5432/teleshop
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:5001}
+      PRIVATE_OBJECT_DIR: ${PRIVATE_OBJECT_DIR:-/tmp/uploads}
+      PUBLIC_OBJECT_SEARCH_PATHS: ${PUBLIC_OBJECT_SEARCH_PATHS:-/tmp/uploads}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: teleshopuser
+      POSTGRES_PASSWORD: SecurePass123
+      POSTGRES_DB: teleshop
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U teleshopuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+root@srv1051051:/var/www/telegrambot# docker-compose down
+parsing /var/www/telegrambot/docker-compose.yml: yaml: unmarshal errors:
+  line 28: mapping key "ports" already defined at line 7
+  line 22: mapping key "environment" already defined at line 9
+root@srv1051051:/var/www/telegrambot# docker-compose --env-file .env.docker up -d
+parsing /var/www/telegrambot/docker-compose.yml: yaml: unmarshal errors:
+  line 28: mapping key "ports" already defined at line 7
+  line 22: mapping key "environment" already defined at line 9
+root@srv1051051:/var/www/telegrambot# echo "=== All environment variables ==="
+=== All environment variables ===
+root@srv1051051:/var/www/telegrambot# docker-compose exec bot1 printenv | grep -E "(PUBLIC_URL|PRIVATE|OBJECT)"
+parsing /var/www/telegrambot/docker-compose.yml: yaml: unmarshal errors:
+  line 28: mapping key "ports" already defined at line 7
+  line 22: mapping key "environment" already defined at line 9
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot1 --tail 15
+parsing /var/www/telegrambot/docker-compose.yml: yaml: unmarshal errors:
+  line 28: mapping key "ports" already defined at line 7
+  line 22: mapping key "environment" already defined at line 9
+root@srv1051051:/var/www/telegrambot# 
