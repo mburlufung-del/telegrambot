@@ -1,0 +1,53 @@
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot1 --tail 20
+telegrambot-bot1-1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot1-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot1-1  | npm warn config
+telegrambot-bot1-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | > workspace@1.0.0 start
+telegrambot-bot1-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | 06:29:35 PM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1  | 06:29:35 PM [express] ✅ Health check available at /health
+telegrambot-bot1-1  | 06:29:36 PM [express] ✅ API routes registered
+telegrambot-bot1-1  | 06:29:36 PM [express] 🖥️  Admin dashboard ready
+telegrambot-bot1-1  | 06:29:36 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1  | Cleared webhook
+telegrambot-bot1-1  | 06:29:46 PM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot1-1  | 06:29:46 PM [express] ✅ Bot initialization completed successfully
+root@srv1051051:/var/www/telegrambot# cat .env.docker
+PUBLIC_URL=http://72.60.20.38:5001
+BOT1_TOKEN=8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw
+BOT2_TOKEN=
+BOT3_TOKEN=
+BOT4_TOKEN=
+BOT5_TOKEN=
+BOT6_TOKEN=
+BOT7_TOKEN=
+BOT8_TOKEN=
+BOT9_TOKEN=
+BOT10_TOKEN=
+root@srv1051051:/var/www/telegrambot# docker-compose exec bot1 printenv | grep -E "(PUBLIC_URL|REPLIT|WEBHOOK)"
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot1 | grep -i "image" | tail -20
+telegrambot-bot1-1  |   hasImage: true
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image processing - download.jpg, type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Uploading file: download.jpg, claimed type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Content validated: image/jpeg (jpg)
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image upload FAILED: Error: PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' tool and set PRIVATE_OBJECT_DIR env var.
+telegrambot-bot1-1  |   hasImage: true
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image processing - download.jpg, type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Uploading file: download.jpg, claimed type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Content validated: image/jpeg (jpg)
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image upload FAILED: Error: PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' tool and set PRIVATE_OBJECT_DIR env var.
+telegrambot-bot1-1  |   hasImage: true
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image processing - download.jpg, type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Uploading file: download.jpg, claimed type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Content validated: image/jpeg (jpg)
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image upload FAILED: Error: PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' tool and set PRIVATE_OBJECT_DIR env var.
+telegrambot-bot1-1  |   hasImage: true
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image processing - download.jpg, type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Uploading file: download.jpg, claimed type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Content validated: image/jpeg (jpg)
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image upload FAILED: Error: PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' tool and set PRIVATE_OBJECT_DIR env var.
+root@srv1051051:/var/www/telegrambot# grep -n "getBaseUrl" server/bot.ts
+root@srv1051051:/var/www/telegrambot# 
