@@ -7,6 +7,29 @@ export class TeleShopBot {
   private userMessages: Map<number, number[]> = new Map();
   private autoVanishTimers: Map<number, NodeJS.Timeout> = new Map();
 
+  // Get the correct base URL for image construction
+  private getBaseUrl(): string {
+    // Priority order:
+    // 1. PUBLIC_URL env var (for VPS deployment)
+    // 2. WEBHOOK_URL (for production webhooks)
+    // 3. REPLIT_DOMAINS (for Replit deployment)
+    // 4. Fallback to localhost (development)
+    
+    if (process.env.PUBLIC_URL) {
+      return process.env.PUBLIC_URL;
+    }
+    
+    if (process.env.WEBHOOK_URL) {
+      return process.env.WEBHOOK_URL;
+    }
+    
+    if (process.env.REPLIT_DOMAINS) {
+      return `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`;
+    }
+    
+    return 'http://localhost:5000';
+  }
+
   // HTML utility functions for iOS Telegram compatibility
   private escapeHtml(text: string): string {
     return text
@@ -220,7 +243,7 @@ export class TeleShopBot {
           if (imageUrl && imageUrl.trim() !== '') {
             // Send image with caption
             // Convert relative path to full URL
-            const baseUrl = process.env.WEBHOOK_URL || `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}`;
+            const baseUrl = this.getBaseUrl();
             const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
             
             console.log(`Sending broadcast image to user ${userId}:`, fullImageUrl);
@@ -1700,7 +1723,7 @@ ${businessHours}
     if (product.imageUrl) {
       try {
         // Convert relative path to full URL for Telegram compatibility
-        const baseUrl = process.env.WEBHOOK_URL || `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}`;
+        const baseUrl = this.getBaseUrl();
         const fullImageUrl = product.imageUrl.startsWith('http') ? product.imageUrl : `${baseUrl}${product.imageUrl}`;
         
         console.log(`Attempting to send product image: ${fullImageUrl}`);
