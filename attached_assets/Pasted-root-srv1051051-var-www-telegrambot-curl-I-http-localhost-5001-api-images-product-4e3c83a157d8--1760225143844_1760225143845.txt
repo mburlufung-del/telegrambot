@@ -1,0 +1,119 @@
+root@srv1051051:/var/www/telegrambot# curl -I http://localhost:5001/api/images/product-4e3c83a157d8
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: image/jpeg
+Cache-Control: public, max-age=3600
+Content-Length: 8406
+ETag: W/"20d6-MLjtP+iHreFrF+RLVdD3pAjkDY0"
+Date: Sat, 11 Oct 2025 23:21:32 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+root@srv1051051:/var/www/telegrambot# curl -v http://localhost:5001/api/images/product-4e3c83a157d8 | head -20
+* Host localhost:5001 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying [::1]:5001...
+* Connected to localhost (::1) port 5001
+> GET /api/images/product-4e3c83a157d8 HTTP/1.1
+> Host: localhost:5001
+> User-Agent: curl/8.5.0
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< X-Powered-By: Express
+< Content-Type: image/jpeg
+< Cache-Control: public, max-age=3600
+< Content-Length: 8406
+< ETag: W/"20d6-MLjtP+iHreFrF+RLVdD3pAjkDY0"
+< Date: Sat, 11 Oct 2025 23:21:52 GMT
+< Connection: keep-alive
+< Keep-Alive: timeout=5
+< 
+{ [8406 bytes data]
+100  8406  100  8406    0     0  2836k      0 --:--:-- --:--:-- --:JFIF ( !%*+... 385-7(-.+
+
+
+!1AQa"q2B#R3bSrs&!1AQ2aq
+GAGlw\T"5?~M.R67-dw1)O* ?Q᠓`5^Gd"" """ """ """ """ """ """ UO."
+                         
+                         }Mgu<̂Uhc,dNޒWJ,n2(z{*sδ߬yH߯]ָ]L}yWQ E^;}?V
+                                                                  [Kcxqh<Y[<=\e4a
+`"sgjaq'+A=Y<L$ctQ8W;X0~UH2p|t-[hMcxX+8DI$}gm{\
+W ƙr,xq[]mG"""" """ """ <Lz]ELjOd|=|Ct.$t-q${= qi;mW\_m=p3Qߺm{G{T!mSLikEieqAC
+1:qeSOT>`i$cb쨘Ě0!->Aʵ}b82IU2l}Mc?V8Ix}O
+                                        ϣEy@ptL
+*?Au'mu<k|oYM~wMbX%AA040                       X@]n
+8Yq5jTaܘ@EX\W&VZ
+                ~,>;pԪV
+                       C8[tgpZ  MS
+?[~Os.iLBwwad~][YكԨ               Ḻ|2CȓW8PZ<#3gyenHʄyk{yfSNOW,sKdZ)"aP:tePa9m6ԡLRVb:m
+TlM70XAq V70K8CAS1a'%ϓOS>h#ԗee'
+                               X./B
+                                   \X01
+                                       u@
+" KKA A+AЍY"(D@DDEe1/pEMчq:t/:V1idh扝|w-i17.8mƝ{Ɩ/|ǎ,\!`k=.#6ƟE'=-Ĵ{~,/lk>kj96"'IQ@GM
+V*KrȰbzYI5{R9TRFc)7[a]qa6a,q9ݬI9q2 DXʀܽ_11Gwl7qy1A{/rGMN                              wr˚^\1;a{<G
+                                                       :ȿYQ8%V>ٳ@/+/\\I*#
+S4t)<O96R"`e6!/_\쬻L@MpfH$P"m[(S3mZ8.(U5G+!:
+70s\!!0Ap,|mj>^ۆúOeF4L.<Oڅ&\ԕboᚢ9;uP.^Qre&'U'8gNgӧ2\K@po-\c*eqmG    t|/A+,yRN^0~E*nis1i
+";F[8;Zs~^*;^#B        IFQ
+ȹ^0ژJ5#kͭ#]gf@""
+YJ$.5DTZ59XhezGf}67+yh3X@۲b7\7.L7}~QbĎFC֪&Qk̩D.kaA$x1i5oOyh%ǕS+ҁ1q?yY+phx q
+MW3M,)-VnE*5^֓jHnNG=- XK@=vL]b.*ּ=ϚI<l5|SB~1ԩ39镄8V%Wy`m&h#]LbEq,Aisck),$GF49Z׆9$ ޖ\χ}YL[PAp#A+(Pٙ-7ײ5{D& {[&94x?c+vQ\G5G>#\jb Wfd6*qñe Ncǚ!~`+OPuDw2-ޒO
+oqS                                             \A&yU
+   :Air6ZcTU|V0G:
+kq#m߮~\RڶpHhW,H:eQ3jj\Kf Ӗ,L"đ
+ŮVZqyuI2f72*l&qo)D2e_6&+JC$4f}~$ͅQ" ""y0iVpwqpqBkZK13v
+δ):KCԝg hNV4;
+             4^\.{~nx`<75LAX}z</2\G=^wl=n2d3u^s zo$m
+9h߇ibF9XK8M=kiXAH7Q\q7T{-
+   2m/ck{*5c^-ŧXȴ,Ohj`6uwTeQB%yɗuh1Rַ(dnʽǑAlZK8S:5WLr\θ!t=c
+                                                          ց""   qSY"3Val3JSx,e?k]JܼCHfєΊ]PyYgUɼE4UK$T4G-vj.5U*<ل>jKZRapla
+                 G4@}"UkRF\jÛb#H?}O
+                                   A0љZno[@חM%.'OEΓ}S8{S!Xykukw'@!s\xCi}%w*cMN*Een1" ""
+F
+ ǲ\nix]ϟ?as@uɱ8BbX]&׀ uGjDľ,>#LM۹wm{TvL[9   [i:s24
+                                                  hYS%C,4_8o*vc}_8ci<8:U?#6;.4
+:^9Q|K\ СyUmG8ͣ};½+"ư$ŏH>R`]hR3X+9fg/p~vD۴*K@l4ut*7
+                                                 Gei9|@`"BT
+'̑ML]AێsK|ifdܯ)89cwQn*);Pn<p
+                           Gbt4* b  Q#<pnnsKzꭍg]SjlM<g6I$ptt֋\GRkꔞjUr
+                                                                     #[.f92Vy¬HWy`?U    ;   \<B|ۘ
+                                                                                                RWKIs8?*VVA3d#ćVNQ0<5o=)p:Tc_:    L5;VMjƋ@[^
+                                      ƝFf-HtFS`͚?]bj@_ozi/8^rc!saQkaa-:dӨ0   1
+                                                                             [
+                                                                              ;a%Oq"ڍ06њbX(.vF|
+                                                                                               c >%/H@J$]up-&AEkʴRk   h9Ŷ$d``đr%Xx p1nc`mDrqf^B6aV?679
+                                                khyQnu/4ݨU|r;7;aׇ|    -
+                                                                      LXf\S4;As }6VQ%2ȜvQˆ"?rr友31n4mzVROM[02tVrkUcd˧A4y"YX=>'V]g2^
+47"Q9+AylyԘ:sc~pRAi"9Ht.:7   Ƨ'03Ԭ;٢@i
+                          iۤWF&+GT0fGA
+-z",x+£R^񂩗rgqyX&uʳp
+                   p
+                    muSxz`v]II
+vEu9t}                        MsgA{[Q3>
+:kK]'g@-X>Ujdq郜8\
+                  C}'eOs[`$۠-VE gv6Qforvk}KeU*5+B$Sܺ5W]Z!o|pk^ٮ\(ZuT/O)a=hERFk:-
+-- 4104k
+* Connection #0 to host localhost left intact
+curl: Failed writing body
+root@srv1051051:/var/www/telegrambot# curl -I http://72.60.20.38:5001/api/images/product-4e3c83a157d8
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: image/jpeg
+Cache-Control: public, max-age=3600
+Content-Length: 8406
+ETag: W/"20d6-MLjtP+iHreFrF+RLVdD3pAjkDY0"
+Date: Sat, 11 Oct 2025 23:24:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+root@srv1051051:/var/www/telegrambot# netstat -tulpn | grep 5001
+tcp        0      0 0.0.0.0:5001            0.0.0.0:*               LISTEN      1113344/docker-prox 
+tcp6       0      0 :::5001                 :::*                    LISTEN      1113351/docker-prox 
+root@srv1051051:/var/www/telegrambot# ufw status | grep 5001
+root@srv1051051:/var/www/telegrambot# docker ps | grep bot1
+852a63fa4563   telegrambot-bot1     "docker-entrypoint.s…"   12 minutes ago   Up 12 minutes             0.0.0.0:5001->5000/tcp, [::]:5001->5000/tcp   telegrambot-bot1-1
