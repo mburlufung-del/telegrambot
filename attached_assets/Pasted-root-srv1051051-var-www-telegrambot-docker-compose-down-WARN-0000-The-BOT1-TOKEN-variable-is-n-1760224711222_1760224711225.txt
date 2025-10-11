@@ -1,0 +1,440 @@
+root@srv1051051:/var/www/telegrambot# docker-compose down
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Running 3/2
+ ✔ Container telegrambot-bot1-1      Removed                                                     0.3s 
+ ✔ Container telegrambot-postgres-1  Removed                                                     0.2s 
+ ✔ Network telegrambot_default       Removed                                                     0.1s 
+root@srv1051051:/var/www/telegrambot# docker-compose build --no-cache bot1
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Building 31.1s (11/11) FINISHED                                                    docker:default
+ => [bot1 internal] load build definition from Dockerfile                                        0.0s
+ => => transferring dockerfile: 280B                                                             0.0s
+ => [bot1 internal] load metadata for docker.io/library/node:20-alpine                           0.6s
+ => [bot1 internal] load .dockerignore                                                           0.0s
+ => => transferring context: 295B                                                                0.0s
+ => [bot1 1/6] FROM docker.io/library/node:20-alpine@sha256:1ab6fc5a31d515dc7b6b25f6acfda200182  0.0s
+ => CACHED [bot1 2/6] WORKDIR /app                                                               0.0s
+ => [bot1 internal] load build context                                                           0.0s
+ => => transferring context: 25.47kB                                                             0.0s
+ => [bot1 3/6] COPY package*.json ./                                                             0.0s
+ => [bot1 4/6] RUN npm install                                                                  10.6s
+ => [bot1 5/6] COPY . .                                                                          0.1s 
+ => [bot1 6/6] RUN npm run build                                                                16.6s 
+ => [bot1] exporting to image                                                                    3.1s 
+ => => exporting layers                                                                          3.0s 
+ => => writing image sha256:3c0fed67eb598d7a2e8eb2c8ba984acbf3ca82afc2082862acf204f9897ae508     0.0s 
+ => => naming to docker.io/library/telegrambot-bot1                                              0.0s 
+root@srv1051051:/var/www/telegrambot# docker-compose --env-file .env.docker up -d                     
+[+] Building 0.0s (0/0)                                                                docker:default
+[+] Running 3/3
+ ✔ Network telegrambot_default       Created                                                     0.0s 
+ ✔ Container telegrambot-postgres-1  Healthy                                                     0.0s 
+ ✔ Container telegrambot-bot1-1      Started                                                     0.0s 
+root@srv1051051:/var/www/telegrambot# sleep 5
+root@srv1051051:/var/www/telegrambot# echo "=== PUBLIC_URL in container ==="
+=== PUBLIC_URL in container ===
+root@srv1051051:/var/www/telegrambot# docker-compose exec bot1 printenv PUBLIC_URL
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+http://72.60.20.38:5001
+root@srv1051051:/var/www/telegrambot# echo "=== Watching for image attempts ==="
+=== Watching for image attempts ===
+root@srv1051051:/var/www/telegrambot# echo "Now add a product with image and watch the URL..."
+Now add a product with image and watch the URL...
+root@srv1051051:/var/www/telegrambot# docker-compose logs -f bot1 | grep -i "attempting to send"
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+^Ccanceled
+
+root@srv1051051:/var/www/telegrambot# cat > fix-baseurl.js << 'JSEOF'
+const fs = require('fs');
+const content = fs.readFileSync('server/bot.ts', 'utf8');
+// Replace line 223 and 1703 to use PUBLIC_URL first
+const fixed = content.replace(
+  /const baseUrl = process\.env\.WEBHOOK_URL \|\| `https:\/\/\$\{process\.env\.REPLIT_DOMAINS\?\.split\(','\)\[0\] \|\| 'localhost:5000'\}`/g,
+  "const baseUrl = process.env.PUBLIC_URL || process.env.WEBHOOK_URL || 'http://localhost:5000'"
+);
+fs.writeFileSync('server/bot.ts', fixed);
+console.log('Fixed baseUrl to prioritize PUBLIC_URL');
+JSEOF
+root@srv1051051:/var/www/telegrambot# node fix-baseurl.js
+Fixed baseUrl to prioritize PUBLIC_URL
+root@srv1051051:/var/www/telegrambot# echo "=== Checking line 223 ==="
+=== Checking line 223 ===
+root@srv1051051:/var/www/telegrambot# sed -n '223p' server/bot.ts
+            const baseUrl = process.env.PUBLIC_URL || process.env.WEBHOOK_URL || 'http://localhost:5000';
+root@srv1051051:/var/www/telegrambot# echo "=== Checking line 1703 ==="
+=== Checking line 1703 ===
+root@srv1051051:/var/www/telegrambot# sed -n '1703p' server/bot.ts
+        const baseUrl = process.env.PUBLIC_URL || process.env.WEBHOOK_URL || 'http://localhost:5000';
+root@srv1051051:/var/www/telegrambot# docker-compose down
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Running 3/3
+ ✔ Container telegrambot-bot1-1      Removed                                                     0.2s 
+ ✔ Container telegrambot-postgres-1  Removed                                                     0.1s 
+ ✔ Network telegrambot_default       Removed                                                     0.1s 
+root@srv1051051:/var/www/telegrambot# docker-compose build --no-cache bot1
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Building 31.2s (11/11) FINISHED                                                    docker:default
+ => [bot1 internal] load build definition from Dockerfile                                        0.0s
+ => => transferring dockerfile: 280B                                                             0.0s
+ => [bot1 internal] load metadata for docker.io/library/node:20-alpine                           0.6s
+ => [bot1 internal] load .dockerignore                                                           0.0s
+ => => transferring context: 295B                                                                0.0s
+ => [bot1 1/6] FROM docker.io/library/node:20-alpine@sha256:1ab6fc5a31d515dc7b6b25f6acfda200182  0.0s
+ => [bot1 internal] load build context                                                           0.0s
+ => => transferring context: 139.55kB                                                            0.0s
+ => CACHED [bot1 2/6] WORKDIR /app                                                               0.0s
+ => [bot1 3/6] COPY package*.json ./                                                             0.0s
+ => [bot1 4/6] RUN npm install                                                                  10.2s
+ => [bot1 5/6] COPY . .                                                                          0.1s
+ => [bot1 6/6] RUN npm run build                                                                17.2s 
+ => [bot1] exporting to image                                                                    3.0s 
+ => => exporting layers                                                                          3.0s 
+ => => writing image sha256:62df453f0e98ccab0613b707f51322d4ea55f0b225af141f6777fcfaf5ff554b     0.0s 
+ => => naming to docker.io/library/telegrambot-bot1                                              0.0s 
+root@srv1051051:/var/www/telegrambot# docker-compose --env-file .env.docker up -d                     
+[+] Building 0.0s (0/0)                                                                docker:default 
+[+] Running 3/3
+ ✔ Network telegrambot_default       Created                                                     0.0s 
+ ✔ Container telegrambot-postgres-1  Healthy                                                     0.0s 
+ ✔ Container telegrambot-bot1-1      Started                                                     0.0s 
+root@srv1051051:/var/www/telegrambot# sleep 5
+root@srv1051051:/var/www/telegrambot# echo "=== Add a product with image now and check logs ==="
+=== Add a product with image now and check logs ===
+root@srv1051051:/var/www/telegrambot# docker-compose logs -f bot1
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+telegrambot-bot1-1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot1-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot1-1  | npm warn config
+telegrambot-bot1-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | > workspace@1.0.0 start
+telegrambot-bot1-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | 07:12:26 PM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1  | 07:12:26 PM [express] ✅ Health check available at /health
+telegrambot-bot1-1  | 07:12:27 PM [express] ✅ API routes registered
+telegrambot-bot1-1  | 07:12:27 PM [express] 🖥️  Admin dashboard ready
+telegrambot-bot1-1  | 07:12:27 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1  | Cleared webhook
+telegrambot-bot1-1  | 07:12:37 PM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot1-1  | 07:12:37 PM [express] ✅ Bot initialization completed successfully
+telegrambot-bot1-1  | Stored image with ID: product-4e3c83a157d8 Size: 8406 Type: image/jpeg
+telegrambot-bot1-1  | Received product data: {
+telegrambot-bot1-1  |   "name": "Mallow",
+telegrambot-bot1-1  |   "description": "",
+telegrambot-bot1-1  |   "price": 12,
+telegrambot-bot1-1  |   "currencyCode": "USD",
+telegrambot-bot1-1  |   "stock": 111,
+telegrambot-bot1-1  |   "unit": "kg",
+telegrambot-bot1-1  |   "categoryId": "f51427db-7ad1-4d50-a9e1-f5dbe1b43d22",
+telegrambot-bot1-1  |   "minOrderQuantity": 1,
+telegrambot-bot1-1  |   "imageUrl": "/api/images/product-4e3c83a157d8",
+telegrambot-bot1-1  |   "isActive": true
+telegrambot-bot1-1  | }
+telegrambot-bot1-1  | Final product data with defaults: {
+telegrambot-bot1-1  |   "name": "Mallow",
+telegrambot-bot1-1  |   "description": "",
+telegrambot-bot1-1  |   "price": "12",
+telegrambot-bot1-1  |   "currencyCode": "USD",
+telegrambot-bot1-1  |   "stock": 111,
+telegrambot-bot1-1  |   "minOrderQuantity": 1,
+telegrambot-bot1-1  |   "unit": "kg",
+telegrambot-bot1-1  |   "imageUrl": "/api/images/product-4e3c83a157d8",
+telegrambot-bot1-1  |   "categoryId": "f51427db-7ad1-4d50-a9e1-f5dbe1b43d22",
+telegrambot-bot1-1  |   "isActive": true,
+telegrambot-bot1-1  |   "compareAtPrice": null
+telegrambot-bot1-1  | }
+telegrambot-bot1-1  | Product created successfully: 223110c5-b319-4063-83df-92ff81515796
+telegrambot-bot1-1  | Sending success response to frontend
+telegrambot-bot1-1  | Success response sent
+telegrambot-bot1-1  | [USER TRACKING] User 5394510012 tracked: {
+telegrambot-bot1-1  |   chatId: '5394510012',
+telegrambot-bot1-1  |   username: 'terry2237',
+telegrambot-bot1-1  |   firstName: 'Terry',
+telegrambot-bot1-1  |   lastName: null,
+telegrambot-bot1-1  |   lastSeen: 2025-10-11T23:15:43.320Z
+telegrambot-bot1-1  | }
+telegrambot-bot1-1  | [INSTANT-VANISH] Cleared previous messages and sent new message 182 for user 5394510012
+telegrambot-bot1-1  | [USER TRACKING] User 5394510012 tracked: {
+telegrambot-bot1-1  |   chatId: '5394510012',
+telegrambot-bot1-1  |   username: 'terry2237',
+telegrambot-bot1-1  |   firstName: 'Terry',
+telegrambot-bot1-1  |   lastName: null,
+telegrambot-bot1-1  |   lastSeen: 2025-10-11T23:15:47.261Z
+telegrambot-bot1-1  | }
+telegrambot-bot1-1  | [INSTANT-VANISH] Cleared previous message 182 for user 5394510012
+telegrambot-bot1-1  | Attempting to send product image: http://72.60.20.38:5001/api/images/product-4e3c83a157d8
+telegrambot-bot1-1  | Image sending failed, will show text-only product details: TelegramError: ETELEGRAM: 400 Bad Request: wrong type of the web page content
+telegrambot-bot1-1  |     at /app/node_modules/node-telegram-bot-api/src/telegram.js:299:15
+telegrambot-bot1-1  |     at tryCatcher (/app/node_modules/bluebird/js/release/util.js:16:23)
+telegrambot-bot1-1  |     at Promise._settlePromiseFromHandler (/app/node_modules/bluebird/js/release/promise.js:547:31)
+telegrambot-bot1-1  |     at Promise._settlePromise (/app/node_modules/bluebird/js/release/promise.js:604:18)
+telegrambot-bot1-1  |     at Promise._settlePromise0 (/app/node_modules/bluebird/js/release/promise.js:649:10)
+telegrambot-bot1-1  |     at Promise._settlePromises (/app/node_modules/bluebird/js/release/promise.js:729:18)
+telegrambot-bot1-1  |     at _drainQueueStep (/app/node_modules/bluebird/js/release/async.js:93:12)
+telegrambot-bot1-1  |     at _drainQueue (/app/node_modules/bluebird/js/release/async.js:86:9)
+telegrambot-bot1-1  |     at Async._drainQueues (/app/node_modules/bluebird/js/release/async.js:102:5)
+telegrambot-bot1-1  |     at Async.drainQueues [as _onImmediate] (/app/node_modules/bluebird/js/release/async.js:15:14)
+telegrambot-bot1-1  |     at process.processImmediate (node:internal/timers:483:21) {
+telegrambot-bot1-1  |   code: 'ETELEGRAM',
+telegrambot-bot1-1  |   response: <ref *1> IncomingMessage {
+telegrambot-bot1-1  |     _events: {
+telegrambot-bot1-1  |       close: [Array],
+telegrambot-bot1-1  |       error: [Function (anonymous)],
+telegrambot-bot1-1  |       data: [Function (anonymous)],
+telegrambot-bot1-1  |       end: [Array],
+telegrambot-bot1-1  |       readable: undefined
+telegrambot-bot1-1  |     },
+telegrambot-bot1-1  |     _readableState: ReadableState {
+telegrambot-bot1-1  |       highWaterMark: 16384,
+telegrambot-bot1-1  |       buffer: [],
+telegrambot-bot1-1  |       bufferIndex: 0,
+telegrambot-bot1-1  |       length: 0,
+telegrambot-bot1-1  |       pipes: [],
+telegrambot-bot1-1  |       awaitDrainWriters: null,
+telegrambot-bot1-1  |       [Symbol(kState)]: 194779004
+telegrambot-bot1-1  |     },
+telegrambot-bot1-1  |     _maxListeners: undefined,
+telegrambot-bot1-1  |     socket: null,
+telegrambot-bot1-1  |     httpVersionMajor: 1,
+telegrambot-bot1-1  |     httpVersionMinor: 1,
+telegrambot-bot1-1  |     httpVersion: '1.1',
+telegrambot-bot1-1  |     complete: true,
+telegrambot-bot1-1  |     rawHeaders: [
+telegrambot-bot1-1  |       'Server',
+telegrambot-bot1-1  |       'nginx/1.18.0',
+telegrambot-bot1-1  |       'Date',
+telegrambot-bot1-1  |       'Sat, 11 Oct 2025 23:15:47 GMT',
+telegrambot-bot1-1  |       'Content-Type',
+telegrambot-bot1-1  |       'application/json',
+telegrambot-bot1-1  |       'Content-Length',
+telegrambot-bot1-1  |       '93',
+telegrambot-bot1-1  |       'Connection',
+telegrambot-bot1-1  |       'keep-alive',
+telegrambot-bot1-1  |       'Strict-Transport-Security',
+telegrambot-bot1-1  |       'max-age=31536000; includeSubDomains; preload',
+telegrambot-bot1-1  |       'Access-Control-Allow-Origin',
+telegrambot-bot1-1  |       '*',
+telegrambot-bot1-1  |       'Access-Control-Expose-Headers',
+telegrambot-bot1-1  |       'Content-Length,Content-Type,Date,Server,Connection'
+telegrambot-bot1-1  |     ],
+telegrambot-bot1-1  |     rawTrailers: [],
+telegrambot-bot1-1  |     joinDuplicateHeaders: undefined,
+telegrambot-bot1-1  |     aborted: false,
+telegrambot-bot1-1  |     upgrade: false,
+telegrambot-bot1-1  |     url: '',
+telegrambot-bot1-1  |     method: null,
+telegrambot-bot1-1  |     statusCode: 400,
+telegrambot-bot1-1  |     statusMessage: 'Bad Request',
+telegrambot-bot1-1  |     client: TLSSocket {
+telegrambot-bot1-1  |       _tlsOptions: [Object],
+telegrambot-bot1-1  |       _secureEstablished: true,
+telegrambot-bot1-1  |       _securePending: false,
+telegrambot-bot1-1  |       _newSessionPending: false,
+telegrambot-bot1-1  |       _controlReleased: true,
+telegrambot-bot1-1  |       secureConnecting: false,
+telegrambot-bot1-1  |       _SNICallback: null,
+telegrambot-bot1-1  |       servername: 'api.telegram.org',
+telegrambot-bot1-1  |       alpnProtocol: false,
+telegrambot-bot1-1  |       authorized: true,
+telegrambot-bot1-1  |       authorizationError: null,
+telegrambot-bot1-1  |       encrypted: true,
+telegrambot-bot1-1  |       _events: [Object: null prototype],
+telegrambot-bot1-1  |       _eventsCount: 9,
+telegrambot-bot1-1  |       connecting: false,
+telegrambot-bot1-1  |       _hadError: false,
+telegrambot-bot1-1  |       _parent: null,
+telegrambot-bot1-1  |       _host: 'api.telegram.org',
+telegrambot-bot1-1  |       _closeAfterHandlingError: false,
+telegrambot-bot1-1  |       _readableState: [ReadableState],
+telegrambot-bot1-1  |       _writableState: [WritableState],
+telegrambot-bot1-1  |       allowHalfOpen: false,
+telegrambot-bot1-1  |       _maxListeners: undefined,
+telegrambot-bot1-1  |       _sockname: null,
+telegrambot-bot1-1  |       _pendingData: null,
+telegrambot-bot1-1  |       _pendingEncoding: '',
+telegrambot-bot1-1  |       server: undefined,
+telegrambot-bot1-1  |       _server: null,
+telegrambot-bot1-1  |       ssl: [TLSWrap],
+telegrambot-bot1-1  |       _requestCert: true,
+telegrambot-bot1-1  |       _rejectUnauthorized: true,
+telegrambot-bot1-1  |       parser: null,
+telegrambot-bot1-1  |       _httpMessage: null,
+telegrambot-bot1-1  |       autoSelectFamilyAttemptedAddresses: [Array],
+telegrambot-bot1-1  |       timeout: 0,
+telegrambot-bot1-1  |       [Symbol(alpncallback)]: null,
+telegrambot-bot1-1  |       [Symbol(res)]: [TLSWrap],
+telegrambot-bot1-1  |       [Symbol(verified)]: true,
+telegrambot-bot1-1  |       [Symbol(pendingSession)]: null,
+telegrambot-bot1-1  |       [Symbol(async_id_symbol)]: -1,
+telegrambot-bot1-1  |       [Symbol(kHandle)]: [TLSWrap],
+telegrambot-bot1-1  |       [Symbol(lastWriteQueueSize)]: 0,
+telegrambot-bot1-1  |       [Symbol(timeout)]: null,
+telegrambot-bot1-1  |       [Symbol(kBuffer)]: null,
+telegrambot-bot1-1  |       [Symbol(kBufferCb)]: null,
+telegrambot-bot1-1  |       [Symbol(kBufferGen)]: null,
+telegrambot-bot1-1  |       [Symbol(shapeMode)]: true,
+telegrambot-bot1-1  |       [Symbol(kCapture)]: false,
+telegrambot-bot1-1  |       [Symbol(kSetNoDelay)]: false,
+telegrambot-bot1-1  |       [Symbol(kSetKeepAlive)]: true,
+telegrambot-bot1-1  |       [Symbol(kSetKeepAliveInitialDelay)]: 1,
+telegrambot-bot1-1  |       [Symbol(kBytesRead)]: 0,
+telegrambot-bot1-1  |       [Symbol(kBytesWritten)]: 0,
+telegrambot-bot1-1  |       [Symbol(connect-options)]: [Object]
+telegrambot-bot1-1  |     },
+telegrambot-bot1-1  |     _consuming: false,
+telegrambot-bot1-1  |     _dumped: false,
+telegrambot-bot1-1  |     req: ClientRequest {
+telegrambot-bot1-1  |       _events: [Object: null prototype],
+telegrambot-bot1-1  |       _eventsCount: 5,
+telegrambot-bot1-1  |       _maxListeners: undefined,
+telegrambot-bot1-1  |       outputData: [],
+telegrambot-bot1-1  |       outputSize: 0,
+telegrambot-bot1-1  |       writable: true,
+telegrambot-bot1-1  |       destroyed: true,
+telegrambot-bot1-1  |       _last: false,
+telegrambot-bot1-1  |       chunkedEncoding: false,
+telegrambot-bot1-1  |       shouldKeepAlive: true,
+telegrambot-bot1-1  |       maxRequestsOnConnectionReached: false,
+telegrambot-bot1-1  |       _defaultKeepAlive: true,
+telegrambot-bot1-1  |       useChunkedEncodingByDefault: true,
+telegrambot-bot1-1  |       sendDate: false,
+telegrambot-bot1-1  |       _removedConnection: false,
+telegrambot-bot1-1  |       _removedContLen: false,
+telegrambot-bot1-1  |       _removedTE: false,
+telegrambot-bot1-1  |       strictContentLength: false,
+telegrambot-bot1-1  |       _contentLength: 0,
+telegrambot-bot1-1  |       _hasBody: true,
+telegrambot-bot1-1  |       _trailer: '',
+telegrambot-bot1-1  |       finished: true,
+telegrambot-bot1-1  |       _headerSent: true,
+telegrambot-bot1-1  |       _closed: true,
+telegrambot-bot1-1  |       socket: [TLSSocket],
+telegrambot-bot1-1  |       _header: 'POST /bot8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw/sendPhoto?caption=%F0%9F%93%A6%20%3Cb%3EMallow%3C%2Fb%3E%0A%F0%9F%92%B0%20%3Cb%3E%2412.00%3C%2Fb%3E&parse_mode=HTML&chat_id=5394510012&photo=http%3A%2F%2F72.60.20.38%3A5001%2Fapi%2Fimages%2Fproduct-4e3c83a157d8 HTTP/1.1\r\n' +
+telegrambot-bot1-1  |         'host: api.telegram.org\r\n' +
+telegrambot-bot1-1  |         'content-length: 0\r\n' +
+telegrambot-bot1-1  |         'Connection: keep-alive\r\n' +
+telegrambot-bot1-1  |         '\r\n',
+telegrambot-bot1-1  |       _keepAliveTimeout: 0,
+telegrambot-bot1-1  |       _onPendingData: [Function: nop],
+telegrambot-bot1-1  |       agent: [Agent],
+telegrambot-bot1-1  |       socketPath: undefined,
+telegrambot-bot1-1  |       method: 'POST',
+telegrambot-bot1-1  |       maxHeaderSize: undefined,
+telegrambot-bot1-1  |       insecureHTTPParser: undefined,
+telegrambot-bot1-1  |       joinDuplicateHeaders: undefined,
+telegrambot-bot1-1  |       path: '/bot8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw/sendPhoto?caption=%F0%9F%93%A6%20%3Cb%3EMallow%3C%2Fb%3E%0A%F0%9F%92%B0%20%3Cb%3E%2412.00%3C%2Fb%3E&parse_mode=HTML&chat_id=5394510012&photo=http%3A%2F%2F72.60.20.38%3A5001%2Fapi%2Fimages%2Fproduct-4e3c83a157d8',
+telegrambot-bot1-1  |       _ended: true,
+telegrambot-bot1-1  |       res: [Circular *1],
+telegrambot-bot1-1  |       aborted: false,
+telegrambot-bot1-1  |       timeoutCb: null,
+telegrambot-bot1-1  |       upgradeOrConnect: false,
+telegrambot-bot1-1  |       parser: null,
+telegrambot-bot1-1  |       maxHeadersCount: null,
+telegrambot-bot1-1  |       reusedSocket: true,
+telegrambot-bot1-1  |       host: 'api.telegram.org',
+telegrambot-bot1-1  |       protocol: 'https:',
+telegrambot-bot1-1  |       [Symbol(shapeMode)]: false,
+telegrambot-bot1-1  |       [Symbol(kCapture)]: false,
+telegrambot-bot1-1  |       [Symbol(kBytesWritten)]: 0,
+telegrambot-bot1-1  |       [Symbol(kNeedDrain)]: false,
+telegrambot-bot1-1  |       [Symbol(corked)]: 0,
+telegrambot-bot1-1  |       [Symbol(kOutHeaders)]: [Object: null prototype],
+telegrambot-bot1-1  |       [Symbol(errored)]: null,
+telegrambot-bot1-1  |       [Symbol(kHighWaterMark)]: 16384,
+telegrambot-bot1-1  |       [Symbol(kRejectNonStandardBodyWrites)]: false,
+telegrambot-bot1-1  |       [Symbol(kUniqueHeaders)]: null
+telegrambot-bot1-1  |     },
+telegrambot-bot1-1  |     _eventsCount: 4,
+telegrambot-bot1-1  |     request: Request {
+telegrambot-bot1-1  |       _events: [Object: null prototype],
+telegrambot-bot1-1  |       _eventsCount: 5,
+telegrambot-bot1-1  |       _maxListeners: undefined,
+telegrambot-bot1-1  |       formData: null,
+telegrambot-bot1-1  |       method: 'POST',
+telegrambot-bot1-1  |       simple: false,
+telegrambot-bot1-1  |       resolveWithFullResponse: true,
+telegrambot-bot1-1  |       forever: true,
+telegrambot-bot1-1  |       readable: true,
+telegrambot-bot1-1  |       writable: true,
+telegrambot-bot1-1  |       explicitMethod: true,
+telegrambot-bot1-1  |       _qs: [Querystring],
+telegrambot-bot1-1  |       _auth: [Auth],
+telegrambot-bot1-1  |       _oauth: [OAuth],
+telegrambot-bot1-1  |       _multipart: [Multipart],
+telegrambot-bot1-1  |       _redirect: [Redirect],
+telegrambot-bot1-1  |       _tunnel: [Tunnel],
+telegrambot-bot1-1  |       _rp_resolve: [Function (anonymous)],
+telegrambot-bot1-1  |       _rp_reject: [Function (anonymous)],
+telegrambot-bot1-1  |       _rp_promise: [Promise [Object]],
+telegrambot-bot1-1  |       _rp_callbackOrig: undefined,
+telegrambot-bot1-1  |       callback: [Function (anonymous)],
+telegrambot-bot1-1  |       _rp_options: [Object],
+telegrambot-bot1-1  |       headers: [Object],
+telegrambot-bot1-1  |       setHeader: [Function (anonymous)],
+telegrambot-bot1-1  |       hasHeader: [Function (anonymous)],
+telegrambot-bot1-1  |       getHeader: [Function (anonymous)],
+telegrambot-bot1-1  |       removeHeader: [Function (anonymous)],
+telegrambot-bot1-1  |       localAddress: undefined,
+telegrambot-bot1-1  |       pool: [Object],
+telegrambot-bot1-1  |       dests: [],
+telegrambot-bot1-1  |       __isRequestRequest: true,
+telegrambot-bot1-1  |       _callback: [Function: RP$callback],
+telegrambot-bot1-1  |       uri: [Url],
+telegrambot-bot1-1  |       proxy: null,
+telegrambot-bot1-1  |       tunnel: true,
+telegrambot-bot1-1  |       setHost: true,
+telegrambot-bot1-1  |       originalCookieHeader: undefined,
+telegrambot-bot1-1  |       _disableCookies: true,
+telegrambot-bot1-1  |       _jar: undefined,
+telegrambot-bot1-1  |       port: 443,
+telegrambot-bot1-1  |       host: 'api.telegram.org',
+telegrambot-bot1-1  |       url: [Url],
+telegrambot-bot1-1  |       path: '/bot8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw/sendPhoto?caption=%F0%9F%93%A6%20%3Cb%3EMallow%3C%2Fb%3E%0A%F0%9F%92%B0%20%3Cb%3E%2412.00%3C%2Fb%3E&parse_mode=HTML&chat_id=5394510012&photo=http%3A%2F%2F72.60.20.38%3A5001%2Fapi%2Fimages%2Fproduct-4e3c83a157d8',
+telegrambot-bot1-1  |       httpModule: [Object],
+telegrambot-bot1-1  |       agentClass: [Function: Agent],
+telegrambot-bot1-1  |       agentOptions: [Object],
+telegrambot-bot1-1  |       agent: [Agent],
+telegrambot-bot1-1  |       _started: true,
+telegrambot-bot1-1  |       href: 'https://api.telegram.org/bot8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw/sendPhoto?caption=%F0%9F%93%A6%20%3Cb%3EMallow%3C%2Fb%3E%0A%F0%9F%92%B0%20%3Cb%3E%2412.00%3C%2Fb%3E&parse_mode=HTML&chat_id=5394510012&photo=http%3A%2F%2F72.60.20.38%3A5001%2Fapi%2Fimages%2Fproduct-4e3c83a157d8',
+telegrambot-bot1-1  |       req: [ClientRequest],
+telegrambot-bot1-1  |       ntick: true,
+telegrambot-bot1-1  |       response: [Circular *1],
+telegrambot-bot1-1  |       originalHost: 'api.telegram.org',
+telegrambot-bot1-1  |       originalHostHeaderName: 'host',
+telegrambot-bot1-1  |       responseContent: [Circular *1],
+telegrambot-bot1-1  |       _destdata: true,
+telegrambot-bot1-1  |       _ended: true,
+telegrambot-bot1-1  |       _callbackCalled: true,
+telegrambot-bot1-1  |       [Symbol(shapeMode)]: false,
+telegrambot-bot1-1  |       [Symbol(kCapture)]: false
+telegrambot-bot1-1  |     },
+telegrambot-bot1-1  |     toJSON: [Function: responseToJSON],
+telegrambot-bot1-1  |     caseless: Caseless { dict: [Object] },
+telegrambot-bot1-1  |     body: {
+telegrambot-bot1-1  |       ok: false,
+telegrambot-bot1-1  |       error_code: 400,
+telegrambot-bot1-1  |       description: 'Bad Request: wrong type of the web page content'
+telegrambot-bot1-1  |     },
+telegrambot-bot1-1  |     [Symbol(shapeMode)]: true,
+telegrambot-bot1-1  |     [Symbol(kCapture)]: false,
+telegrambot-bot1-1  |     [Symbol(kHeaders)]: {
+telegrambot-bot1-1  |       server: 'nginx/1.18.0',
+telegrambot-bot1-1  |       date: 'Sat, 11 Oct 2025 23:15:47 GMT',
+telegrambot-bot1-1  |       'content-type': 'application/json',
+telegrambot-bot1-1  |       'content-length': '93',
+telegrambot-bot1-1  |       connection: 'keep-alive',
+telegrambot-bot1-1  |       'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+telegrambot-bot1-1  |       'access-control-allow-origin': '*',
+telegrambot-bot1-1  |       'access-control-expose-headers': 'Content-Length,Content-Type,Date,Server,Connection'
+telegrambot-bot1-1  |     },
+telegrambot-bot1-1  |     [Symbol(kHeadersCount)]: 16,
+telegrambot-bot1-1  |     [Symbol(kTrailers)]: null,
+telegrambot-bot1-1  |     [Symbol(kTrailersCount)]: 0
+telegrambot-bot1-1  |   }
+telegrambot-bot1-1  | }
+telegrambot-bot1-1  | [INSTANT-VANISH] Tracked product details message 183 for user 5394510012
+^Ccanceled
+root@srv1051051:/var/www/telegrambot# docker-compose logs -f bot1 | grep -i "attempting"
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+telegrambot-bot1-1  | Attempting to send product image: http://72.60.20.38:5001/api/images/product-4e3c83a157d8
