@@ -1,0 +1,117 @@
+root@srv1051051:/var/www/telegrambot# docker-compose down
+parsing /var/www/telegrambot/docker-compose.yml: yaml: unmarshal errors:
+  line 28: mapping key "ports" already defined at line 7
+  line 22: mapping key "environment" already defined at line 9
+root@srv1051051:/var/www/telegrambot# docker-compose --env-file .env.docker up -d
+parsing /var/www/telegrambot/docker-compose.yml: yaml: unmarshal errors:
+  line 28: mapping key "ports" already defined at line 7
+  line 22: mapping key "environment" already defined at line 9
+root@srv1051051:/var/www/telegrambot# echo "=== All environment variables ==="
+=== All environment variables ===
+root@srv1051051:/var/www/telegrambot# docker-compose exec bot1 printenv | grep -E "(PUBLIC_URL|PRIVATE|OBJECT)"
+parsing /var/www/telegrambot/docker-compose.yml: yaml: unmarshal errors:
+  line 28: mapping key "ports" already defined at line 7
+  line 22: mapping key "environment" already defined at line 9
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot1 --tail 15
+parsing /var/www/telegrambot/docker-compose.yml: yaml: unmarshal errors:
+  line 28: mapping key "ports" already defined at line 7
+  line 22: mapping key "environment" already defined at line 9
+root@srv1051051:/var/www/telegrambot# cat > docker-compose.yml << 'YMLEOF'
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: teleshopuser
+      POSTGRES_PASSWORD: SecurePass123
+      POSTGRES_DB: teleshop
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U teleshopuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  bot1:
+    build: .
+    ports:
+      - "5001:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      TELEGRAM_BOT_TOKEN: ${BOT1_TOKEN}
+      DATABASE_URL: postgresql://teleshopuser:SecurePass123@postgres:5432/teleshop
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:5001}
+      PRIVATE_OBJECT_DIR: ${PRIVATE_OBJECT_DIR:-/tmp/uploads}
+      PUBLIC_OBJECT_SEARCH_PATHS: ${PUBLIC_OBJECT_SEARCH_PATHS:-/tmp/uploads}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  postgres_data:
+YMLEOF
+root@srv1051051:/var/www/telegrambot# echo "=== docker-compose.yml bot1 section ==="
+=== docker-compose.yml bot1 section ===
+root@srv1051051:/var/www/telegrambot# sed -n '/bot1:/,/restart:/p' docker-compose.yml
+  bot1:
+    build: .
+    ports:
+      - "5001:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      TELEGRAM_BOT_TOKEN: ${BOT1_TOKEN}
+      DATABASE_URL: postgresql://teleshopuser:SecurePass123@postgres:5432/teleshop
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:5001}
+      PRIVATE_OBJECT_DIR: ${PRIVATE_OBJECT_DIR:-/tmp/uploads}
+      PUBLIC_OBJECT_SEARCH_PATHS: ${PUBLIC_OBJECT_SEARCH_PATHS:-/tmp/uploads}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+root@srv1051051:/var/www/telegrambot# docker-compose down
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Running 3/3
+ ✔ Container telegrambot-bot1-1      Removed                                                     0.3s 
+ ✔ Container telegrambot-postgres-1  Removed                                                     0.1s 
+ ✔ Network telegrambot_default       Removed                                                     0.1s 
+root@srv1051051:/var/www/telegrambot# docker-compose --env-file .env.docker up -d
+[+] Building 0.0s (0/0)                                                                docker:default
+[+] Running 3/3
+ ✔ Network telegrambot_default       Created                                                     0.0s 
+ ✔ Container telegrambot-postgres-1  Healthy                                                     0.0s 
+ ✔ Container telegrambot-bot1-1      Started                                                     0.0s 
+root@srv1051051:/var/www/telegrambot# sleep 3
+root@srv1051051:/var/www/telegrambot# echo ""
+
+root@srv1051051:/var/www/telegrambot# echo "=== Environment variables in container ==="
+=== Environment variables in container ===
+root@srv1051051:/var/www/telegrambot# docker-compose exec bot1 printenv | grep -E "(PUBLIC_URL|PRIVATE|OBJECT)"
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+PUBLIC_URL=http://72.60.20.38:5001
+PRIVATE_OBJECT_DIR=/tmp/uploads
+PUBLIC_OBJECT_SEARCH_PATHS=/tmp/uploads
+root@srv1051051:/var/www/telegrambot# echo ""
+
+root@srv1051051:/var/www/telegrambot# echo "=== Bot logs ==="
+=== Bot logs ===
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot1 --tail 15
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+telegrambot-bot1-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot1-1  | npm warn config
+telegrambot-bot1-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | > workspace@1.0.0 start
+telegrambot-bot1-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | 06:53:37 PM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1  | 06:53:37 PM [express] ✅ Health check available at /health
+telegrambot-bot1-1  | 06:53:37 PM [express] ✅ API routes registered
+telegrambot-bot1-1  | 06:53:37 PM [express] 🖥️  Admin dashboard ready
+telegrambot-bot1-1  | 06:53:37 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1  | Cleared webhook
+telegrambot-bot1-1  | 06:53:47 PM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot1-1  | 06:53:47 PM [express] ✅ Bot initialization completed successfully
