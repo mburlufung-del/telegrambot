@@ -1,0 +1,105 @@
+root@srv1051051:/var/www/telegrambot# cat .env.docker
+PUBLIC_URL=http://72.60.20.38:5001
+BOT1_TOKEN=8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw
+BOT2_TOKEN=
+BOT3_TOKEN=
+BOT4_TOKEN=
+BOT5_TOKEN=
+BOT6_TOKEN=
+BOT7_TOKEN=
+BOT8_TOKEN=
+BOT9_TOKEN=
+BOT10_TOKEN=
+root@srv1051051:/var/www/telegrambot# docker-compose exec bot1 printenv | grep -E "(PUBLIC_URL|REPLIT|WEBHOOK)"
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot1 | grep -i "image" | tail -20
+telegrambot-bot1-1  |   hasImage: true
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image processing - download.jpg, type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Uploading file: download.jpg, claimed type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Content validated: image/jpeg (jpg)
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image upload FAILED: Error: PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' tool and set PRIVATE_OBJECT_DIR env var.
+telegrambot-bot1-1  |   hasImage: true
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image processing - download.jpg, type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Uploading file: download.jpg, claimed type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Content validated: image/jpeg (jpg)
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image upload FAILED: Error: PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' tool and set PRIVATE_OBJECT_DIR env var.
+telegrambot-bot1-1  |   hasImage: true
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image processing - download.jpg, type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Uploading file: download.jpg, claimed type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Content validated: image/jpeg (jpg)
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image upload FAILED: Error: PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' tool and set PRIVATE_OBJECT_DIR env var.
+telegrambot-bot1-1  |   hasImage: true
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image processing - download.jpg, type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Uploading file: download.jpg, claimed type: image/jpeg, size: 8406 bytes
+telegrambot-bot1-1  | [UPLOAD] Content validated: image/jpeg (jpg)
+telegrambot-bot1-1  | [BROADCAST] Step 3: Image upload FAILED: Error: PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' tool and set PRIVATE_OBJECT_DIR env var.
+root@srv1051051:/var/www/telegrambot# grep -n "getBaseUrl" server/bot.ts
+root@srv1051051:/var/www/telegrambot# sed -i 's|DATABASE_URL: postgresql://teleshopuser:SecurePass123@postgres:5432/teleshop|DATABASE_URL: postgresql://teleshopuser:SecurePass123@postgres:5432/teleshop\n      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:5001}|' docker-compose.yml
+root@srv1051051:/var/www/telegrambot# echo "PRIVATE_OBJECT_DIR=/tmp/uploads" >> .env.docker
+root@srv1051051:/var/www/telegrambot# echo "PUBLIC_OBJECT_SEARCH_PATHS=/tmp/uploads" >> .env.docker
+root@srv1051051:/var/www/telegrambot# echo "=== Updated .env.docker ==="
+=== Updated .env.docker ===
+root@srv1051051:/var/www/telegrambot# cat .env.docker
+PUBLIC_URL=http://72.60.20.38:5001
+BOT1_TOKEN=8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw
+BOT2_TOKEN=
+BOT3_TOKEN=
+BOT4_TOKEN=
+BOT5_TOKEN=
+BOT6_TOKEN=
+BOT7_TOKEN=
+BOT8_TOKEN=
+BOT9_TOKEN=
+BOT10_TOKEN=
+PRIVATE_OBJECT_DIR=/tmp/uploads
+PUBLIC_OBJECT_SEARCH_PATHS=/tmp/uploads
+root@srv1051051:/var/www/telegrambot# docker-compose down
+[+] Running 3/3
+ ✔ Container telegrambot-bot1-1      Removed                                                     0.2s 
+ ✔ Container telegrambot-postgres-1  Removed                                                     0.1s 
+ ✔ Network telegrambot_default       Removed                                                     0.1s 
+root@srv1051051:/var/www/telegrambot# docker-compose build --no-cache bot1
+[+] Building 30.8s (11/11) FINISHED                                                    docker:default
+ => [bot1 internal] load build definition from Dockerfile                                        0.0s
+ => => transferring dockerfile: 280B                                                             0.0s
+ => [bot1 internal] load metadata for docker.io/library/node:20-alpine                           0.7s
+ => [bot1 internal] load .dockerignore                                                           0.0s
+ => => transferring context: 295B                                                                0.0s
+ => [bot1 1/6] FROM docker.io/library/node:20-alpine@sha256:1ab6fc5a31d515dc7b6b25f6acfda200182  0.0s
+ => [bot1 internal] load build context                                                           0.0s
+ => => transferring context: 25.15kB                                                             0.0s
+ => CACHED [bot1 2/6] WORKDIR /app                                                               0.0s
+ => [bot1 3/6] COPY package*.json ./                                                             0.0s
+ => [bot1 4/6] RUN npm install                                                                  10.2s
+ => [bot1 5/6] COPY . .                                                                          0.1s
+ => [bot1 6/6] RUN npm run build                                                                16.5s 
+ => [bot1] exporting to image                                                                    3.4s 
+ => => exporting layers                                                                          3.4s 
+ => => writing image sha256:f06d9a153ab3a8e8bf89f63b104381a5bb07a290c7730bb3108f7bd75eb1bf29     0.0s 
+ => => naming to docker.io/library/telegrambot-bot1                                              0.0s 
+root@srv1051051:/var/www/telegrambot# docker-compose --env-file .env.docker up -d                     
+[+] Building 0.0s (0/0)                                                                docker:default 
+[+] Running 3/3
+ ✔ Network telegrambot_default       Created                                                     0.0s 
+ ✔ Container telegrambot-postgres-1  Healthy                                                     0.0s 
+ ✔ Container telegrambot-bot1-1      Started                                                     0.0s 
+root@srv1051051:/var/www/telegrambot# echo "=== Environment variables in container ==="
+=== Environment variables in container ===
+root@srv1051051:/var/www/telegrambot# docker-compose exec bot1 printenv | grep -E "(PUBLIC_URL|PRIVATE_OBJECT|PUBLIC_OBJECT)"
+PUBLIC_URL=http://72.60.20.38:5001
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot1 --tail 20
+telegrambot-bot1-1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot1-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot1-1  | npm warn config
+telegrambot-bot1-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | > workspace@1.0.0 start
+telegrambot-bot1-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | 06:44:25 PM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1  | 06:44:25 PM [express] ✅ Health check available at /health
+telegrambot-bot1-1  | 06:44:26 PM [express] ✅ API routes registered
+telegrambot-bot1-1  | 06:44:26 PM [express] 🖥️  Admin dashboard ready
+telegrambot-bot1-1  | 06:44:26 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1  | Cleared webhook
+telegrambot-bot1-1  | 06:44:36 PM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot1-1  | 06:44:36 PM [express] ✅ Bot initialization completed successfully
