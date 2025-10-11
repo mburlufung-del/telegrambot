@@ -1,0 +1,74 @@
+root@srv1051051:/var/www/telegrambot# cat > fix-baseurl.js << 'JSEOF'
+const fs = require('fs');
+const content = fs.readFileSync('server/bot.ts', 'utf8');
+// Replace line 223 and 1703 to use PUBLIC_URL first
+const fixed = content.replace(
+  /const baseUrl = process\.env\.WEBHOOK_URL \|\| `https:\/\/\$\{process\.env\.REPLIT_DOMAINS\?\.split\(','\)\[0\] \|\| 'localhost:5000'\}`/g,
+  "const baseUrl = process.env.PUBLIC_URL || process.env.WEBHOOK_URL || 'http://localhost:5000'"
+);
+fs.writeFileSync('server/bot.ts', fixed);
+console.log('Fixed baseUrl to prioritize PUBLIC_URL');
+JSEOF
+root@srv1051051:/var/www/telegrambot# node fix-baseurl.js
+Fixed baseUrl to prioritize PUBLIC_URL
+root@srv1051051:/var/www/telegrambot# echo "=== Checking line 223 ==="
+=== Checking line 223 ===
+root@srv1051051:/var/www/telegrambot# sed -n '223p' server/bot.ts
+            const baseUrl = process.env.PUBLIC_URL || process.env.WEBHOOK_URL || 'http://localhost:5000';
+root@srv1051051:/var/www/telegrambot# echo "=== Checking line 1703 ==="
+=== Checking line 1703 ===
+root@srv1051051:/var/www/telegrambot# sed -n '1703p' server/bot.ts
+        const baseUrl = process.env.PUBLIC_URL || process.env.WEBHOOK_URL || 'http://localhost:5000';
+root@srv1051051:/var/www/telegrambot# docker-compose down
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Running 3/3
+ ✔ Container telegrambot-bot1-1      Removed                                                     0.2s 
+ ✔ Container telegrambot-postgres-1  Removed                                                     0.1s 
+ ✔ Network telegrambot_default       Removed                                                     0.1s 
+root@srv1051051:/var/www/telegrambot# docker-compose build --no-cache bot1
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Building 31.2s (11/11) FINISHED                                                    docker:default
+ => [bot1 internal] load build definition from Dockerfile                                        0.0s
+ => => transferring dockerfile: 280B                                                             0.0s
+ => [bot1 internal] load metadata for docker.io/library/node:20-alpine                           0.6s
+ => [bot1 internal] load .dockerignore                                                           0.0s
+ => => transferring context: 295B                                                                0.0s
+ => [bot1 1/6] FROM docker.io/library/node:20-alpine@sha256:1ab6fc5a31d515dc7b6b25f6acfda200182  0.0s
+ => [bot1 internal] load build context                                                           0.0s
+ => => transferring context: 139.55kB                                                            0.0s
+ => CACHED [bot1 2/6] WORKDIR /app                                                               0.0s
+ => [bot1 3/6] COPY package*.json ./                                                             0.0s
+ => [bot1 4/6] RUN npm install                                                                  10.2s
+ => [bot1 5/6] COPY . .                                                                          0.1s
+ => [bot1 6/6] RUN npm run build                                                                17.2s 
+ => [bot1] exporting to image                                                                    3.0s 
+ => => exporting layers                                                                          3.0s 
+ => => writing image sha256:62df453f0e98ccab0613b707f51322d4ea55f0b225af141f6777fcfaf5ff554b     0.0s 
+ => => naming to docker.io/library/telegrambot-bot1                                              0.0s 
+root@srv1051051:/var/www/telegrambot# docker-compose --env-file .env.docker up -d                     
+[+] Building 0.0s (0/0)                                                                docker:default 
+[+] Running 3/3
+ ✔ Network telegrambot_default       Created                                                     0.0s 
+ ✔ Container telegrambot-postgres-1  Healthy                                                     0.0s 
+ ✔ Container telegrambot-bot1-1      Started                                                     0.0s 
+root@srv1051051:/var/www/telegrambot# sleep 5
+root@srv1051051:/var/www/telegrambot# echo "=== Add a product with image now and check logs ==="
+=== Add a product with image now and check logs ===
+root@srv1051051:/var/www/telegrambot# docker-compose logs -f bot1
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+telegrambot-bot1-1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot1-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot1-1  | npm warn config
+telegrambot-bot1-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | > workspace@1.0.0 start
+telegrambot-bot1-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | 07:12:26 PM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1  | 07:12:26 PM [express] ✅ Health check available at /health
+telegrambot-bot1-1  | 07:12:27 PM [express] ✅ API routes registered
+telegrambot-bot1-1  | 07:12:27 PM [express] 🖥️  Admin dashboard ready
+telegrambot-bot1-1  | 07:12:27 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1  | Cleared webhook
+telegrambot-bot1-1  | 07:12:37 PM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot1-1  | 07:12:37 PM [express] ✅ Bot initialization completed successfully
