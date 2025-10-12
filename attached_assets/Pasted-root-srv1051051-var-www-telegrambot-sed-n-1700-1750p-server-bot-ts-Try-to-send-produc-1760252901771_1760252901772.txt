@@ -1,0 +1,118 @@
+root@srv1051051:/var/www/telegrambot# sed -n '1700,1750p' server/bot.ts
+
+    // Try to send product image if available, but don't let image failures block product display
+    if (product.imageUrl) {
+      try {
+        // Convert relative path to full URL for Telegram compatibility
+        const baseUrl = process.env.PUBLIC_URL || process.env.WEBHOOK_URL || 'http://localhost:5000';
+        const fullImageUrl = product.imageUrl.startsWith('http') ? product.imageUrl : `${baseUrl}${product.imageUrl}`;
+        
+        console.log(`Attempting to send product image from memory: ${product.imageUrl}`);
+        
+        // Get image buffer from in-memory store
+        const imageId = product.imageUrl.replace('/api/images/', '');
+        const imageStore = (global as any).imageStore || new Map();
+        const imageData = imageStore.get(imageId);
+        
+        // Get localized price for image caption
+        const localizedPrice = await i18n.getProductPrice(userId, product);
+        
+        if (imageData && imageData.data) {
+          // Send image buffer directly to Telegram
+          const sentMessage = await this.bot?.sendPhoto(chatId, imageData.data, {
+            caption: `📦 <b>${this.escapeHtml(product.name)}</b>\n💰 <b>${this.escapeHtml(localizedPrice.formattedPrice)}</b>`,
+            parse_mode: 'HTML'
+          });
+        } else {
+          throw new Error(`Image ${imageId} not found in memory store`);
+        }
+        
+        // Add to auto-vanish tracking
+        if (sentMessage) {
+          const userMsgIds = this.userMessages.get(chatId) || [];
+          userMsgIds.push(sentMessage.message_id);
+          this.userMessages.set(chatId, userMsgIds);
+          console.log(`[INSTANT-VANISH] Tracked product image message ${sentMessage.message_id} for user ${chatId}`);
+        }
+      } catch (error) {
+        console.log('Image sending failed, will show text-only product details:', error);
+        // Continue to show text details even if image fails
+      }
+    }
+    
+    // Build comprehensive product message
+    let message = `🏷️ <b>${this.escapeHtml(product.name)}</b>\n\n`;
+    
+    // Enhanced description display
+    if (product.description) {
+      message += `📝 <b>Description:</b>\n${this.escapeHtml(product.description)}\n\n`;
+    }
+    
+    // Price information with currency conversion
+    const localizedCurrentPrice = await i18n.getProductPrice(userId, product);
+root@srv1051051:/var/www/telegrambot# cat > fix-scoping.js << 'EOF'
+const fs = require('fs');
+let code = fs.readFileSync('server/bot.ts', 'utf8');
+// Find the problematic section and fix variable scoping
+const broken = `        if (imageData && imageData.data) {
+          // Send image buffer directly to Telegram
+          const sentMessage = await this.bot?.sendPhoto(chatId, imageData.data, {
+            caption: \`📦 <b>\${this.escapeHtml(product.name)}</b>\\n💰 <b>\${this.escapeHtml(localizedPrice.formattedPrice)}</b>\`,
+            parse_mode: 'HTML'
+          });
+        } else {
+          throw new Error(\`Image \${imageId} not found in memory store\`);
+        }`;
+const fixed = `        let sentMessage;
+        if (imageData && imageData.data) {
+          // Send image buffer directly to Telegram
+          sentMessage = await this.bot?.sendPhoto(chatId, imageData.data, {
+            caption: \`📦 <b>\${this.escapeHtml(product.name)}</b>\\n💰 <b>\${this.escapeHtml(localizedPrice.formattedPrice)}</b>\`,
+            parse_mode: 'HTML'
+          });
+        } else {
+          throw new Error(\`Image \${imageId} not found in memory store\`);
+        }`;
+code = code.replace(broken, fixed);
+fs.writeFileSync('server/bot.ts', code);
+console.log('✅ Fixed variable scoping');
+EOF
+root@srv1051051:/var/www/telegrambot# node fix-scoping.js
+✅ Fixed variable scoping
+root@srv1051051:/var/www/telegrambot# docker-compose down
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Running 3/3
+ ✔ Container telegrambot-bot1-1      Removed                                                     0.2s 
+ ✔ Container telegrambot-postgres-1  Removed                                                     0.1s 
+ ✔ Network telegrambot_default       Removed                                                     0.1s 
+root@srv1051051:/var/www/telegrambot# docker-compose build --no-cache bot1
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Building 30.1s (11/11) FINISHED                                                    docker:default
+ => [bot1 internal] load build definition from Dockerfile                                        0.0s
+ => => transferring dockerfile: 280B                                                             0.0s
+ => [bot1 internal] load metadata for docker.io/library/node:20-alpine                           0.6s
+ => [bot1 internal] load .dockerignore                                                           0.0s
+ => => transferring context: 295B                                                                0.0s
+ => [bot1 1/6] FROM docker.io/library/node:20-alpine@sha256:1ab6fc5a31d515dc7b6b25f6acfda200182  0.0s
+ => [bot1 internal] load build context                                                           0.0s
+ => => transferring context: 141.05kB                                                            0.0s
+ => CACHED [bot1 2/6] WORKDIR /app                                                               0.0s
+ => [bot1 3/6] COPY package*.json ./                                                             0.0s
+ => [bot1 4/6] RUN npm install                                                                  10.1s
+ => [bot1 5/6] COPY . .                                                                          0.1s 
+ => [bot1 6/6] RUN npm run build                                                                16.4s 
+ => [bot1] exporting to image                                                                    3.0s 
+ => => exporting layers                                                                          2.9s 
+ => => writing image sha256:a52aef9f7d37a108d368dd0b2009b69eb65ee96c678f3d6fe8d06388e89123dc     0.0s 
+ => => naming to docker.io/library/telegrambot-bot1                                              0.0s 
+root@srv1051051:/var/www/telegrambot# docker-compose --env-file .env.docker up -d                     
+[+] Building 0.0s (0/0)                                                                docker:default
+[+] Running 3/3
+ ✔ Network telegrambot_default       Created                                                     0.0s 
+ ✔ Container telegrambot-postgres-1  Healthy                                                     0.0s 
+ ✔ Container telegrambot-bot1-1      Started                                                     0.0s 
+root@srv1051051:/var/www/telegrambot# sleep 8
+echo "=== Bot ready! Test with a product image ==="
+=== Bot ready! Test with a product image ===
+root@srv1051051:/var/www/telegrambot# 
+root@srv1051051:/var/www/telegrambot# 
