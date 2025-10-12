@@ -1,0 +1,89 @@
+root@srv1051051:/var/www/telegrambot# node fix-telegram-images-v2.js
+✅ Fixed: Bot now sends image buffers from in-memory store
+root@srv1051051:/var/www/telegrambot# echo "=== Verifying fix ===" 
+sed -n '1700,1725p' server/bot.ts | head -20
+=== Verifying fix ===
+
+    // Try to send product image if available, but don't let image failures block product display
+    if (product.imageUrl) {
+      try {
+        // Convert relative path to full URL for Telegram compatibility
+        const baseUrl = process.env.PUBLIC_URL || process.env.WEBHOOK_URL || 'http://localhost:5000';
+        const fullImageUrl = product.imageUrl.startsWith('http') ? product.imageUrl : `${baseUrl}${product.imageUrl}`;
+        
+        console.log(`Attempting to send product image from memory: ${product.imageUrl}`);
+        
+        // Get image buffer from in-memory store
+        const imageId = product.imageUrl.replace('/api/images/', '');
+        const imageStore = (global as any).imageStore || new Map();
+        const imageData = imageStore.get(imageId);
+        
+        // Get localized price for image caption
+        const localizedPrice = await i18n.getProductPrice(userId, product);
+        
+        if (imageData && imageData.data) {
+          // Send image buffer directly to Telegram
+root@srv1051051:/var/www/telegrambot# docker-compose down
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Running 3/3
+ ✔ Container telegrambot-bot1-1      Removed                                                     0.2s 
+ ✔ Container telegrambot-postgres-1  Removed                                                     0.1s 
+ ✔ Network telegrambot_default       Removed                                                     0.1s 
+root@srv1051051:/var/www/telegrambot# docker-compose build --no-cache bot1
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Building 23.0s (10/10) FINISHED                                                    docker:default
+ => [bot1 internal] load build definition from Dockerfile                                        0.0s
+ => => transferring dockerfile: 280B                                                             0.0s
+ => [bot1 internal] load metadata for docker.io/library/node:20-alpine                           0.6s
+ => [bot1 internal] load .dockerignore                                                           0.0s
+ => => transferring context: 295B                                                                0.0s
+ => [bot1 1/6] FROM docker.io/library/node:20-alpine@sha256:1ab6fc5a31d515dc7b6b25f6acfda200182  0.0s
+ => CACHED [bot1 2/6] WORKDIR /app                                                               0.0s
+ => [bot1 internal] load build context                                                           0.0s
+ => => transferring context: 141.89kB                                                            0.0s
+ => [bot1 3/6] COPY package*.json ./                                                             0.0s
+ => [bot1 4/6] RUN npm install                                                                  10.9s
+ => [bot1 5/6] COPY . .                                                                          0.1s 
+ => ERROR [bot1 6/6] RUN npm run build                                                          11.4s 
+------                                                                                                
+ > [bot1 6/6] RUN npm run build:                                                                      
+0.304 npm warn config optional Use `--omit=optional` to exclude optional dependencies, or             
+0.304 npm warn config `--include=optional` to include them.                                           
+0.304 npm warn config                                                                                 
+0.304 npm warn config       Default value does install optional deps unless otherwise omitted.        
+0.344 
+0.344 > workspace@1.0.0 build
+0.344 > tsc && vite build
+0.344 
+11.20 server/bot.ts(1729,13): error TS2552: Cannot find name 'sentMessage'. Did you mean 'postMessage'?
+11.20 server/bot.ts(1731,27): error TS2552: Cannot find name 'sentMessage'. Did you mean 'postMessage'?
+11.20 server/bot.ts(1733,73): error TS2552: Cannot find name 'sentMessage'. Did you mean 'postMessage'?
+------
+failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 2
+root@srv1051051:/var/www/telegrambot# docker-compose --env-file .env.docker up -d
+[+] Building 0.0s (0/0)                                                                docker:default
+[+] Running 3/3
+ ✔ Network telegrambot_default       Created                                                     0.0s 
+ ✔ Container telegrambot-postgres-1  Healthy                                                     0.0s 
+ ✔ Container telegrambot-bot1-1      Started                                                     0.0s 
+root@srv1051051:/var/www/telegrambot# sleep 8
+root@srv1051051:/var/www/telegrambot# echo "=== Ready! Add a product with image now ==="
+docker-compose logs -f bot1
+=== Ready! Add a product with image now ===
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+telegrambot-bot1-1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot1-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot1-1  | npm warn config
+telegrambot-bot1-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | > workspace@1.0.0 start
+telegrambot-bot1-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | 03:02:17 AM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1  | 03:02:17 AM [express] ✅ Health check available at /health
+telegrambot-bot1-1  | 03:02:18 AM [express] ✅ API routes registered
+telegrambot-bot1-1  | 03:02:18 AM [express] 🖥️  Admin dashboard ready
+telegrambot-bot1-1  | 03:02:18 AM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1  | Cleared webhook
+telegrambot-bot1-1  | 03:02:28 AM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot1-1  | 03:02:28 AM [express] ✅ Bot initialization completed successfully
