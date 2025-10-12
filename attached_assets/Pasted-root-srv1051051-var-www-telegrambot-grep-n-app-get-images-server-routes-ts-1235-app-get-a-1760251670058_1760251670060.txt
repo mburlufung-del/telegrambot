@@ -1,0 +1,62 @@
+root@srv1051051:/var/www/telegrambot# grep -n "app.get.*images" server/routes.ts
+1235:  app.get("/api/images/:imageId", (req, res) => {
+root@srv1051051:/var/www/telegrambot# sed -n '1235,1260p' server/routes.ts
+  app.get("/api/images/:imageId", (req, res) => {
+    try {
+      const imageId = req.params.imageId;
+      const imageStore = (global as any).imageStore || new Map();
+      const imageData = imageStore.get(imageId);
+
+      if (imageData && imageData.data) {
+        // Serve the actual uploaded image
+        res.setHeader('Content-Type', imageData.contentType);
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        res.setHeader('Content-Length', imageData.data.length.toString());
+        res.send(imageData.data);
+        console.log("Served actual uploaded image:", imageId, "Size:", imageData.data.length);
+      } else {
+        // Fallback to consistent placeholder if image not found
+        const seed = parseInt(imageId.replace(/\D/g, ''), 10) || 1;
+        const imageUrl = `https://picsum.photos/300/200?random=${seed}`;
+        res.redirect(302, imageUrl);
+        console.log("Served placeholder for missing image:", imageId);
+      }
+    } catch (error) {
+      console.error("Error serving image:", error);
+      res.status(500).json({ message: "Failed to serve image" });
+    }
+  });
+
+root@srv1051051:/var/www/telegrambot# env | grep PRIVATE_OBJECT_DIR
+root@srv1051051:/var/www/telegrambot# cat > fix-telegram-images.js << 'EOF'
+const fs = require('fs');
+const path = require('path');
+// Read the bot file
+let botCode = fs.readFileSync('server/bot.ts', 'utf8');
+// Find and replace the image sending in showProductDetails (around line 1700)
+const oldImageSend = `        const sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
+          caption: \`📦 <b>\${this.escapeHtml(product.name)}</b>\\n💰 <b>\${this.escapeHtml(localizedPrice.formattedPrice)}</b>\`,
+          parse_mode: 'HTML'
+        });`;
+const newImageSend = `        // Read image file and send as buffer instead of URL
+        const imagePath = path.join(process.env.PRIVATE_OBJECT_DIR || '.private', product.imageUrl.replace('/api/images/', ''));
+        const imageBuffer = fs.readFileSync(imagePath);
+        
+        const sentMessage = await this.bot?.sendPhoto(chatId, imageBuffer, {
+          caption: \`📦 <b>\${this.escapeHtml(product.name)}</b>\\n💰 <b>\${this.escapeHtml(localizedPrice.formattedPrice)}</b>\`,
+          parse_mode: 'HTML'
+        });`;
+botCode = botCode.replace(oldImageSend, newImageSend);
+// Add required imports at the top if not present
+if (!botCode.includes("import * as fs from 'fs'")) {
+  botCode = botCode.replace(
+    /^(import.*?\n)+/,
+    "$&import * as fs from 'fs';\nimport * as path from 'path';\n"
+  );
+}
+fs.writeFileSync('server/bot.ts', botCode);
+console.log('✅ Fixed bot to send image files instead of URLs');
+EOF
+root@srv1051051:/var/www/telegrambot# node fix-telegram-images.js
+✅ Fixed bot to send image files instead of URLs
+root@srv1051051:/var/www/telegrambot# ^C
