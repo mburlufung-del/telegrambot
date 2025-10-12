@@ -1,0 +1,43 @@
+root@srv1051051:~# cd /var/www/telegrambot
+root@srv1051051:/var/www/telegrambot# cat server/bot.ts | grep -n "sendPhoto" | head -5
+237:              await this.bot!.sendPhoto(chatId, fullImageUrl, {
+301:  async sendPhoto(chatId: string, photo: Buffer | string, options?: any) {
+307:    return await this.bot.sendPhoto(numericChatId, photo, options);
+1711:        const sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
+root@srv1051051:/var/www/telegrambot# sed -n '220,235p' server/bot.ts
+          if (imageUrl && imageUrl.trim() !== '') {
+            // Send image with caption
+            // Convert relative path to full URL
+            const baseUrl = process.env.PUBLIC_URL || process.env.WEBHOOK_URL || 'http://localhost:5000';
+            const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
+            
+            console.log(`Sending broadcast image to user ${userId}:`, fullImageUrl);
+            
+            // Test the image URL accessibility first
+            try {
+              const testResponse = await fetch(fullImageUrl, { method: 'HEAD' });
+              console.log(`Image URL test for ${userId}: ${testResponse.status}`);
+            } catch (testError) {
+              console.log(`Image URL test failed: ${testError}`);
+            }
+            
+root@srv1051051:/var/www/telegrambot# sed -n '1700,1715p' server/bot.ts
+    if (product.imageUrl) {
+      try {
+        // Convert relative path to full URL for Telegram compatibility
+        const baseUrl = process.env.PUBLIC_URL || process.env.WEBHOOK_URL || 'http://localhost:5000';
+        const fullImageUrl = product.imageUrl.startsWith('http') ? product.imageUrl : `${baseUrl}${product.imageUrl}`;
+        
+        console.log(`Attempting to send product image: ${fullImageUrl}`);
+        
+        // Get localized price for image caption
+        const localizedPrice = await i18n.getProductPrice(userId, product);
+        
+        const sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
+          caption: `📦 <b>${this.escapeHtml(product.name)}</b>\n💰 <b>${this.escapeHtml(localizedPrice.formattedPrice)}</b>`,
+          parse_mode: 'HTML'
+        });
+        
+root@srv1051051:/var/www/telegrambot# grep -n "app.get.*images" server/routes.ts
+1235:  app.get("/api/images/:imageId", (req, res) => {
+root@srv1051051:/var/www/telegrambot# 
