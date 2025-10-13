@@ -847,26 +847,41 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
   // Enhanced Listings command with full category → product → details → actions flow
   private async handleListingsCommand(chatId: number, userId: string) {
-    const allCategories = await storage.getCategories();
+    // Get only parent categories (top-level categories without a parent)
+    const parentCategories = await storage.getParentCategories();
 
-    // Filter categories to only show those with active products
+    // Filter parent categories to only show those with active products (including in subcategories)
     const categoriesWithProducts = [];
-    for (const category of allCategories) {
-      const products = await storage.getProductsByCategory(category.id);
-      // getProductsByCategory already filters for isActive=true, so all products are active
-      if (products.length > 0) {
+    for (const category of parentCategories) {
+      // Count products in this category
+      const directProducts = await storage.getProductsByCategory(category.id);
+      
+      // Also count products in subcategories
+      const subcategories = await storage.getSubcategories(category.id);
+      let subcategoryProductCount = 0;
+      for (const subcat of subcategories) {
+        const subProducts = await storage.getProductsByCategory(subcat.id);
+        subcategoryProductCount += subProducts.length;
+      }
+      
+      const totalProducts = directProducts.length + subcategoryProductCount;
+      
+      if (totalProducts > 0) {
         categoriesWithProducts.push({
           ...category,
-          productCount: products.length
+          productCount: totalProducts,
+          hasSubcategories: subcategories.length > 0
         });
       }
     }
 
     if (categoriesWithProducts.length === 0) {
-      console.log('[DEBUG] No categories with products found. Total categories:', allCategories.length);
-      for (const cat of allCategories) {
+      console.log('[DEBUG] No parent categories with products found. Total parent categories:', parentCategories.length);
+      for (const cat of parentCategories) {
         const products = await storage.getProductsByCategory(cat.id);
-        console.log(`[DEBUG] Category "${cat.name}" (${cat.id}): ${products.length} products`);
+        console.log(`[DEBUG] Category "${cat.name}" (${cat.id}): ${products.length} direct products`);
+        const subcategories = await storage.getSubcategories(cat.id);
+        console.log(`[DEBUG] Category "${cat.name}" has ${subcategories.length} subcategories`);
         if (products.length > 0) {
           console.log('[DEBUG] Sample products:', products.slice(0, 3).map(p => ({ name: p.name, isActive: p.isActive })));
         }
@@ -1536,6 +1551,11 @@ ${businessHours}
         const categoryId = data.replace('category_', '');
         await this.handleCategoryProducts(chatId, userId, categoryId);
       }
+      // Handle direct product listing for parent categories (bypassing subcategories)
+      else if (data?.startsWith('products_')) {
+        const categoryId = data.replace('products_', '');
+        await this.handleDirectProductListing(chatId, userId, categoryId);
+      }
       // Handle product selection
       else if (data?.startsWith('product_')) {
         const productId = data.replace('product_', '');
@@ -1617,23 +1637,82 @@ ${businessHours}
     return text.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&').replace(/\n/g, ' ');
   }
 
-  // Handle category product listing
+  // Handle category product listing or subcategory display
   private async handleCategoryProducts(chatId: number, userId: string, categoryId: string) {
     const category = await storage.getCategories().then(cats => cats.find(c => c.id === categoryId));
-    const products = await storage.getProductsByCategory(categoryId);
-    // getProductsByCategory already filters for active products, no need to filter again
-    const activeProducts = products;
-
+    
     if (!category) {
       await this.sendMainMenu(chatId);
       return;
     }
 
+    // Check if this category has subcategories
+    const subcategories = await storage.getSubcategories(categoryId);
+    const products = await storage.getProductsByCategory(categoryId);
+    const activeProducts = products;
+    
+    // If category has subcategories, show them along with an option to view parent products if they exist
+    if (subcategories.length > 0) {
+      let subcategoryMessage = `📂 <b>${this.escapeHtml(category.name)}</b>\n\n`;
+      
+      if (activeProducts.length > 0) {
+        subcategoryMessage += `This category has ${activeProducts.length} products and ${subcategories.length} subcategories.\n\n`;
+        subcategoryMessage += 'Choose an option:\n\n';
+      } else {
+        subcategoryMessage += 'Select a subcategory:\n\n';
+      }
+      
+      const subcategoryButtons: Array<Array<{text: string, callback_data: string}>> = [];
+      
+      // If parent has products, add a button to view them
+      if (activeProducts.length > 0) {
+        subcategoryButtons.push([
+          { text: `📦 View Products in ${category.name} (${activeProducts.length})`, callback_data: `products_${categoryId}` }
+        ]);
+      }
+      
+      // Add subcategory buttons
+      for (let index = 0; index < subcategories.length; index++) {
+        const subcat = subcategories[index];
+        const subcatProducts = await storage.getProductsByCategory(subcat.id);
+        
+        subcategoryMessage += `${index + 1}. <b>${this.escapeHtml(subcat.name)}</b> (${subcatProducts.length} products)\n`;
+        if (subcat.description) {
+          subcategoryMessage += `   ${this.escapeHtml(subcat.description)}\n`;
+        }
+        subcategoryMessage += '\n';
+        
+        // Create buttons in rows of 2
+        if (index % 2 === 0) {
+          subcategoryButtons.push([]);
+        }
+        subcategoryButtons[subcategoryButtons.length - 1].push({
+          text: `${index + 1}. ${subcat.name}`,
+          callback_data: `category_${subcat.id}`
+        });
+      }
+      
+      // Add back button
+      subcategoryButtons.push([
+        { text: '🔙 Back to Categories', callback_data: 'listings' }
+      ]);
+      
+      const keyboard = { inline_keyboard: subcategoryButtons };
+      
+      await this.sendAutoVanishMessage(chatId, subcategoryMessage, {
+        parse_mode: 'HTML',
+        reply_markup: keyboard
+      });
+      return;
+    }
+    
+    // No subcategories, show products directly
+
     if (activeProducts.length === 0) {
       const message = `📂 <b>${this.escapeHtml(category.name)}</b>\n\nNo products available in this category at the moment.`;
       const keyboard = {
         inline_keyboard: [
-          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          [{ text: '🔙 Back to Categories', callback_data: 'listings' }]
         ]
       };
       
@@ -1685,7 +1764,82 @@ ${businessHours}
 
     // Add navigation buttons
     productButtons.push([
-      { text: '🔙 Back to Menu', callback_data: 'back_to_menu' }
+      { text: '🔙 Back to Categories', callback_data: 'listings' }
+    ]);
+
+    const keyboard = { inline_keyboard: productButtons };
+
+    await this.sendAutoVanishMessage(chatId, productsMessage, {
+      parse_mode: 'HTML',
+      reply_markup: keyboard
+    });
+  }
+
+  // Handle direct product listing (bypassing subcategory check)
+  private async handleDirectProductListing(chatId: number, userId: string, categoryId: string) {
+    const category = await storage.getCategories().then(cats => cats.find(c => c.id === categoryId));
+    const products = await storage.getProductsByCategory(categoryId);
+    const activeProducts = products;
+
+    if (!category) {
+      await this.sendMainMenu(chatId);
+      return;
+    }
+
+    if (activeProducts.length === 0) {
+      const message = `📂 <b>${this.escapeHtml(category.name)}</b>\n\nNo products available in this category at the moment.`;
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: '🔙 Back to Categories', callback_data: 'listings' }]
+        ]
+      };
+      
+      await this.sendAutoVanishMessage(chatId, message, { 
+        parse_mode: 'HTML',
+        reply_markup: keyboard 
+      });
+      return;
+    }
+
+    let productsMessage = `📂 <b>${this.escapeHtml(category.name)}</b>\n\n`;
+    
+    const productButtons: Array<Array<{text: string, callback_data: string}>> = [];
+    
+    for (let index = 0; index < Math.min(activeProducts.length, 10); index++) {
+      const product = activeProducts[index];
+      const stockStatus = product.stock > 0 ? '✅' : '❌';
+      
+      const formattedPrice = await i18n.formatPrice(userId, product.price, product.currencyCode);
+      const formattedComparePrice = product.compareAtPrice 
+        ? await i18n.formatPrice(userId, product.compareAtPrice, product.currencyCode)
+        : null;
+      
+      const priceDisplay = formattedComparePrice 
+        ? `<s>${this.escapeHtml(formattedComparePrice)}</s> <b>${this.escapeHtml(formattedPrice)}</b>`
+        : `<b>${this.escapeHtml(formattedPrice)}</b>`;
+      
+      productsMessage += `${index + 1}. <b>${this.escapeHtml(product.name)}</b> ${stockStatus}\n`;
+      productsMessage += `   ${priceDisplay}\n`;
+      
+      const description = product.description || 'No description available';
+      const escapedDescription = this.escapeHtml(description);
+      productsMessage += `   ${escapedDescription.substring(0, 60)}${escapedDescription.length > 60 ? '...' : ''}\n\n`;
+      
+      if (index % 2 === 0) {
+        productButtons.push([]);
+      }
+      productButtons[productButtons.length - 1].push({
+        text: `${index + 1}. ${product.name}`,
+        callback_data: `product_${product.id}`
+      });
+    }
+
+    if (activeProducts.length > 10) {
+      productsMessage += `... and ${activeProducts.length - 10} more products.`;
+    }
+
+    productButtons.push([
+      { text: '🔙 Back to Category', callback_data: `category_${categoryId}` }
     ]);
 
     const keyboard = { inline_keyboard: productButtons };
