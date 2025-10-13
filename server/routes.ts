@@ -418,6 +418,24 @@ function registerAllRoutes(app: Express): void {
     }
   });
 
+  app.get("/api/categories/parent", async (req, res) => {
+    try {
+      const parentCategories = await storage.getParentCategories();
+      res.json(parentCategories);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch parent categories" });
+    }
+  });
+
+  app.get("/api/categories/:id/subcategories", async (req, res) => {
+    try {
+      const subcategories = await storage.getSubcategories(req.params.id);
+      res.json(subcategories);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch subcategories" });
+    }
+  });
+
   app.post("/api/categories", async (req, res) => {
     try {
       console.log("Received category data:", req.body);
