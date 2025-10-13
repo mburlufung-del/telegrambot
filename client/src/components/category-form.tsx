@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Category, InsertCategory } from "@shared/schema";
@@ -15,6 +16,7 @@ import { Save, FolderOpen } from "lucide-react";
 const categoryFormSchema = z.object({
   name: z.string().min(1, "Category name is required"),
   description: z.string().optional(),
+  parentId: z.string().nullable().optional(),
   isActive: z.boolean(),
 });
 
@@ -30,11 +32,20 @@ export default function CategoryForm({ category, onSuccess, onCancel }: Category
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Fetch all categories to show parent options
+  const { data: allCategories = [] } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
+  });
+
+  // Filter out current category and its descendants to prevent circular references
+  const parentOptions = allCategories.filter(cat => cat.id !== category?.id);
+
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       name: category?.name || "",
       description: category?.description || "",
+      parentId: category?.parentId || null,
       isActive: category?.isActive ?? true,
     },
   });
@@ -119,6 +130,29 @@ export default function CategoryForm({ category, onSuccess, onCancel }: Category
             rows={3}
             data-testid="input-category-description"
           />
+        </div>
+
+        <div>
+          <Label htmlFor="parentId">Parent Category (Optional)</Label>
+          <Select
+            value={form.watch("parentId") || "none"}
+            onValueChange={(value) => form.setValue("parentId", value === "none" ? null : value)}
+          >
+            <SelectTrigger data-testid="select-parent-category">
+              <SelectValue placeholder="Select parent category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No Parent (Top Level)</SelectItem>
+              {parentOptions.map((cat) => (
+                <SelectItem key={cat.id} value={cat.id}>
+                  {cat.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-sm text-muted-foreground mt-1">
+            Choose a parent category to create a subcategory
+          </p>
         </div>
 
         <div className="flex items-center space-x-2">
