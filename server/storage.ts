@@ -275,34 +275,53 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  private botId: string;
+
+  constructor(botId: string) {
+    this.botId = botId;
+  }
+
+  // Helper: Add botId to WHERE clause for SELECT operations
+  private withBotId(table: any, condition?: any) {
+    const botIdCondition = eq(table.botId, this.botId);
+    return condition ? and(condition, botIdCondition) : botIdCondition;
+  }
+
+  // Helper: Add botId to INSERT values
+  private withBotIdValue<T extends Record<string, any>>(data: T): T & { botId: string } {
+    return { ...data, botId: this.botId };
+  }
+
   // Products
   async getProducts(): Promise<Product[]> {
-    return await db.select().from(products).where(eq(products.isActive, true)).orderBy(desc(products.createdAt));
+    return await db.select().from(products)
+      .where(this.withBotId(products, eq(products.isActive, true)))
+      .orderBy(desc(products.createdAt));
   }
 
   async getProductsByCategory(categoryId: string): Promise<Product[]> {
     return await db.select().from(products)
-      .where(and(eq(products.categoryId, categoryId), eq(products.isActive, true)))
+      .where(this.withBotId(products, and(eq(products.categoryId, categoryId), eq(products.isActive, true))))
       .orderBy(products.name);
   }
 
   async getFeaturedProducts(): Promise<Product[]> {
     return await db.select().from(products)
-      .where(and(eq(products.isFeatured, true), eq(products.isActive, true)))
+      .where(this.withBotId(products, and(eq(products.isFeatured, true), eq(products.isActive, true))))
       .orderBy(desc(products.createdAt));
   }
 
   async searchProducts(query: string): Promise<Product[]> {
     return await db.select().from(products)
-      .where(and(
+      .where(this.withBotId(products, and(
         eq(products.isActive, true),
         ilike(products.name, `%${query}%`)
-      ))
+      )))
       .orderBy(desc(products.createdAt));
   }
 
   async getProduct(id: string): Promise<Product | undefined> {
-    const result = await db.select().from(products).where(eq(products.id, id));
+    const result = await db.select().from(products).where(this.withBotId(products, eq(products.id, id)));
     return result[0];
   }
 
@@ -318,14 +337,14 @@ export class DatabaseStorage implements IStorage {
       minOrderQuantity: product.minOrderQuantity || 1
     };
     
-    const result = await db.insert(products).values(productWithDefaults).returning();
+    const result = await db.insert(products).values(this.withBotIdValue(productWithDefaults)).returning();
     return result[0];
   }
 
   async updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined> {
     const result = await db.update(products)
       .set({ ...product, updatedAt: new Date() })
-      .where(eq(products.id, id))
+      .where(this.withBotId(products, eq(products.id, id)))
       .returning();
     return result[0];
   }
@@ -333,47 +352,47 @@ export class DatabaseStorage implements IStorage {
   async deleteProduct(id: string): Promise<boolean> {
     const result = await db.update(products)
       .set({ isActive: false })
-      .where(eq(products.id, id));
+      .where(this.withBotId(products, eq(products.id, id)));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
   // Categories
   async getCategories(): Promise<Category[]> {
-    return await db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.name);
+    return await db.select().from(categories).where(this.withBotId(categories, eq(categories.isActive, true))).orderBy(categories.name);
   }
 
   async getParentCategories(): Promise<Category[]> {
     return await db.select().from(categories)
-      .where(and(
+      .where(this.withBotId(categories, and(
         eq(categories.isActive, true),
         sql`${categories.parentId} IS NULL`
-      ))
+      )))
       .orderBy(categories.name);
   }
 
   async getSubcategories(parentId: string): Promise<Category[]> {
     return await db.select().from(categories)
-      .where(and(
+      .where(this.withBotId(categories, and(
         eq(categories.isActive, true),
         eq(categories.parentId, parentId)
-      ))
+      )))
       .orderBy(categories.name);
   }
 
   async getCategory(id: string): Promise<Category | undefined> {
-    const result = await db.select().from(categories).where(eq(categories.id, id));
+    const result = await db.select().from(categories).where(this.withBotId(categories, eq(categories.id, id)));
     return result[0];
   }
 
   async createCategory(category: InsertCategory): Promise<Category> {
-    const result = await db.insert(categories).values(category).returning();
+    const result = await db.insert(categories).values(this.withBotIdValue(category)).returning();
     return result[0];
   }
 
   async updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category | undefined> {
     const result = await db.update(categories)
       .set(category)
-      .where(eq(categories.id, id))
+      .where(this.withBotId(categories, eq(categories.id, id)))
       .returning();
     return result[0];
   }
@@ -381,37 +400,37 @@ export class DatabaseStorage implements IStorage {
   async deleteCategory(id: string): Promise<boolean> {
     const result = await db.update(categories)
       .set({ isActive: false })
-      .where(eq(categories.id, id));
+      .where(this.withBotId(categories, eq(categories.id, id)));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
   // Cart
   async getCart(telegramUserId: string): Promise<Cart[]> {
-    return await db.select().from(cart).where(eq(cart.telegramUserId, telegramUserId)).orderBy(desc(cart.addedAt));
+    return await db.select().from(cart).where(this.withBotId(cart, eq(cart.telegramUserId, telegramUserId))).orderBy(desc(cart.addedAt));
   }
 
   async addToCart(cartItem: InsertCart): Promise<Cart> {
     // Check if item already exists in cart
     const existingItems = await db.select().from(cart)
-      .where(and(
+      .where(this.withBotId(cart, and(
         eq(cart.telegramUserId, cartItem.telegramUserId),
         eq(cart.productId, cartItem.productId)
-      ));
+      )));
 
     if (existingItems.length > 0) {
       // Update quantity if item exists
       const newQuantity = existingItems[0].quantity + (cartItem.quantity || 1);
       const result = await db.update(cart)
         .set({ quantity: newQuantity })
-        .where(and(
+        .where(this.withBotId(cart, and(
           eq(cart.telegramUserId, cartItem.telegramUserId),
           eq(cart.productId, cartItem.productId)
-        ))
+        )))
         .returning();
       return result[0];
     } else {
       // Add new item
-      const result = await db.insert(cart).values(cartItem).returning();
+      const result = await db.insert(cart).values(this.withBotIdValue(cartItem)).returning();
       return result[0];
     }
   }
@@ -419,25 +438,25 @@ export class DatabaseStorage implements IStorage {
   async updateCartItem(telegramUserId: string, productId: string, quantity: number): Promise<Cart | undefined> {
     const result = await db.update(cart)
       .set({ quantity })
-      .where(and(
+      .where(this.withBotId(cart, and(
         eq(cart.telegramUserId, telegramUserId),
         eq(cart.productId, productId)
-      ))
+      )))
       .returning();
     return result[0];
   }
 
   async removeFromCart(telegramUserId: string, productId: string): Promise<boolean> {
     const result = await db.delete(cart)
-      .where(and(
+      .where(this.withBotId(cart, and(
         eq(cart.telegramUserId, telegramUserId),
         eq(cart.productId, productId)
-      ));
+      )));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
   async clearCart(telegramUserId: string): Promise<boolean> {
-    const result = await db.delete(cart).where(eq(cart.telegramUserId, telegramUserId));
+    const result = await db.delete(cart).where(this.withBotId(cart, eq(cart.telegramUserId, telegramUserId)));
     return result.rowCount !== null && result.rowCount >= 0;
   }
 
@@ -462,49 +481,49 @@ export class DatabaseStorage implements IStorage {
 
   // Wishlist
   async getWishlist(telegramUserId: string): Promise<Wishlist[]> {
-    return await db.select().from(wishlist).where(eq(wishlist.telegramUserId, telegramUserId)).orderBy(desc(wishlist.addedAt));
+    return await db.select().from(wishlist).where(this.withBotId(wishlist, eq(wishlist.telegramUserId, telegramUserId))).orderBy(desc(wishlist.addedAt));
   }
 
   async addToWishlist(wishlistItem: InsertWishlist): Promise<Wishlist> {
-    const result = await db.insert(wishlist).values(wishlistItem).returning();
+    const result = await db.insert(wishlist).values(this.withBotIdValue(wishlistItem)).returning();
     return result[0];
   }
 
   async removeFromWishlist(telegramUserId: string, productId: string): Promise<boolean> {
     const result = await db.delete(wishlist)
-      .where(and(
+      .where(this.withBotId(wishlist, and(
         eq(wishlist.telegramUserId, telegramUserId),
         eq(wishlist.productId, productId)
-      ));
+      )));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
   async isInWishlist(telegramUserId: string, productId: string): Promise<boolean> {
     const result = await db.select().from(wishlist)
-      .where(and(
+      .where(this.withBotId(wishlist, and(
         eq(wishlist.telegramUserId, telegramUserId),
         eq(wishlist.productId, productId)
-      ));
+      )));
     return result.length > 0;
   }
 
   // Orders
   async getOrders(): Promise<Order[]> {
-    return await db.select().from(orders).orderBy(desc(orders.createdAt));
+    return await db.select().from(orders).where(this.withBotId(orders)).orderBy(desc(orders.createdAt));
   }
 
   async getOrdersByUserId(telegramUserId: string): Promise<Order[]> {
-    return await db.select().from(orders).where(eq(orders.telegramUserId, telegramUserId)).orderBy(desc(orders.createdAt));
+    return await db.select().from(orders).where(this.withBotId(orders, eq(orders.telegramUserId, telegramUserId))).orderBy(desc(orders.createdAt));
   }
 
   async getUserOrders(telegramUserId: string): Promise<Order[]> {
     return await db.select().from(orders)
-      .where(eq(orders.telegramUserId, telegramUserId))
+      .where(this.withBotId(orders, eq(orders.telegramUserId, telegramUserId)))
       .orderBy(desc(orders.createdAt));
   }
 
   async getOrder(id: string): Promise<Order | undefined> {
-    const result = await db.select().from(orders).where(eq(orders.id, id));
+    const result = await db.select().from(orders).where(this.withBotId(orders, eq(orders.id, id)));
     return result[0];
   }
 
@@ -517,14 +536,14 @@ export class DatabaseStorage implements IStorage {
       status: order.status || "pending"
     };
     
-    const result = await db.insert(orders).values(orderWithNumber).returning();
+    const result = await db.insert(orders).values(this.withBotIdValue(orderWithNumber)).returning();
     return result[0];
   }
 
   async updateOrder(id: string, order: Partial<InsertOrder>): Promise<Order | undefined> {
     const result = await db.update(orders)
       .set({ ...order, updatedAt: new Date() })
-      .where(eq(orders.id, id))
+      .where(this.withBotId(orders, eq(orders.id, id)))
       .returning();
     return result[0];
   }
@@ -535,40 +554,40 @@ export class DatabaseStorage implements IStorage {
 
   // Inquiries
   async getInquiries(): Promise<Inquiry[]> {
-    return await db.select().from(inquiries).orderBy(desc(inquiries.createdAt));
+    return await db.select().from(inquiries).where(this.withBotId(inquiries)).orderBy(desc(inquiries.createdAt));
   }
 
   async getInquiry(id: string): Promise<Inquiry | undefined> {
-    const result = await db.select().from(inquiries).where(eq(inquiries.id, id));
+    const result = await db.select().from(inquiries).where(this.withBotId(inquiries, eq(inquiries.id, id)));
     return result[0];
   }
 
   async createInquiry(inquiry: InsertInquiry): Promise<Inquiry> {
-    const result = await db.insert(inquiries).values(inquiry).returning();
+    const result = await db.insert(inquiries).values(this.withBotIdValue(inquiry)).returning();
     return result[0];
   }
 
   async updateInquiry(id: string, inquiry: Partial<InsertInquiry>): Promise<Inquiry | undefined> {
     const result = await db.update(inquiries)
       .set(inquiry)
-      .where(eq(inquiries.id, id))
+      .where(this.withBotId(inquiries, eq(inquiries.id, id)))
       .returning();
     return result[0];
   }
 
   async getUnreadInquiriesCount(): Promise<number> {
     const result = await db.select({ count: sql`count(*)` }).from(inquiries)
-      .where(eq(inquiries.isRead, false));
+      .where(this.withBotId(inquiries, eq(inquiries.isRead, false)));
     return parseInt(result[0].count as string) || 0;
   }
 
   // Bot Settings
   async getBotSettings(): Promise<BotSettings[]> {
-    return await db.select().from(botSettings).orderBy(botSettings.key);
+    return await db.select().from(botSettings).where(this.withBotId(botSettings)).orderBy(botSettings.key);
   }
 
   async getBotSetting(key: string): Promise<BotSettings | undefined> {
-    const result = await db.select().from(botSettings).where(eq(botSettings.key, key));
+    const result = await db.select().from(botSettings).where(this.withBotId(botSettings, eq(botSettings.key, key)));
     return result[0];
   }
 
@@ -578,18 +597,18 @@ export class DatabaseStorage implements IStorage {
     if (existing) {
       const result = await db.update(botSettings)
         .set({ value: setting.value, updatedAt: new Date() })
-        .where(eq(botSettings.key, setting.key))
+        .where(this.withBotId(botSettings, eq(botSettings.key, setting.key)))
         .returning();
       return result[0];
     } else {
-      const result = await db.insert(botSettings).values(setting).returning();
+      const result = await db.insert(botSettings).values(this.withBotIdValue(setting)).returning();
       return result[0];
     }
   }
 
   // Bot Statistics
   async getBotStats(): Promise<BotStats | undefined> {
-    const result = await db.select().from(botStats);
+    const result = await db.select().from(botStats).where(this.withBotId(botStats));
     return result[0];
   }
 
@@ -601,15 +620,15 @@ export class DatabaseStorage implements IStorage {
           totalUsers: existing.totalUsers + 1,
           updatedAt: new Date()
         })
-        .where(eq(botStats.id, existing.id));
+        .where(this.withBotId(botStats, eq(botStats.id, existing.id)));
     } else {
-      await db.insert(botStats).values({
+      await db.insert(botStats).values(this.withBotIdValue({
         totalUsers: 1,
         totalOrders: 0,
         totalMessages: 0,
         totalRevenue: "0",
         updatedAt: new Date()
-      });
+      }));
     }
   }
 
@@ -621,15 +640,15 @@ export class DatabaseStorage implements IStorage {
           totalOrders: existing.totalOrders + 1,
           updatedAt: new Date()
         })
-        .where(eq(botStats.id, existing.id));
+        .where(this.withBotId(botStats, eq(botStats.id, existing.id)));
     } else {
-      await db.insert(botStats).values({
+      await db.insert(botStats).values(this.withBotIdValue({
         totalUsers: 0,
         totalOrders: 1,
         totalMessages: 0,
         totalRevenue: "0",
         updatedAt: new Date()
-      });
+      }));
     }
   }
 
@@ -641,15 +660,15 @@ export class DatabaseStorage implements IStorage {
           totalMessages: existing.totalMessages + 1,
           updatedAt: new Date()
         })
-        .where(eq(botStats.id, existing.id));
+        .where(this.withBotId(botStats, eq(botStats.id, existing.id)));
     } else {
-      await db.insert(botStats).values({
+      await db.insert(botStats).values(this.withBotIdValue({
         totalUsers: 0,
         totalOrders: 0,
         totalMessages: 1,
         totalRevenue: "0",
         updatedAt: new Date()
-      });
+      }));
     }
   }
 
@@ -663,15 +682,15 @@ export class DatabaseStorage implements IStorage {
           totalRevenue: newRevenue.toString(),
           updatedAt: new Date()
         })
-        .where(eq(botStats.id, existing.id));
+        .where(this.withBotId(botStats, eq(botStats.id, existing.id)));
     } else {
-      await db.insert(botStats).values({
+      await db.insert(botStats).values(this.withBotIdValue({
         totalUsers: 0,
         totalOrders: 0,
         totalMessages: 0,
         totalRevenue: amount,
         updatedAt: new Date()
-      });
+      }));
     }
   }
 
@@ -683,21 +702,21 @@ export class DatabaseStorage implements IStorage {
           ...stats,
           updatedAt: new Date()
         })
-        .where(eq(botStats.id, existing.id))
+        .where(this.withBotId(botStats, eq(botStats.id, existing.id)))
         .returning();
       return result[0];
     } else {
-      const result = await db.insert(botStats).values({
+      const result = await db.insert(botStats).values(this.withBotIdValue({
         ...stats,
         updatedAt: new Date()
-      }).returning();
+      })).returning();
       return result[0];
     }
   }
 
   // Product Ratings
   async createProductRating(rating: InsertProductRating): Promise<ProductRating> {
-    const result = await db.insert(productRatings).values(rating).returning();
+    const result = await db.insert(productRatings).values(this.withBotIdValue(rating)).returning();
     return result[0];
   }
 
@@ -707,7 +726,7 @@ export class DatabaseStorage implements IStorage {
 
   async getProductRatings(productId: string): Promise<ProductRating[]> {
     return await db.select().from(productRatings)
-      .where(eq(productRatings.productId, productId))
+      .where(this.withBotId(productRatings, eq(productRatings.productId, productId)))
       .orderBy(desc(productRatings.createdAt));
   }
 
@@ -729,7 +748,7 @@ export class DatabaseStorage implements IStorage {
     })
     .from(productRatings)
     .innerJoin(products, eq(productRatings.productId, products.id))
-    .where(sql`${productRatings.createdAt} >= ${weekAgo.toISOString()}`)
+    .where(this.withBotId(productRatings, sql`${productRatings.createdAt} >= ${weekAgo.toISOString()}`))
     .orderBy(desc(productRatings.createdAt));
 
     // Group by product and calculate averages
@@ -779,10 +798,10 @@ export class DatabaseStorage implements IStorage {
 
   async getUserProductRating(productId: string, telegramUserId: string): Promise<ProductRating | undefined> {
     const result = await db.select().from(productRatings)
-      .where(and(
+      .where(this.withBotId(productRatings, and(
         eq(productRatings.productId, productId),
         eq(productRatings.telegramUserId, telegramUserId)
-      ));
+      )));
     return result[0];
   }
 
@@ -791,7 +810,7 @@ export class DatabaseStorage implements IStorage {
     if (existing) {
       const result = await db.update(productRatings)
         .set({ rating })
-        .where(eq(productRatings.id, existing.id))
+        .where(this.withBotId(productRatings, eq(productRatings.id, existing.id)))
         .returning();
       return result[0];
     }
@@ -826,19 +845,19 @@ export class DatabaseStorage implements IStorage {
   // Pricing Tiers
   async getPricingTiers(productId: string): Promise<PricingTier[]> {
     return await db.select().from(pricingTiers)
-      .where(and(eq(pricingTiers.productId, productId), eq(pricingTiers.isActive, true)))
+      .where(this.withBotId(pricingTiers, and(eq(pricingTiers.productId, productId), eq(pricingTiers.isActive, true))))
       .orderBy(asc(pricingTiers.minQuantity));
   }
 
   async createPricingTier(tier: InsertPricingTier): Promise<PricingTier> {
-    const result = await db.insert(pricingTiers).values(tier).returning();
+    const result = await db.insert(pricingTiers).values(this.withBotIdValue(tier)).returning();
     return result[0];
   }
 
   async updatePricingTier(id: string, tier: Partial<PricingTier>): Promise<PricingTier | undefined> {
     const result = await db.update(pricingTiers)
       .set(tier)
-      .where(eq(pricingTiers.id, id))
+      .where(this.withBotId(pricingTiers, eq(pricingTiers.id, id)))
       .returning();
     return result[0];
   }
@@ -846,7 +865,7 @@ export class DatabaseStorage implements IStorage {
   async deletePricingTier(id: string): Promise<boolean> {
     const result = await db.update(pricingTiers)
       .set({ isActive: false })
-      .where(eq(pricingTiers.id, id));
+      .where(this.withBotId(pricingTiers, eq(pricingTiers.id, id)));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
@@ -870,35 +889,35 @@ export class DatabaseStorage implements IStorage {
 
   // Payment Methods
   async getPaymentMethods(): Promise<PaymentMethod[]> {
-    return await db.select().from(paymentMethods).orderBy(asc(paymentMethods.sortOrder));
+    return await db.select().from(paymentMethods).where(this.withBotId(paymentMethods)).orderBy(asc(paymentMethods.sortOrder));
   }
 
   async getActivePaymentMethods(): Promise<PaymentMethod[]> {
     return await db.select().from(paymentMethods)
-      .where(eq(paymentMethods.isActive, true))
+      .where(this.withBotId(paymentMethods, eq(paymentMethods.isActive, true)))
       .orderBy(asc(paymentMethods.sortOrder));
   }
 
   async getPaymentMethod(id: string): Promise<PaymentMethod | undefined> {
-    const result = await db.select().from(paymentMethods).where(eq(paymentMethods.id, id));
+    const result = await db.select().from(paymentMethods).where(this.withBotId(paymentMethods, eq(paymentMethods.id, id)));
     return result[0];
   }
 
   async createPaymentMethod(method: InsertPaymentMethod): Promise<PaymentMethod> {
-    const result = await db.insert(paymentMethods).values(method).returning();
+    const result = await db.insert(paymentMethods).values(this.withBotIdValue(method)).returning();
     return result[0];
   }
 
   async updatePaymentMethod(id: string, method: Partial<InsertPaymentMethod>): Promise<PaymentMethod | undefined> {
     const result = await db.update(paymentMethods)
       .set(method)
-      .where(eq(paymentMethods.id, id))
+      .where(this.withBotId(paymentMethods, eq(paymentMethods.id, id)))
       .returning();
     return result[0];
   }
 
   async deletePaymentMethod(id: string): Promise<boolean> {
-    const result = await db.delete(paymentMethods).where(eq(paymentMethods.id, id));
+    const result = await db.delete(paymentMethods).where(this.withBotId(paymentMethods, eq(paymentMethods.id, id)));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
@@ -906,41 +925,41 @@ export class DatabaseStorage implements IStorage {
     for (const method of methods) {
       await db.update(paymentMethods)
         .set({ sortOrder: method.sortOrder })
-        .where(eq(paymentMethods.id, method.id));
+        .where(this.withBotId(paymentMethods, eq(paymentMethods.id, method.id)));
     }
   }
 
   // Delivery Methods
   async getDeliveryMethods(): Promise<DeliveryMethod[]> {
-    return await db.select().from(deliveryMethods).orderBy(asc(deliveryMethods.sortOrder));
+    return await db.select().from(deliveryMethods).where(this.withBotId(deliveryMethods)).orderBy(asc(deliveryMethods.sortOrder));
   }
 
   async getActiveDeliveryMethods(): Promise<DeliveryMethod[]> {
     return await db.select().from(deliveryMethods)
-      .where(eq(deliveryMethods.isActive, true))
+      .where(this.withBotId(deliveryMethods, eq(deliveryMethods.isActive, true)))
       .orderBy(asc(deliveryMethods.sortOrder));
   }
 
   async getDeliveryMethod(id: string): Promise<DeliveryMethod | undefined> {
-    const result = await db.select().from(deliveryMethods).where(eq(deliveryMethods.id, id));
+    const result = await db.select().from(deliveryMethods).where(this.withBotId(deliveryMethods, eq(deliveryMethods.id, id)));
     return result[0];
   }
 
   async createDeliveryMethod(method: InsertDeliveryMethod): Promise<DeliveryMethod> {
-    const result = await db.insert(deliveryMethods).values(method).returning();
+    const result = await db.insert(deliveryMethods).values(this.withBotIdValue(method)).returning();
     return result[0];
   }
 
   async updateDeliveryMethod(id: string, method: Partial<InsertDeliveryMethod>): Promise<DeliveryMethod | undefined> {
     const result = await db.update(deliveryMethods)
       .set(method)
-      .where(eq(deliveryMethods.id, id))
+      .where(this.withBotId(deliveryMethods, eq(deliveryMethods.id, id)))
       .returning();
     return result[0];
   }
 
   async deleteDeliveryMethod(id: string): Promise<boolean> {
-    const result = await db.delete(deliveryMethods).where(eq(deliveryMethods.id, id));
+    const result = await db.delete(deliveryMethods).where(this.withBotId(deliveryMethods, eq(deliveryMethods.id, id)));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
@@ -948,28 +967,28 @@ export class DatabaseStorage implements IStorage {
     for (const method of methods) {
       await db.update(deliveryMethods)
         .set({ sortOrder: method.sortOrder })
-        .where(eq(deliveryMethods.id, method.id));
+        .where(this.withBotId(deliveryMethods, eq(deliveryMethods.id, method.id)));
     }
   }
 
   // Operators implementation
   async getOperators(): Promise<Operator[]> {
-    return await db.select().from(operators).orderBy(asc(operators.name));
+    return await db.select().from(operators).where(this.withBotId(operators)).orderBy(asc(operators.name));
   }
 
   async getActiveOperators(): Promise<Operator[]> {
     return await db.select().from(operators)
-      .where(eq(operators.active, true))
+      .where(this.withBotId(operators, eq(operators.active, true)))
       .orderBy(asc(operators.name));
   }
 
   async getOperator(id: string): Promise<Operator | undefined> {
-    const result = await db.select().from(operators).where(eq(operators.id, id));
+    const result = await db.select().from(operators).where(this.withBotId(operators, eq(operators.id, id)));
     return result[0];
   }
 
   async createOperator(operator: InsertOperator): Promise<Operator> {
-    const result = await db.insert(operators).values(operator).returning();
+    const result = await db.insert(operators).values(this.withBotIdValue(operator)).returning();
     const newOperator = result[0];
     
     // If this operator has admin role, set it as the primary operator
@@ -984,7 +1003,7 @@ export class DatabaseStorage implements IStorage {
   async updateOperator(id: string, operator: Partial<InsertOperator>): Promise<Operator | undefined> {
     const result = await db.update(operators)
       .set({ ...operator, updatedAt: sql`now()` })
-      .where(eq(operators.id, id))
+      .where(this.withBotId(operators, eq(operators.id, id)))
       .returning();
     
     const updatedOperator = result[0];
@@ -999,7 +1018,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteOperator(id: string): Promise<boolean> {
-    const result = await db.delete(operators).where(eq(operators.id, id)).returning();
+    const result = await db.delete(operators).where(this.withBotId(operators, eq(operators.id, id))).returning();
     return result.length > 0;
   }
 
@@ -1009,7 +1028,7 @@ export class DatabaseStorage implements IStorage {
     
     const result = await db.update(operators)
       .set({ active: !operator.active, updatedAt: sql`now()` })
-      .where(eq(operators.id, id))
+      .where(this.withBotId(operators, eq(operators.id, id)))
       .returning();
     return result[0];
   }
@@ -1024,12 +1043,12 @@ export class DatabaseStorage implements IStorage {
       lastSeen: new Date()
     };
     
-    // Insert or update user
+    // Insert or update user (unique on botId + chatId)
     await db
       .insert(trackedUsers)
-      .values(userToInsert)
+      .values(this.withBotIdValue(userToInsert))
       .onConflictDoUpdate({
-        target: trackedUsers.chatId,
+        target: [trackedUsers.botId, trackedUsers.chatId],
         set: {
           username: userToInsert.username,
           firstName: userToInsert.firstName,
@@ -1042,7 +1061,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTrackedUsers(): Promise<TrackedUser[]> {
-    return await db.select().from(trackedUsers).orderBy(desc(trackedUsers.lastSeen));
+    return await db.select().from(trackedUsers).where(this.withBotId(trackedUsers)).orderBy(desc(trackedUsers.lastSeen));
   }
 
   // Broadcast operations implementation
@@ -1061,21 +1080,21 @@ export class DatabaseStorage implements IStorage {
       status: broadcast.status || 'sent',
     };
     
-    await db.insert(broadcasts).values(broadcastToInsert);
+    await db.insert(broadcasts).values(this.withBotIdValue(broadcastToInsert));
     console.log('Broadcast saved:', broadcast);
   }
 
   async getBroadcastHistory(): Promise<Broadcast[]> {
-    return await db.select().from(broadcasts).orderBy(desc(broadcasts.createdAt)).limit(20);
+    return await db.select().from(broadcasts).where(this.withBotId(broadcasts)).orderBy(desc(broadcasts.createdAt)).limit(20);
   }
 
   // Operator Support implementation
   async createOperatorSession(session: InsertOperatorSession): Promise<OperatorSession> {
     const result = await db.insert(operatorSessions)
-      .values({
+      .values(this.withBotIdValue({
         ...session,
         lastActivityAt: new Date(),
-      })
+      }))
       .returning();
     return result[0];
   }
@@ -1083,25 +1102,26 @@ export class DatabaseStorage implements IStorage {
   async getOperatorSessions(status?: string): Promise<OperatorSession[]> {
     if (status) {
       return await db.select().from(operatorSessions)
-        .where(eq(operatorSessions.status, status))
+        .where(this.withBotId(operatorSessions, eq(operatorSessions.status, status)))
         .orderBy(desc(operatorSessions.lastActivityAt));
     }
     return await db.select().from(operatorSessions)
+      .where(this.withBotId(operatorSessions))
       .orderBy(desc(operatorSessions.lastActivityAt));
   }
 
   async getOperatorSession(id: string): Promise<OperatorSession | undefined> {
     const result = await db.select().from(operatorSessions)
-      .where(eq(operatorSessions.id, id));
+      .where(this.withBotId(operatorSessions, eq(operatorSessions.id, id)));
     return result[0];
   }
 
   async getUserActiveSession(telegramUserId: string): Promise<OperatorSession | undefined> {
     const result = await db.select().from(operatorSessions)
-      .where(and(
+      .where(this.withBotId(operatorSessions, and(
         eq(operatorSessions.telegramUserId, telegramUserId),
         eq(operatorSessions.status, "waiting")
-      ))
+      )))
       .orderBy(desc(operatorSessions.createdAt));
     return result[0];
   }
@@ -1113,7 +1133,7 @@ export class DatabaseStorage implements IStorage {
         lastActivityAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(operatorSessions.id, id))
+      .where(this.withBotId(operatorSessions, eq(operatorSessions.id, id)))
       .returning();
     return result[0];
   }
@@ -1121,7 +1141,7 @@ export class DatabaseStorage implements IStorage {
   // Support Messages implementation
   async addSupportMessage(message: InsertSupportMessage): Promise<SupportMessage> {
     const result = await db.insert(supportMessages)
-      .values(message)
+      .values(this.withBotIdValue(message))
       .returning();
     
     // Update session last activity
@@ -1131,14 +1151,14 @@ export class DatabaseStorage implements IStorage {
         lastActivityAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(operatorSessions.id, message.sessionId));
+      .where(this.withBotId(operatorSessions, eq(operatorSessions.id, message.sessionId)));
     
     return result[0];
   }
 
   async getSupportMessages(sessionId: string): Promise<SupportMessage[]> {
     return await db.select().from(supportMessages)
-      .where(eq(supportMessages.sessionId, sessionId))
+      .where(this.withBotId(supportMessages, eq(supportMessages.sessionId, sessionId)))
       .orderBy(asc(supportMessages.createdAt));
   }
 
@@ -1151,7 +1171,7 @@ export class DatabaseStorage implements IStorage {
         lastActivityAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(operatorSessions.id, sessionId));
+      .where(this.withBotId(operatorSessions, eq(operatorSessions.id, sessionId)));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
@@ -1163,13 +1183,13 @@ export class DatabaseStorage implements IStorage {
         lastActivityAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(operatorSessions.id, sessionId));
+      .where(this.withBotId(operatorSessions, eq(operatorSessions.id, sessionId)));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
   async createAiSuggestion(suggestion: InsertAiChatSuggestion): Promise<AiChatSuggestion> {
     const result = await db.insert(aiChatSuggestions)
-      .values(suggestion)
+      .values(this.withBotIdValue(suggestion))
       .returning();
     return result[0];
   }
@@ -1177,7 +1197,7 @@ export class DatabaseStorage implements IStorage {
   async getLatestAiSuggestion(sessionId: string): Promise<AiChatSuggestion | undefined> {
     const results = await db.select()
       .from(aiChatSuggestions)
-      .where(eq(aiChatSuggestions.sessionId, sessionId))
+      .where(this.withBotId(aiChatSuggestions, eq(aiChatSuggestions.sessionId, sessionId)))
       .orderBy(desc(aiChatSuggestions.createdAt))
       .limit(1);
     return results[0];
@@ -1186,7 +1206,7 @@ export class DatabaseStorage implements IStorage {
   async markAiSuggestionAsUsed(suggestionId: string): Promise<boolean> {
     const result = await db.update(aiChatSuggestions)
       .set({ wasUsed: true })
-      .where(eq(aiChatSuggestions.id, suggestionId));
+      .where(this.withBotId(aiChatSuggestions, eq(aiChatSuggestions.id, suggestionId)));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
@@ -1445,4 +1465,24 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Helper: Extract bot ID from Telegram bot token
+// Token format: BOT_ID:SECRET_KEY (e.g., "8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw")
+function extractBotId(token: string | undefined): string {
+  if (!token) {
+    console.warn('⚠️  No TELEGRAM_BOT_TOKEN found, using default bot ID');
+    return 'default';
+  }
+  const botId = token.split(':')[0];
+  if (!botId) {
+    console.error('❌ Invalid bot token format, using default bot ID');
+    return 'default';
+  }
+  return botId;
+}
+
+// For multi-store architecture, extract bot ID from token
+// In multi-bot deployment, each bot process has its own TELEGRAM_BOT_TOKEN env var
+// and creates its own storage instance with isolated data
+const botId = extractBotId(process.env.TELEGRAM_BOT_TOKEN);
+console.log(`✅ Initializing storage for Bot ID: ${botId}`);
+export const storage = new DatabaseStorage(botId);

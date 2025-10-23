@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, decimal, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, integer, timestamp, boolean, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -44,7 +44,9 @@ export const botSettings = pgTable("bot_settings", {
   key: text("key").notNull(),
   value: text("value").notNull(),
   updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
-});
+}, (table) => ({
+  uniqueBotIdKey: unique("bot_settings_bot_id_key_unique").on(table.botId, table.key),
+}));
 
 // Payment methods table for dynamic management
 export const paymentMethods = pgTable("payment_methods", {
@@ -82,18 +84,22 @@ export const deliveryMethods = pgTable("delivery_methods", {
 // Bot operators table for managing support staff
 export const operators = pgTable("operators", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   name: text("name").notNull(),
-  telegramUsername: text("telegram_username").notNull().unique(),
+  telegramUsername: text("telegram_username").notNull(),
   email: text("email"),
   role: text("role"),
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
   updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
-});
+}, (table) => ({
+  uniqueBotIdUsername: unique("operators_bot_id_telegram_username_unique").on(table.botId, table.telegramUsername),
+}));
 
 // Operator support sessions table for live customer support
 export const operatorSessions = pgTable("operator_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   telegramUserId: text("telegram_user_id").notNull(),
   customerName: text("customer_name").notNull(),
   operatorName: text("operator_name"),
@@ -111,6 +117,7 @@ export const operatorSessions = pgTable("operator_sessions", {
 // Support messages for operator chat history
 export const supportMessages = pgTable("support_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   sessionId: varchar("session_id").notNull().references(() => operatorSessions.id),
   senderType: text("sender_type").notNull(), // customer, operator, system, ai
   senderName: text("sender_name").notNull(),
@@ -125,6 +132,7 @@ export const supportMessages = pgTable("support_messages", {
 // AI chat suggestions for operators
 export const aiChatSuggestions = pgTable("ai_chat_suggestions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   sessionId: varchar("session_id").notNull().references(() => operatorSessions.id),
   suggestion: text("suggestion").notNull(), // AI-generated response suggestion
   context: text("context").notNull(), // Conversation context used
@@ -192,11 +200,14 @@ export const botStats = pgTable("bot_stats", {
 
 export const productRatings = pgTable("product_ratings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   productId: varchar("product_id").notNull().references(() => products.id),
   telegramUserId: text("telegram_user_id").notNull(),
   rating: integer("rating").notNull(), // 1-5 stars
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
-});
+}, (table) => ({
+  uniqueBotProductUser: unique("product_ratings_bot_product_user_unique").on(table.botId, table.productId, table.telegramUserId),
+}));
 
 export const pricingTiers = pgTable("pricing_tiers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -299,6 +310,7 @@ export const insertBotStatsSchema = createInsertSchema(botStats).omit({
 
 export const insertProductRatingSchema = createInsertSchema(productRatings).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
 });
 
@@ -312,7 +324,9 @@ export const trackedUsers = pgTable("tracked_users", {
   lastName: text("last_name"),
   lastSeen: timestamp("last_seen").notNull().default(sql`now()`),
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
-});
+}, (table) => ({
+  uniqueBotIdChatId: unique("tracked_users_bot_id_chat_id_unique").on(table.botId, table.chatId),
+}));
 
 export const insertTrackedUserSchema = createInsertSchema(trackedUsers).omit({
   id: true,
@@ -376,6 +390,7 @@ export type OrderItem = z.infer<typeof orderItemSchema>;
 
 export const insertOperatorSchema = createInsertSchema(operators).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
   updatedAt: true,
 });
@@ -384,6 +399,7 @@ export type InsertOperator = z.infer<typeof insertOperatorSchema>;
 
 export const insertOperatorSessionSchema = createInsertSchema(operatorSessions).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
   updatedAt: true,
   lastActivityAt: true,
@@ -391,11 +407,13 @@ export const insertOperatorSessionSchema = createInsertSchema(operatorSessions).
 
 export const insertSupportMessageSchema = createInsertSchema(supportMessages).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
 });
 
 export const insertAiChatSuggestionSchema = createInsertSchema(aiChatSuggestions).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
 });
 
