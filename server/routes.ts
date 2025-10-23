@@ -119,6 +119,38 @@ async function uploadToObjectStorage(buffer: Buffer, filename: string, mimeType?
   return publicUrl;
 }
 
+// Helper function to check for circular references in category hierarchy
+async function wouldCreateCircularReference(categoryId: string, newParentId: string | null): Promise<boolean> {
+  if (!newParentId) return false; // No circular reference if no parent
+  if (categoryId === newParentId) return true; // Direct self-reference
+  
+  // Walk up the parent chain to see if we encounter the category being updated
+  let currentId: string | null = newParentId;
+  const visited = new Set<string>();
+  
+  while (currentId) {
+    if (visited.has(currentId)) {
+      // Cycle detected in existing hierarchy
+      return true;
+    }
+    visited.add(currentId);
+    
+    if (currentId === categoryId) {
+      // Found the category we're updating - this would create a cycle
+      return true;
+    }
+    
+    // Get the parent of the current category
+    const categories = await storage.getCategories();
+    const currentCategory = categories.find(c => c.id === currentId);
+    if (!currentCategory) break;
+    
+    currentId = currentCategory.parentId;
+  }
+  
+  return false;
+}
+
 // Helper function with all route definitions
 function registerAllRoutes(app: Express): void {
   // Request logging middleware for debugging
@@ -471,6 +503,17 @@ function registerAllRoutes(app: Express): void {
   app.put("/api/categories/:id", async (req, res) => {
     try {
       const categoryData = insertCategorySchema.partial().parse(req.body);
+      
+      // Check for circular references if parentId is being updated
+      if (categoryData.parentId !== undefined) {
+        const wouldCreateCycle = await wouldCreateCircularReference(req.params.id, categoryData.parentId);
+        if (wouldCreateCycle) {
+          return res.status(400).json({ 
+            message: "Invalid parent category: This would create a circular reference in the category hierarchy" 
+          });
+        }
+      }
+      
       const category = await storage.updateCategory(req.params.id, categoryData);
       if (!category) {
         return res.status(404).json({ message: "Category not found" });
