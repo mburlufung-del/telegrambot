@@ -1,0 +1,44 @@
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot2 --tail=30 | grep -E "Attempting|buffer|image"
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot2 --tail=100 | grep -E "Attempting|buffer|Sending image"
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot2 --tail=300 | grep -i "product\|image\|photo\|attempting"
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+telegrambot-bot2-1  | Attempting to send product image: product-bb9c0e5dad36
+telegrambot-bot2-1  | Image not in memory, trying URL: http://72.60.20.38:5002/api/images/product-bb9c0e5dad36
+telegrambot-bot2-1  | Image sending failed, will show text-only product details: TelegramError: ETELEGRAM: 400 Bad Request: wrong type of the web page content
+telegrambot-bot2-1  |       _header: 'POST /bot8061353646:AAHvaeFYPGp5z3Xs40q5RBiQ5bMpPE15SHI/sendPhoto?caption=%F0%9F%93%A6%20%3Cb%3EBromazolam%20Blister%20%E2%80%93%2010x%202.5mg%3C%2Fb%3E%0A%F0%9F%92%B0%20%3Cb%3E%E2%82%AC35.00%3C%2Fb%3E&parse_mode=HTML&chat_id=5394510012&photo=http%3A%2F%2F72.60.20.38%3A5002%2Fapi%2Fimages%2Fproduct-bb9c0e5dad36 HTTP/1.1\r\n' +
+telegrambot-bot2-1  |       path: '/bot8061353646:AAHvaeFYPGp5z3Xs40q5RBiQ5bMpPE15SHI/sendPhoto?caption=%F0%9F%93%A6%20%3Cb%3EBromazolam%20Blister%20%E2%80%93%2010x%202.5mg%3C%2Fb%3E%0A%F0%9F%92%B0%20%3Cb%3E%E2%82%AC35.00%3C%2Fb%3E&parse_mode=HTML&chat_id=5394510012&photo=http%3A%2F%2F72.60.20.38%3A5002%2Fapi%2Fimages%2Fproduct-bb9c0e5dad36',
+telegrambot-bot2-1  |       path: '/bot8061353646:AAHvaeFYPGp5z3Xs40q5RBiQ5bMpPE15SHI/sendPhoto?caption=%F0%9F%93%A6%20%3Cb%3EBromazolam%20Blister%20%E2%80%93%2010x%202.5mg%3C%2Fb%3E%0A%F0%9F%92%B0%20%3Cb%3E%E2%82%AC35.00%3C%2Fb%3E&parse_mode=HTML&chat_id=5394510012&photo=http%3A%2F%2F72.60.20.38%3A5002%2Fapi%2Fimages%2Fproduct-bb9c0e5dad36',
+telegrambot-bot2-1  |       href: 'https://api.telegram.org/bot8061353646:AAHvaeFYPGp5z3Xs40q5RBiQ5bMpPE15SHI/sendPhoto?caption=%F0%9F%93%A6%20%3Cb%3EBromazolam%20Blister%20%E2%80%93%2010x%202.5mg%3C%2Fb%3E%0A%F0%9F%92%B0%20%3Cb%3E%E2%82%AC35.00%3C%2Fb%3E&parse_mode=HTML&chat_id=5394510012&photo=http%3A%2F%2F72.60.20.38%3A5002%2Fapi%2Fimages%2Fproduct-bb9c0e5dad36',
+telegrambot-bot2-1  | [INSTANT-VANISH] Tracked product details message 173 for user 5394510012
+telegrambot-bot2-1  | Received product data: {
+telegrambot-bot2-1  |   "description": "DMC (Dimethocaine) Powder\nDMC (Dimethocaine) Powder is intended for laboratory use only. This product is intended for research use only and is not intended for human consumption or medical use.\nChemical category\n\nDimethocaine derivative\nProperties\n\n    Fine powder that can be evenly distributed in the lab\n    Consistent batch for reproducible research\n    Suitable for qualitative and quantitative analysis\n\nSpecifications\n\n    Drug name: DMC (Dimethocaine)\n    Form: powder\n    Application: For research and analysis only\n    Salt type and batch data: according to label or product specification\nUse in the lab\nUse only by authorized personnel in a suitable testing area. Use calibrated equipment. Record batch, date, and quantity in the logbook for traceability.\nSave\nStore in a cool, dry, and dark place in the original, tightly sealed packaging. Keep out of reach of unauthorized persons.\nSafety\nNot intended for human consumption. Avoid inhalation and direct contact with skin and eyes. Wear gloves and safety glasses. Discharge into the environment is prohibited. Follow local regulations for storage and disposal.\n\nFrom 2+ @ €23.75\nFrom 5+ €22.75\nFrom 10+ €21.75\nFrom 25+ €20.25\nFrom 50+ €18.75\nFrom 100+ € 16.25",
+telegrambot-bot2-1  |   "imageUrl": "/api/images/product-368de45f0fda",
+telegrambot-bot2-1  | Final product data with defaults: {
+telegrambot-bot2-1  |   "description": "DMC (Dimethocaine) Powder\nDMC (Dimethocaine) Powder is intended for laboratory use only. This product is intended for research use only and is not intended for human consumption or medical use.\nChemical category\n\nDimethocaine derivative\nProperties\n\n    Fine powder that can be evenly distributed in the lab\n    Consistent batch for reproducible research\n    Suitable for qualitative and quantitative analysis\n\nSpecifications\n\n    Drug name: DMC (Dimethocaine)\n    Form: powder\n    Application: For research and analysis only\n    Salt type and batch data: according to label or product specification\nUse in the lab\nUse only by authorized personnel in a suitable testing area. Use calibrated equipment. Record batch, date, and quantity in the logbook for traceability.\nSave\nStore in a cool, dry, and dark place in the original, tightly sealed packaging. Keep out of reach of unauthorized persons.\nSafety\nNot intended for human consumption. Avoid inhalation and direct contact with skin and eyes. Wear gloves and safety glasses. Discharge into the environment is prohibited. Follow local regulations for storage and disposal.\n\nFrom 2+ @ €23.75\nFrom 5+ €22.75\nFrom 10+ €21.75\nFrom 25+ €20.25\nFrom 50+ €18.75\nFrom 100+ € 16.25",
+telegrambot-bot2-1  |   "imageUrl": "/api/images/product-368de45f0fda",
+telegrambot-bot2-1  | Product created successfully: ab09fecd-9b26-4a52-85e5-641093c1afcf
+root@srv1051051:/var/www/telegrambot# 
+root@srv1051051:/var/www/telegrambot# # Check if the image buffer code is in bot.ts
+grep -n "Sending image buffer to Telegram" server/bot.ts
+1939:          console.log(`Sending image buffer to Telegram (${imageData.data.length} bytes)`);
+root@srv1051051:/var/www/telegrambot# 
