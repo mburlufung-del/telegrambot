@@ -1,0 +1,47 @@
+no changes added to commit (use "git add" and/or "git commit -a")
+root@srv1051051:/var/www/telegrambot# grep -n "parentId" shared/schema.ts
+root@srv1051051:/var/www/telegrambot# # On your VPS
+nano shared/schema.ts
+root@srv1051051:/var/www/telegrambot# # Add parentId column to categories table
+docker exec -it telegrambot-postgres-1 psql -U teleshopuser -d teleshop -c "ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_id VARCHAR REFERENCES categories(id);"
+ALTER TABLE
+root@srv1051051:/var/www/telegrambot# docker-compose build
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Building 5.2s (17/17) FINISHED                                                                      docker:default
+ => [bot2 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot1 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot1 internal] load metadata for docker.io/library/node:20-alpine                                            0.6s
+ => [bot1 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot2 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot2 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39  0.0s
+ => [bot1 internal] load build context                                                                            0.0s
+ => => transferring context: 47.61kB                                                                              0.0s
+ => [bot2 internal] load build context                                                                            0.0s
+ => => transferring context: 47.61kB                                                                              0.0s
+ => CACHED [bot2 4/6] RUN npm install                                                                             0.0s
+ => CACHED [bot2 2/6] WORKDIR /app                                                                                0.0s
+ => CACHED [bot1 3/6] COPY package*.json ./                                                                       0.0s
+ => CACHED [bot1 4/6] RUN npm install                                                                             0.0s
+ => [bot1 5/6] COPY . .                                                                                           0.1s
+ => CACHED [bot2 3/6] COPY package*.json ./                                                                       0.0s
+ => [bot2 5/6] COPY . .                                                                                           0.1s
+ => ERROR [bot2 6/6] RUN npm run build                                                                            4.4s
+ => CANCELED [bot1 6/6] RUN npm run build                                                                         4.5s
+------                                                                                                                 
+ > [bot2 6/6] RUN npm run build:                                                                                       
+0.304 npm warn config optional Use `--omit=optional` to exclude optional dependencies, or                              
+0.304 npm warn config `--include=optional` to include them.                                                            
+0.304 npm warn config                                                                                                  
+0.304 npm warn config       Default value does install optional deps unless otherwise omitted.                         
+0.357                                                                                                                  
+0.357 > workspace@1.0.0 build                                                                                          
+0.357 > tsc && vite build                                                                                              
+0.357                                                                                                                  
+4.293 shared/schema.ts(178,14): error TS1005: ':' expected.
+4.294 shared/schema.ts(186,3): error TS1005: ',' expected.
+------
+failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 2
