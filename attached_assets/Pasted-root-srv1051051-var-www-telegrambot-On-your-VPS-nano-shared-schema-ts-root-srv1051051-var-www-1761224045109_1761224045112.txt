@@ -1,0 +1,210 @@
+root@srv1051051:/var/www/telegrambot# # On your VPS
+nano shared/schema.ts
+root@srv1051051:/var/www/telegrambot# nano shared/schema.ts
+root@srv1051051:/var/www/telegrambot# docker-compose build
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Building 5.1s (17/17) FINISHED                                                                      docker:default
+ => [bot2 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot1 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot1 internal] load metadata for docker.io/library/node:20-alpine                                            0.6s
+ => [bot2 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot1 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot1 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39  0.0s
+ => [bot2 internal] load build context                                                                            0.0s
+ => => transferring context: 47.45kB                                                                              0.0s
+ => [bot1 internal] load build context                                                                            0.0s
+ => => transferring context: 47.45kB                                                                              0.0s
+ => CACHED [bot1 2/6] WORKDIR /app                                                                                0.0s
+ => CACHED [bot2 3/6] COPY package*.json ./                                                                       0.0s
+ => CACHED [bot1 4/6] RUN npm install                                                                             0.0s
+ => [bot2 5/6] COPY . .                                                                                           0.1s
+ => CACHED [bot1 3/6] COPY package*.json ./                                                                       0.0s
+ => CACHED [bot1 4/6] RUN npm install                                                                             0.0s
+ => [bot1 5/6] COPY . .                                                                                           0.1s
+ => CANCELED [bot1 6/6] RUN npm run build                                                                         4.4s
+ => ERROR [bot2 6/6] RUN npm run build                                                                            4.3s
+------                                                                                                                 
+ > [bot2 6/6] RUN npm run build:                                                                                       
+0.306 npm warn config optional Use `--omit=optional` to exclude optional dependencies, or                              
+0.306 npm warn config `--include=optional` to include them.                                                            
+0.306 npm warn config                                                                                                  
+0.306 npm warn config       Default value does install optional deps unless otherwise omitted.                         
+0.356                                                                                                                  
+0.356 > workspace@1.0.0 build                                                                                          
+0.356 > tsc && vite build                                                                                              
+0.356                                                                                                                  
+4.230 shared/schema.ts(178,14): error TS1005: ':' expected.
+4.231 shared/schema.ts(187,3): error TS1005: ',' expected.
+4.231 shared/schema.ts(188,14): error TS1005: ':' expected.
+4.232 shared/schema.ts(196,3): error TS1005: ',' expected.
+4.232 shared/schema.ts(198,14): error TS1005: ':' expected.
+4.232 shared/schema.ts(201,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(203,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(222,4): error TS1005: ',' expected.
+4.233 shared/schema.ts(224,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(227,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(229,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(232,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(234,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(238,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(240,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(244,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(246,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(253,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(255,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(258,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(260,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(263,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(265,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(268,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(270,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(273,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(275,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(278,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(281,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(289,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(291,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(294,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(297,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(306,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(308,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(311,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(314,14): error TS1005: ':' expected.
+4.233 shared/schema.ts(320,3): error TS1005: ',' expected.
+4.233 shared/schema.ts(322,13): error TS1005: ',' expected.
+4.233 shared/schema.ts(322,51): error TS1005: ',' expected.
+4.233 shared/schema.ts(323,13): error TS1005: ',' expected.
+4.233 shared/schema.ts(323,64): error TS1005: ',' expected.
+4.233 shared/schema.ts(324,13): error TS1005: ',' expected.
+4.233 shared/schema.ts(324,52): error TS1005: ',' expected.
+4.233 shared/schema.ts(325,13): error TS1005: ',' expected.
+4.233 shared/schema.ts(325,64): error TS1005: ',' expected.
+4.233 shared/schema.ts(326,13): error TS1005: ',' expected.
+4.233 shared/schema.ts(326,47): error TS1005: ',' expected.
+4.233 shared/schema.ts(327,13): error TS1005: ',' expected.
+4.233 shared/schema.ts(327,60): error TS1005: ',' expected.
+4.233 shared/schema.ts(328,13): error TS1005: ',' expected.
+4.233 shared/schema.ts(328,44): error TS1005: ',' expected.
+4.233 shared/schema.ts(329,13): error TS1005: ',' expected.
+4.233 shared/schema.ts(329,58): error TS1005: ',' expected.
+4.233 shared/schema.ts(330,13): error TS1005: ',' expected.
+4.233 shared/schema.ts(330,52): error TS1005: ',' expected.
+4.233 shared/schema.ts(331,13): error TS1005: ',' expected.
+4.233 shared/schema.ts(331,66): error TS1005: ',' expected.
+4.234 shared/schema.ts(332,13): error TS1005: ',' expected.
+4.234 shared/schema.ts(332,54): error TS1005: ',' expected.
+4.234 shared/schema.ts(333,13): error TS1005: ',' expected.
+4.234 shared/schema.ts(333,66): error TS1005: ',' expected.
+4.234 shared/schema.ts(334,13): error TS1005: ',' expected.
+4.234 shared/schema.ts(334,58): error TS1005: ',' expected.
+4.234 shared/schema.ts(335,13): error TS1005: ',' expected.
+4.234 shared/schema.ts(335,72): error TS1005: ',' expected.
+4.234 shared/schema.ts(336,13): error TS1005: ',' expected.
+4.234 shared/schema.ts(336,63): error TS1005: ',' expected.
+4.234 shared/schema.ts(337,13): error TS1005: ',' expected.
+4.234 shared/schema.ts(337,76): error TS1005: ',' expected.
+4.234 shared/schema.ts(338,13): error TS1005: ',' expected.
+4.234 shared/schema.ts(338,65): error TS1005: ',' expected.
+4.234 shared/schema.ts(339,13): error TS1005: ',' expected.
+4.234 shared/schema.ts(339,78): error TS1005: ',' expected.
+4.234 shared/schema.ts(340,13): error TS1005: ',' expected.
+4.234 shared/schema.ts(340,52): error TS1005: ',' expected.
+4.235 shared/schema.ts(341,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(341,66): error TS1005: ',' expected.
+4.235 shared/schema.ts(342,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(342,63): error TS1005: ',' expected.
+4.235 shared/schema.ts(343,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(343,76): error TS1005: ',' expected.
+4.235 shared/schema.ts(344,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(344,59): error TS1005: ',' expected.
+4.235 shared/schema.ts(345,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(345,72): error TS1005: ',' expected.
+4.235 shared/schema.ts(346,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(346,56): error TS1005: ',' expected.
+4.235 shared/schema.ts(348,14): error TS1005: ':' expected.
+4.235 shared/schema.ts(352,3): error TS1005: ',' expected.
+4.235 shared/schema.ts(353,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(353,53): error TS1005: ',' expected.
+4.235 shared/schema.ts(354,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(354,66): error TS1005: ',' expected.
+4.235 shared/schema.ts(356,14): error TS1005: ':' expected.
+4.235 shared/schema.ts(361,3): error TS1005: ',' expected.
+4.235 shared/schema.ts(363,14): error TS1005: ':' expected.
+4.235 shared/schema.ts(366,3): error TS1005: ',' expected.
+4.235 shared/schema.ts(368,14): error TS1005: ':' expected.
+4.235 shared/schema.ts(371,3): error TS1005: ',' expected.
+4.235 shared/schema.ts(373,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(373,67): error TS1005: ',' expected.
+4.235 shared/schema.ts(374,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(374,80): error TS1005: ',' expected.
+4.235 shared/schema.ts(375,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(375,65): error TS1005: ',' expected.
+4.235 shared/schema.ts(376,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(376,78): error TS1005: ',' expected.
+4.235 shared/schema.ts(377,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(377,69): error TS1005: ',' expected.
+4.235 shared/schema.ts(378,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(378,82): error TS1005: ',' expected.
+4.235 shared/schema.ts(379,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(379,59): error TS1005: ',' expected.
+4.235 shared/schema.ts(380,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(380,72): error TS1005: ',' expected.
+4.235 shared/schema.ts(381,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(381,55): error TS1005: ',' expected.
+4.235 shared/schema.ts(382,13): error TS1005: ',' expected.
+4.235 shared/schema.ts(382,68): error TS1005: ',' expected.
+4.235 shared/schema.ts(387,14): error TS1005: ':' expected.
+4.235 shared/schema.ts(394,3): error TS1005: ',' expected.
+4.235 shared/schema.ts(397,14): error TS1005: ':' expected.
+4.235 shared/schema.ts(405,3): error TS1005: ',' expected.
+4.236 shared/schema.ts(408,14): error TS1005: ':' expected.
+4.236 shared/schema.ts(412,3): error TS1005: ',' expected.
+4.236 shared/schema.ts(415,14): error TS1005: ':' expected.
+4.236 shared/schema.ts(421,3): error TS1005: ',' expected.
+4.236 shared/schema.ts(424,14): error TS1005: ':' expected.
+4.236 shared/schema.ts(435,4): error TS1005: ',' expected.
+4.236 shared/schema.ts(438,14): error TS1005: ':' expected.
+4.236 shared/schema.ts(448,4): error TS1005: ',' expected.
+4.236 shared/schema.ts(451,14): error TS1005: ':' expected.
+4.236 shared/schema.ts(453,3): error TS1005: ',' expected.
+4.236 shared/schema.ts(455,14): error TS1005: ':' expected.
+4.236 shared/schema.ts(457,3): error TS1005: ',' expected.
+4.236 shared/schema.ts(459,14): error TS1005: ':' expected.
+4.236 shared/schema.ts(461,3): error TS1005: ',' expected.
+4.236 shared/schema.ts(463,14): error TS1005: ':' expected.
+4.236 shared/schema.ts(466,3): error TS1005: ',' expected.
+4.236 shared/schema.ts(468,14): error TS1005: ':' expected.
+4.237 shared/schema.ts(472,3): error TS1005: ',' expected.
+4.237 shared/schema.ts(474,14): error TS1005: ':' expected.
+4.237 shared/schema.ts(478,3): error TS1005: ',' expected.
+4.237 shared/schema.ts(481,13): error TS1005: ',' expected.
+4.237 shared/schema.ts(481,53): error TS1005: ',' expected.
+4.237 shared/schema.ts(482,13): error TS1005: ',' expected.
+4.237 shared/schema.ts(482,61): error TS1005: ',' expected.
+4.237 shared/schema.ts(483,13): error TS1005: ',' expected.
+4.237 shared/schema.ts(483,74): error TS1005: ',' expected.
+4.237 shared/schema.ts(484,13): error TS1005: ',' expected.
+4.237 shared/schema.ts(484,66): error TS1005: ',' expected.
+4.237 shared/schema.ts(485,13): error TS1005: ',' expected.
+4.237 shared/schema.ts(485,54): error TS1005: ',' expected.
+4.237 shared/schema.ts(486,13): error TS1005: ',' expected.
+4.237 shared/schema.ts(486,66): error TS1005: ',' expected.
+4.237 shared/schema.ts(487,13): error TS1005: ',' expected.
+4.237 shared/schema.ts(487,66): error TS1005: ',' expected.
+4.237 shared/schema.ts(488,13): error TS1005: ',' expected.
+4.237 shared/schema.ts(488,80): error TS1005: ',' expected.
+4.237 shared/schema.ts(489,13): error TS1005: ',' expected.
+4.237 shared/schema.ts(489,73): error TS1005: ',' expected.
+4.237 shared/schema.ts(490,13): error TS1005: ',' expected.
+4.237 shared/schema.ts(490,86): error TS1005: ',' expected.
+4.237 shared/schema.ts(491,13): error TS1005: ',' expected.
+4.237 shared/schema.ts(491,75): error TS1005: ',' expected.
+4.237 shared/schema.ts(492,13): error TS1005: ',' expected.
+4.237 shared/schema.ts(492,88): error TS1005: ',' expected.
+4.237 shared/schema.ts(493,1): error TS1005: '}' expected.
+------
+failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 2
