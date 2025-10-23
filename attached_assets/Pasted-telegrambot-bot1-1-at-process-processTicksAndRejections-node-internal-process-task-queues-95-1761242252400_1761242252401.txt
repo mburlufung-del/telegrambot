@@ -1,0 +1,90 @@
+telegrambot-bot1-1  |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+telegrambot-bot1-1  |     at async initializeBotWithTimeout (/app/server/index.ts:142:5)
+telegrambot-bot1-1  | 01:47:53 PM [express] ❌ Bot initialization failed: No bot token configured
+telegrambot-bot1-1  | 01:47:53 PM [express] 🔄 Server continues running with admin dashboard only
+telegrambot-bot1-1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot1-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot1-1  | npm warn config
+telegrambot-bot1-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot2-1  | 01:47:53 PM [express] ✅ Static file serving configured
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | > workspace@1.0.0 start
+telegrambot-bot1-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | ✅ Initializing storage for Bot ID: default
+telegrambot-bot1-1  | ⚠️  No TELEGRAM_BOT_TOKEN found, using default bot ID
+telegrambot-bot1-1  | 01:56:50 PM [express] 🔧 Setting up API routes...
+telegrambot-bot1-1  | 01:56:50 PM [express] ✅ API routes registered
+telegrambot-bot1-1  | 01:56:50 PM [express] 🔧 Setting up static file serving...
+telegrambot-bot1-1  | 01:56:50 PM [express] ✅ Static file serving configured
+telegrambot-bot1-1  | 01:56:50 PM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1  | 01:56:50 PM [express] ✅ Health check available at / and /health
+telegrambot-bot1-1  | 01:56:50 PM [express] 🖥️  Admin dashboard ready
+telegrambot-bot1-1  | 01:56:50 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1  | 01:56:50 PM [express] ⚠️  No bot token found, skipping bot initialization
+telegrambot-bot1-1  | 01:56:50 PM [express] ❌ Bot initialization step failed: No bot token configured
+telegrambot-bot1-1  | Full error: Error: No bot token configured
+telegrambot-bot1-1  |     at autoInitializeBot (/app/server/index.ts:183:13)
+telegrambot-bot1-1  |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+telegrambot-bot1-1  |     at async initializeBotWithTimeout (/app/server/index.ts:142:5)
+telegrambot-bot1-1  | 01:56:50 PM [express] ❌ Bot initialization failed: No bot token configured
+telegrambot-bot1-1  | 01:56:50 PM [express] 🔄 Server continues running with admin dashboard only
+telegrambot-bot2-1  | 01:47:53 PM [express] 🚀 Server started on port 5000
+telegrambot-bot2-1  | 01:47:53 PM [express] ✅ Health check available at / and /health
+telegrambot-bot2-1  | 01:47:53 PM [express] 🖥️  Admin dashboard ready
+telegrambot-bot2-1  | 01:47:53 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot2-1  | Cleared webhook
+telegrambot-bot2-1  | 01:48:03 PM [express] ❌ Bot initialization failed: Bot initialization timeout
+telegrambot-bot2-1  | 01:48:03 PM [express] 🔄 Server continues running with admin dashboard only
+telegrambot-bot2-1  | 01:48:03 PM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot2-1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot2-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot2-1  | npm warn config
+telegrambot-bot2-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot2-1  | 
+telegrambot-bot2-1  | > workspace@1.0.0 start
+telegrambot-bot2-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot2-1  | 
+telegrambot-bot2-1  | ✅ Initializing storage for Bot ID: 8061353646
+telegrambot-bot2-1  | 01:56:50 PM [express] 🔧 Setting up API routes...
+telegrambot-bot2-1  | 01:56:50 PM [express] ✅ API routes registered
+telegrambot-bot2-1  | 01:56:50 PM [express] 🔧 Setting up static file serving...
+telegrambot-bot2-1  | 01:56:50 PM [express] ✅ Static file serving configured
+telegrambot-bot2-1  | 01:56:50 PM [express] 🚀 Server started on port 5000
+telegrambot-bot2-1  | 01:56:50 PM [express] ✅ Health check available at / and /health
+telegrambot-bot2-1  | 01:56:50 PM [express] 🖥️  Admin dashboard ready
+telegrambot-bot2-1  | 01:56:50 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot2-1  | Cleared webhook
+telegrambot-bot2-1  | 01:57:00 PM [express] ❌ Bot initialization failed: Bot initialization timeout
+telegrambot-bot2-1  | 01:57:00 PM [express] 🔄 Server continues running with admin dashboard only
+telegrambot-bot2-1  | 01:57:00 PM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot3-1  |       response: [Circular *1],
+telegrambot-bot3-1  |       originalHost: 'api.telegram.org',
+telegrambot-bot3-1  |       originalHostHeaderName: 'host',
+telegrambot-bot3-1  |       responseContent: [Circular *1],
+telegrambot-bot3-1  |       _destdata: true,
+telegrambot-bot3-1  |       _ended: true,
+telegrambot-bot3-1  |       _callbackCalled: true,
+telegrambot-bot3-1  |       [Symbol(shapeMode)]: false,
+telegrambot-bot3-1  |       [Symbol(kCapture)]: false
+telegrambot-bot3-1  |     },
+telegrambot-bot3-1  |     toJSON: [Function: responseToJSON],
+telegrambot-bot3-1  |     caseless: Caseless { dict: [Object] },
+telegrambot-bot3-1  |     body: { ok: false, error_code: 401, description: 'Unauthorized' },
+telegrambot-bot3-1  |     [Symbol(shapeMode)]: true,
+telegrambot-bot3-1  |     [Symbol(kCapture)]: false,
+telegrambot-bot3-1  |     [Symbol(kHeaders)]: {
+telegrambot-bot3-1  |       server: 'nginx/1.18.0',
+telegrambot-bot3-1  |       date: 'Thu, 23 Oct 2025 17:57:08 GMT',
+telegrambot-bot3-1  |       'content-type': 'application/json',
+telegrambot-bot3-1  |       'content-length': '58',
+telegrambot-bot3-1  |       connection: 'keep-alive',
+telegrambot-bot3-1  |       'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+telegrambot-bot3-1  |       'access-control-allow-origin': '*',
+telegrambot-bot3-1  |       'access-control-expose-headers': 'Content-Length,Content-Type,Date,Server,Connection'
+telegrambot-bot3-1  |     },
+telegrambot-bot3-1  |     [Symbol(kHeadersCount)]: 16,
+telegrambot-bot3-1  |     [Symbol(kTrailers)]: null,
+telegrambot-bot3-1  |     [Symbol(kTrailersCount)]: 0
+telegrambot-bot3-1  |   }
+telegrambot-bot3-1  | }
