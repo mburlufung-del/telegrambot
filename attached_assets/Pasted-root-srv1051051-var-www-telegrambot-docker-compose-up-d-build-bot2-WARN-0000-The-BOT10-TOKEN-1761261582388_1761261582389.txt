@@ -1,0 +1,44 @@
+root@srv1051051:/var/www/telegrambot# docker-compose up -d --build bot2
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Building 19.1s (11/11) FINISHED                                                                     docker:default
+ => [bot2 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 390B                                                                              0.0s
+ => [bot2 internal] load metadata for docker.io/library/node:20-alpine                                            0.7s
+ => [bot2 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot2 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39  0.0s
+ => [bot2 internal] load build context                                                                            0.0s
+ => => transferring context: 288.50kB                                                                             0.0s
+ => CACHED [bot2 2/6] WORKDIR /app                                                                                0.0s
+ => CACHED [bot2 3/6] COPY package*.json ./                                                                       0.0s
+ => CACHED [bot2 4/6] RUN npm install                                                                             0.0s
+ => [bot2 5/6] COPY . .                                                                                           0.1s
+ => [bot2 6/6] RUN npm run build                                                                                 18.2s
+ => [bot2] exporting to image                                                                                     0.1s 
+ => => exporting layers                                                                                           0.1s 
+ => => writing image sha256:1e8dea7e8b6b5715611951bb648327755961845be664ca4aa7de18bed79abffc                      0.0s 
+ => => naming to docker.io/library/telegrambot-bot2                                                               0.0s 
+[+] Running 2/2                                                                                                        
+ ✔ Container telegrambot-postgres-1  Healthy                                                                      0.0s 
+ ✔ Container telegrambot-bot2-1      Started                                                                      0.3s 
+root@srv1051051:/var/www/telegrambot# sed -i '1920a\
+    // Try to send product image if available, but don'\''t let image failures block product display\
+root@srv1051051:/var/www/telegrambot#            1,1949d' server/bot.ts
+                                      docker-compose logs bot2 --tail=50 | grep -E "Bot|error|Error|timeout"
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+telegrambot-bot2-1  | ✅ Initializing storage for Bot ID: 8061353646
+telegrambot-bot2-1  | 07:18:52 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot2-1  | 07:19:02 PM [express] ❌ Bot initialization failed: Bot initialization timeout
+root@srv1051051:/var/www/telegrambot# 
