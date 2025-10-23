@@ -1,0 +1,51 @@
+--- a/server/bot.ts
++++ b/server/bot.ts
+@@ -1918,24 +1918,45 @@
+     this.userMessages.set(chatId, []);
+ 
+     // Try to send product image if available, but don't let image failures block product display
+     if (product.imageUrl) {
+       try {
+-        // Convert relative path to full URL for Telegram compatibility
+-        const baseUrl = this.getBaseUrl();
+-        const fullImageUrl = product.imageUrl.startsWith('http') ? product.imageUrl : `${baseUrl}${product.imageUrl}`;
++        // Extract imageId from URL (e.g., /api/images/product-abc123 → product-abc123)
++        const imageId = product.imageUrl.replace('/api/images/', '');
+         
+-        console.log(`Attempting to send product image: ${fullImageUrl}`);
++        // Get image data from in-memory store
++        const imageStore = (global as any).imageStore || new Map();
++        const imageData = imageStore.get(imageId);
++        
++        console.log(`Attempting to send product image: ${imageId}`);
+         
+         // Get localized price for image caption
+         const localizedPrice = await i18n.getProductPrice(userId, product);
+         
+-        const sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
+-          caption: `📦 <b>${this.escapeHtml(product.name)}</b>\n💰 <b>${this.escapeHtml(localizedPrice.formattedPrice)}</b>`,
+-          parse_mode: 'HTML'
+-        });
++        let sentMessage;
++        if (imageData && imageData.data) {
++          // Send image buffer directly to Telegram (works even if port is blocked)
++          console.log(`Sending image buffer to Telegram (${imageData.data.length} bytes)`);
++          sentMessage = await this.bot?.sendPhoto(chatId, imageData.data, {
++            caption: `📦 <b>${this.escapeHtml(product.name)}</b>\n💰 <b>${this.escapeHtml(localizedPrice.formattedPrice)}</b>`,
++            parse_mode: 'HTML'
++          });
++        } else {
++          // Fallback: If image not in memory, try URL (for external images)
++          const baseUrl = this.getBaseUrl();
++          const fullImageUrl = product.imageUrl.startsWith('http') ? product.imageUrl : `${baseUrl}${product.imageUrl}`;
++          console.log(`Image not in memory, trying URL: ${fullImageUrl}`);
++          sentMessage = await this.bot?.sendPhoto(chatId, fullImageUrl, {
++            caption: `📦 <b>${this.escapeHtml(product.name)}</b>\n💰 <b>${this.escapeHtml(localizedPrice.formattedPrice)}</b>`,
++            parse_mode: 'HTML'
++          });
++        }
+         
+         // Add to auto-vanish tracking
+         if (sentMessage) {
+           const userMsgIds = this.userMessages.get(chatId) || [];
+           userMsgIds.push(sentMessage.message_id);
