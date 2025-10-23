@@ -1,0 +1,190 @@
+╔═══════════════════════════════════════════════════════════════╗
+║        QUICK START: Adding Bot Tokens 2-10                   ║
+║                                                               ║
+║   Multi-Bot Telegram Shop System on Hostinger VPS            ║
+║   VPS IP: 72.60.20.38                                         ║
+╚═══════════════════════════════════════════════════════════════╝
+
+┌───────────────────────────────────────────────────────────────┐
+│ STEP 1: Get Bot Tokens from Telegram                         │
+└───────────────────────────────────────────────────────────────┘
+
+1. Open Telegram and search for @BotFather
+2. Send: /newbot
+3. Follow prompts to create your bot
+4. Copy the token (looks like: 123456789:ABCxyz...)
+5. Repeat for each bot you want (up to 9 more bots)
+
+┌───────────────────────────────────────────────────────────────┐
+│ STEP 2: Add Tokens to Configuration                          │
+└───────────────────────────────────────────────────────────────┘
+
+On your VPS:
+
+   cd /var/www/telegrambot
+   cp .env.docker.example .env.docker
+   nano .env.docker
+
+Replace these lines with your actual tokens:
+
+   BOT1_TOKEN=8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw  ✓ Active
+   BOT2_TOKEN=PASTE_YOUR_BOT_2_TOKEN_HERE
+   BOT3_TOKEN=PASTE_YOUR_BOT_3_TOKEN_HERE
+   BOT4_TOKEN=PASTE_YOUR_BOT_4_TOKEN_HERE
+   BOT5_TOKEN=PASTE_YOUR_BOT_5_TOKEN_HERE
+   BOT6_TOKEN=PASTE_YOUR_BOT_6_TOKEN_HERE
+   BOT7_TOKEN=PASTE_YOUR_BOT_7_TOKEN_HERE
+   BOT8_TOKEN=PASTE_YOUR_BOT_8_TOKEN_HERE
+   BOT9_TOKEN=PASTE_YOUR_BOT_9_TOKEN_HERE
+   BOT10_TOKEN=PASTE_YOUR_BOT_10_TOKEN_HERE
+
+Save: Ctrl+X → Y → Enter
+
+┌───────────────────────────────────────────────────────────────┐
+│ STEP 3: Validate Your Setup                                  │
+└───────────────────────────────────────────────────────────────┘
+
+   ./check-bot-setup.sh
+
+This will show you which bots are configured correctly.
+
+┌───────────────────────────────────────────────────────────────┐
+│ STEP 4: Deploy Your Bots                                     │
+└───────────────────────────────────────────────────────────────┘
+
+Deploy ALL configured bots:
+   docker-compose --env-file .env.docker up -d
+
+OR deploy specific bots:
+   docker-compose --env-file .env.docker up -d postgres bot1 bot2 bot3
+
+Add a single bot later:
+   docker-compose --env-file .env.docker up -d bot5
+
+┌───────────────────────────────────────────────────────────────┐
+│ STEP 5: Access Your Dashboards                               │
+└───────────────────────────────────────────────────────────────┘
+
+   Bot 1:  http://72.60.20.38:5001  ✓ Currently Active
+   Bot 2:  http://72.60.20.38:5002
+   Bot 3:  http://72.60.20.38:5003
+   Bot 4:  http://72.60.20.38:5004
+   Bot 5:  http://72.60.20.38:5005
+   Bot 6:  http://72.60.20.38:5006
+   Bot 7:  http://72.60.20.38:5007
+   Bot 8:  http://72.60.20.38:5008
+   Bot 9:  http://72.60.20.38:5009
+   Bot 10: http://72.60.20.38:5010
+
+┌───────────────────────────────────────────────────────────────┐
+│ USEFUL COMMANDS                                               │
+└───────────────────────────────────────────────────────────────┘
+
+Check running bots:
+   docker-compose ps
+
+View bot logs:
+   docker-compose logs -f bot2
+
+Restart a bot:
+   docker-compose restart bot3
+
+Stop all bots:
+   docker-compose down
+
+Update and redeploy:
+   cd /var/www/telegrambot
+   git pull
+   docker-compose build
+   docker-compose --env-file .env.docker up -d
+
+┌───────────────────────────────────────────────────────────────┐
+│ EXAMPLE: Adding Just Bot 2                                   │
+└───────────────────────────────────────────────────────────────┘
+
+1. Get token from @BotFather
+2. Edit config:
+      nano .env.docker
+   
+3. Find:
+      BOT2_TOKEN=your_bot_2_token_here
+   
+4. Replace with:
+      BOT2_TOKEN=987654321:ABCxyz123456789
+   
+5. Save (Ctrl+X, Y, Enter)
+
+6. Deploy:
+      docker-compose --env-file .env.docker up -d bot2
+
+7. Check:
+      docker-compose logs -f bot2
+
+8. Open: http://72.60.20.38:5002
+
+┌───────────────────────────────────────────────────────────────┐
+│ TROUBLESHOOTING                                               │
+└───────────────────────────────────────────────────────────────┘
+
+Bot won't start?
+   → Check logs: docker-compose logs bot2 --tail 50
+   → Verify token is correct in .env.docker
+   → Ensure token isn't used elsewhere
+
+Can't access dashboard?
+   → Check bot is running: docker ps | grep bot2
+   → Check firewall: sudo ufw status
+   → Verify port 500X is open
+
+All bots stopped?
+   → Check Docker: docker ps
+   → Check database: docker-compose ps postgres
+   → Restart: docker-compose --env-file .env.docker up -d
+
+┌───────────────────────────────────────────────────────────────┐
+│ IMPORTANT NOTES                                               │
+└───────────────────────────────────────────────────────────────┘
+
+✓ All bots share the same PostgreSQL database
+✓ Each bot needs a UNIQUE token from @BotFather  
+✓ You can run 1-10 bots (start small, add more later)
+✓ Each bot has its own admin dashboard on separate port
+✓ Bots auto-restart if they crash
+✓ NEVER commit .env.docker to GitHub (contains secrets)
+
+┌───────────────────────────────────────────────────────────────┐
+│ FILES & DOCUMENTATION                                         │
+└───────────────────────────────────────────────────────────────┘
+
+MULTI_BOT_SETUP.md     → Detailed setup guide
+QUICK_START_BOTS_2-10.txt → This file
+check-bot-setup.sh     → Validation script
+README.md              → Full documentation
+.env.docker.example    → Configuration template
+docker-compose.yml     → Multi-bot orchestration
+
+┌───────────────────────────────────────────────────────────────┐
+│ CURRENT STATUS                                                │
+└───────────────────────────────────────────────────────────────┘
+
+✓ Bot 1: DEPLOYED and RUNNING on port 5001
+  Telegram: @mdphpwelt_shopbot
+  Token: 8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw
+  Dashboard: http://72.60.20.38:5001
+
+⏳ Bots 2-10: Ready to deploy (waiting for tokens)
+  Ports: 5002-5010 (reserved and configured)
+  
+✓ PostgreSQL: Running (shared by all bots)
+✓ Docker: Configured for 10-bot deployment
+✓ Infrastructure: Ready on Hostinger VPS
+
+═══════════════════════════════════════════════════════════════
+
+Next Action: Add your bot tokens to .env.docker and deploy!
+
+Command to start:
+   cd /var/www/telegrambot
+   ./check-bot-setup.sh
+
+═══════════════════════════════════════════════════════════════
