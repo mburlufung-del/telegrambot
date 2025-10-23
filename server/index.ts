@@ -10,19 +10,35 @@ const port = process.env.PORT || 5000;
 let botStatus = 'initializing';
 let botInitError: string | null = null;
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Health check - immediately available
+// CRITICAL: Health check endpoint MUST be first for deployment health checks
+// This endpoint responds immediately without any async operations
 app.get('/health', (req, res) => {
-  res.json({
+  res.status(200).json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     bot_status: botStatus,
     bot_error: botInitError
   });
 });
+
+// Root path health check (for deployment systems that check /)
+app.get('/', (req, res, next) => {
+  // Only respond as health check if it's not a browser request
+  const accept = req.headers.accept || '';
+  if (!accept.includes('text/html')) {
+    return res.status(200).json({
+      status: 'healthy',
+      service: 'TeleShop Bot',
+      timestamp: new Date().toISOString()
+    });
+  }
+  // For browser requests, continue to static file serving
+  next();
+});
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 function log(message: string, source: string = 'express') {
   const timestamp = new Date();
@@ -52,42 +68,71 @@ async function setupRoutes() {
 function setupStaticFiles() {
   try {
     const distPath = path.resolve(process.cwd(), 'dist', 'public');
+    
+    // Serve static files (CSS, JS, images, etc.)
     app.use(express.static(distPath));
     
-    // Fallback to index.html for client-side routing (must be last)
-    app.use('*', (_req, res) => {
-      res.sendFile(path.resolve(distPath, 'index.html'));
+    // SPA fallback to index.html for client-side routing
+    // Only for GET requests that accept HTML (not API calls or health checks)
+    app.get('*', (req, res, next) => {
+      // Skip if it's an API route
+      if (req.path.startsWith('/api/')) {
+        return next();
+      }
+      
+      // Only serve HTML to browser requests
+      const accept = req.headers.accept || '';
+      if (accept.includes('text/html')) {
+        res.sendFile(path.resolve(distPath, 'index.html'));
+      } else {
+        next();
+      }
     });
-    log('🖥️  Admin dashboard ready');
+    
+    log('✅ Static file serving configured');
   } catch (error) {
     log(`❌ Failed to setup static files: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
-// Create HTTP server and start it
+// Create HTTP server
 import { createServer } from 'http';
 const server = createServer(app);
 
-server.listen({
-  port,
-  host: "0.0.0.0", 
-  reusePort: true,
-}, async () => {
-  log(`🚀 Server started on port ${port}`);
-  log(`✅ Health check available at /health`);
-  
-  // Setup routes and static files first (so dashboard is always accessible)
+// Setup all routes and static files BEFORE starting the server
+// This ensures immediate availability for health checks
+async function setupServer() {
+  log('🔧 Setting up API routes...');
   await setupRoutes();
+  
+  log('🔧 Setting up static file serving...');
   setupStaticFiles();
   
-  // Initialize bot in background (can fail without affecting dashboard)
-  log(`🔍 Bot initialization starting in background...`);
-  initializeBotWithTimeout(server);
+  // Start the server after everything is ready
+  server.listen({
+    port,
+    host: "0.0.0.0", 
+    reusePort: true,
+  }, () => {
+    log(`🚀 Server started on port ${port}`);
+    log(`✅ Health check available at / and /health`);
+    log(`🖥️  Admin dashboard ready`);
+    
+    // Initialize bot in background (can fail without affecting dashboard)
+    log(`🔍 Bot initialization starting in background...`);
+    initializeBotWithTimeout(server);
+  });
+}
+
+// Start the server setup
+setupServer().catch((error) => {
+  log(`❌ Failed to setup server: ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
 });
 
 // Initialize bot with timeout and error handling
 async function initializeBotWithTimeout(server: any) {
-  const timeout = 30000; // 30 second timeout
+  const timeout = 10000; // 10 second timeout (reduced from 30s)
   
   try {
     botStatus = 'initializing';
