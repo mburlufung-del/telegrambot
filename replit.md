@@ -1,12 +1,36 @@
-# TeleShop Bot - E-Commerce Telegram Bot System
+# TeleShop Bot - Multi-Store E-Commerce Telegram Bot System
 
 ## Overview
 
-TeleShop Bot is a production-ready Telegram e-commerce bot with a comprehensive admin dashboard. The system enables businesses to sell products through Telegram with features like product catalog management, order processing, customer inquiries, payment methods, delivery options, and broadcast messaging. The architecture follows a full-stack approach with a React admin dashboard and Express.js backend powering the Telegram bot functionality.
+TeleShop Bot is a production-ready **multi-store** Telegram e-commerce platform with comprehensive admin dashboards. The system enables running up to **10 independent Telegram shop bots** simultaneously, each managing its own store with separate products, categories, orders, and settings. All bots share the same codebase and database but maintain complete data isolation through bot ID partitioning. The architecture follows a full-stack approach with React admin dashboards and Express.js backends.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Multi-Store Architecture
+
+### Core Concept
+- **10 Bots, 1 Codebase**: All bots run identical code from the same Docker image
+- **Shared Database**: Single PostgreSQL instance with data partitioned by `botId`
+- **Complete Isolation**: Each bot only accesses its own data (products, orders, etc.)
+- **Independent Dashboards**: Each bot has its own admin dashboard on separate ports (5001-5010)
+
+### Bot ID System
+- Bot ID extracted from Telegram token: `8467452442:SECRET` → Bot ID: `8467452442`
+- Every database table includes `botId` column for data partitioning
+- Storage layer auto-injects `botId` into all queries and inserts
+- Zero cross-contamination between bots
+
+### Data Partitioning Tables
+All store data is partitioned by `botId`:
+- **products**, **categories**, **orders**, **cart**, **wishlist**
+- **inquiries**, **payment_methods**, **delivery_methods**
+- **bot_settings**, **bot_stats**, **tracked_users**, **broadcasts**
+- **pricing_tiers**, **product_ratings**
+
+Shared global data (not partitioned):
+- **currencies**, **languages**, **exchange_rates**
 
 ## System Architecture
 

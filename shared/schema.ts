@@ -5,6 +5,7 @@ import { z } from "zod";
 
 export const products = pgTable("products", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   name: text("name").notNull(),
   description: text("description").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
@@ -26,6 +27,7 @@ export const products = pgTable("products", {
 
 export const inquiries = pgTable("inquiries", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   telegramUserId: text("telegram_user_id").notNull(),
   username: text("username"), // Telegram username without @
   customerName: text("customer_name").notNull(),
@@ -38,7 +40,8 @@ export const inquiries = pgTable("inquiries", {
 
 export const botSettings = pgTable("bot_settings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  key: text("key").notNull().unique(),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
+  key: text("key").notNull(),
   value: text("value").notNull(),
   updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
 });
@@ -46,6 +49,7 @@ export const botSettings = pgTable("bot_settings", {
 // Payment methods table for dynamic management
 export const paymentMethods = pgTable("payment_methods", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   name: varchar("name").notNull(),
   description: text("description"),
   paymentInfo: text("payment_info"), // Bank account, crypto address, etc.
@@ -59,6 +63,7 @@ export const paymentMethods = pgTable("payment_methods", {
 // Delivery methods table for dynamic management
 export const deliveryMethods = pgTable("delivery_methods", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   name: varchar("name").notNull(),
   description: text("description"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0"),
@@ -130,6 +135,7 @@ export const aiChatSuggestions = pgTable("ai_chat_suggestions", {
 
 export const orders = pgTable("orders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   orderNumber: varchar("order_number").unique(), // User-visible order number
   telegramUserId: text("telegram_user_id").notNull(),
   customerName: text("customer_name").notNull(),
@@ -148,6 +154,7 @@ export const orders = pgTable("orders", {
 
 export const cart = pgTable("cart", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   telegramUserId: text("telegram_user_id").notNull(),
   productId: varchar("product_id").notNull().references(() => products.id),
   quantity: integer("quantity").notNull().default(1),
@@ -156,6 +163,7 @@ export const cart = pgTable("cart", {
 
 export const wishlist = pgTable("wishlist", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   telegramUserId: text("telegram_user_id").notNull(),
   productId: varchar("product_id").notNull().references(() => products.id),
   quantity: integer("quantity").notNull().default(1),
@@ -164,7 +172,8 @@ export const wishlist = pgTable("wishlist", {
 
 export const categories = pgTable("categories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull().unique(),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
+  name: text("name").notNull(),
   description: text("description"),
   parentId: varchar("parent_id").references((): any => categories.id),
   isActive: boolean("is_active").notNull().default(true),
@@ -173,6 +182,7 @@ export const categories = pgTable("categories", {
 
 export const botStats = pgTable("bot_stats", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull().unique(), // Telegram bot ID for multi-store support
   totalUsers: integer("total_users").notNull().default(0),
   totalOrders: integer("total_orders").notNull().default(0),
   totalMessages: integer("total_messages").notNull().default(0),
@@ -190,6 +200,7 @@ export const productRatings = pgTable("product_ratings", {
 
 export const pricingTiers = pgTable("pricing_tiers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   productId: varchar("product_id").notNull().references(() => products.id),
   minQuantity: integer("min_quantity").notNull(),
   maxQuantity: integer("max_quantity"), // null means unlimited
@@ -200,6 +211,7 @@ export const pricingTiers = pgTable("pricing_tiers", {
 
 export const insertPricingTierSchema = createInsertSchema(pricingTiers).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
 });
 
@@ -211,6 +223,7 @@ export const insertProductSchema = createInsertSchema(products, {
   maxOrderQuantity: z.number().or(z.string()).transform(val => val ? Number(val) : undefined).optional().nullable(),
 }).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
   updatedAt: true,
 }).transform((data: any) => ({
@@ -226,28 +239,33 @@ export const insertProductSchema = createInsertSchema(products, {
 
 export const insertInquirySchema = createInsertSchema(inquiries).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
 });
 
 export const insertBotSettingsSchema = createInsertSchema(botSettings).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   updatedAt: true,
 });
 
 export const insertPaymentMethodSchema = createInsertSchema(paymentMethods).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
   updatedAt: true,
 });
 
 export const insertDeliveryMethodSchema = createInsertSchema(deliveryMethods).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
   updatedAt: true,
 });
 
 export const insertOrderSchema = createInsertSchema(orders).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
   updatedAt: true,
 }).extend({
@@ -257,21 +275,25 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
 
 export const insertCartSchema = createInsertSchema(cart).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   addedAt: true,
 });
 
 export const insertWishlistSchema = createInsertSchema(wishlist).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   addedAt: true,
 });
 
 export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
 });
 
 export const insertBotStatsSchema = createInsertSchema(botStats).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   updatedAt: true,
 });
 
@@ -283,7 +305,8 @@ export const insertProductRatingSchema = createInsertSchema(productRatings).omit
 // Tracked users table for broadcast functionality
 export const trackedUsers = pgTable("tracked_users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  chatId: text("chat_id").notNull().unique(),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
+  chatId: text("chat_id").notNull(),
   username: text("username"),
   firstName: text("first_name"),
   lastName: text("last_name"),
@@ -293,12 +316,14 @@ export const trackedUsers = pgTable("tracked_users", {
 
 export const insertTrackedUserSchema = createInsertSchema(trackedUsers).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
 });
 
 // Broadcasts table for storing broadcast history
 export const broadcasts = pgTable("broadcasts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   title: text("title"),
   message: text("message").notNull(),
   hasImage: boolean("has_image").notNull().default(false),
@@ -310,6 +335,7 @@ export const broadcasts = pgTable("broadcasts", {
 
 export const insertBroadcastSchema = createInsertSchema(broadcasts).omit({
   id: true,
+  botId: true, // Auto-populated by storage layer
   createdAt: true,
 });
 
