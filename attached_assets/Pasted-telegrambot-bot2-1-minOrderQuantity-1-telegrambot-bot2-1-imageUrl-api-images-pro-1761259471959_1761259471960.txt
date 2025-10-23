@@ -1,0 +1,21 @@
+telegrambot-bot2-1  |   "minOrderQuantity": 1,
+telegrambot-bot2-1  |   "imageUrl": "/api/images/product-0724de54a23a",
+telegrambot-bot2-1  |   "isActive": true
+telegrambot-bot2-1  | }
+telegrambot-bot2-1  | Final product data with defaults: {
+telegrambot-bot2-1  |   "name": "IC-26 (Methiodone) HCl Powder",
+telegrambot-bot2-1  |   "description": "IC-26 Powder contains methiodone hydrochloride and is often compared to methadone or O-DSMT. At DrSupply, you are guaranteed a purity of at least 98%, ensuring your test results remain reliable. Delivered quickly and discreetly.\nIC-26 (Methiodone) HCl Powder is a powerful research chemical, developed for advanced researchers seeking reliable, consistent results. It is often compared to methadone or used as an alternative to O-DSMT. Thanks to its powder form, the dosage can be more precisely tailored to the research objective.\nEffects of IC-26 (Methiodone) HCl\n\nIC-26, or Methiodone hydrochloride, is known for the following effects in a research setting:\n\n        Euphoria\n        Analgesic effect\n\nApplications and research\n\nThis research chemical is widely used in comparative studies of opioid agonists. IC-26 is structurally similar to methadone but contains an additional iodine ion, which results in a unique binding structure and prolonged action. When administered nasally, the onset of action is shorter, making this powder form suitable for more precise dosing.\nSafety recommendations and hazard statements\n\n    May cause irritation to eyes and respiratory tract.\n    Do not discharge into the environment\n\nIn case of contact with eyes: Rinse gently with water for at least 10 to 15 minutes. Remove contact lenses, if present and easy to do.\n\nIn case of contact with skin: Rinse with soap and water.\n\nBy inhalation: Get fresh air and adopt a position that supports breathing.\n\nFrom 2g @ €33.25\nFrom 5g @ €31.15\nFrom 10g @ €29.40\nFrom 20g @ €25.90\nFrom 50g @ €24.50\nFrom 100g @ €22.75\nFrom 200g @ €21.00",
+telegrambot-bot2-1  |   "price": "35",
+telegrambot-bot2-1  |   "currencyCode": "EUR",
+telegrambot-bot2-1  |   "stock": 500,
+telegrambot-bot2-1  |   "minOrderQuantity": 1,
+telegrambot-bot2-1  |   "unit": "gram",
+telegrambot-bot2-1  |   "imageUrl": "/api/images/product-0724de54a23a",
+telegrambot-bot2-1  |   "categoryId": "85c1293a-b390-480f-b0bc-8caafc7709d9",
+telegrambot-bot2-1  |   "isActive": true,
+telegrambot-bot2-1  |   "compareAtPrice": null
+telegrambot-bot2-1  | }
+telegrambot-bot2-1  | Product created successfully: f6fd6738-3f7a-43d1-b16e-321cc2185747
+telegrambot-bot2-1  | Sending success response to frontend
+telegrambot-bot2-1  | Success response sent
+root@srv1051051:/var/www/telegrambot# 
