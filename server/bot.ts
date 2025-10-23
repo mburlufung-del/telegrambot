@@ -56,6 +56,51 @@ export class TeleShopBot {
     return html;
   }
 
+  // Get translated text from translations field
+  private getTranslatedText(
+    translations: any,
+    field: 'name' | 'description',
+    defaultValue: string,
+    languageCode: string = 'en'
+  ): string {
+    try {
+      if (translations && typeof translations === 'object') {
+        const langData = translations[languageCode];
+        if (langData && langData[field]) {
+          return langData[field];
+        }
+      }
+    } catch (error) {
+      console.error('Error getting translated text:', error);
+    }
+    return defaultValue;
+  }
+
+  // Get product name in user's language
+  private async getProductName(product: any, userId: string): Promise<string> {
+    const languageCode = await i18n.getUserLanguage(userId);
+    return this.getTranslatedText(product.translations, 'name', product.name, languageCode);
+  }
+
+  // Get product description in user's language
+  private async getProductDescription(product: any, userId: string): Promise<string> {
+    const languageCode = await i18n.getUserLanguage(userId);
+    return this.getTranslatedText(product.translations, 'description', product.description, languageCode);
+  }
+
+  // Get category name in user's language
+  private async getCategoryName(category: any, userId: string): Promise<string> {
+    const languageCode = await i18n.getUserLanguage(userId);
+    return this.getTranslatedText(category.translations, 'name', category.name, languageCode);
+  }
+
+  // Get category description in user's language
+  private async getCategoryDescription(category: any, userId: string): Promise<string> {
+    const languageCode = await i18n.getUserLanguage(userId);
+    const description = category.description || '';
+    return this.getTranslatedText(category.translations, 'description', description, languageCode);
+  }
+
   async initialize(token?: string) {
     if (this.bot) {
       await this.shutdown();

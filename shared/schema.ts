@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, decimal, integer, timestamp, boolean, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, integer, timestamp, boolean, unique, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -8,6 +8,7 @@ export const products = pgTable("products", {
   botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   name: text("name").notNull(),
   description: text("description").notNull(),
+  translations: jsonb("translations"), // Multi-language support: {en: {name, description}, es: {name, description}, ...}
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   compareAtPrice: decimal("compare_at_price", { precision: 10, scale: 2 }),
   currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD").references(() => currencies.code),
@@ -183,6 +184,7 @@ export const categories = pgTable("categories", {
   botId: text("bot_id").notNull(), // Telegram bot ID for multi-store support
   name: text("name").notNull(),
   description: text("description"),
+  translations: jsonb("translations"), // Multi-language support: {en: {name, description}, es: {name, description}, ...}
   parentId: varchar("parent_id").references((): any => categories.id),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
