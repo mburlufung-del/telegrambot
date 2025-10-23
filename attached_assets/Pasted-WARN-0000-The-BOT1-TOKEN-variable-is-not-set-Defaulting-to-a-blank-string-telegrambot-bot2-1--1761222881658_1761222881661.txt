@@ -1,0 +1,164 @@
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+telegrambot-bot2-1      | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot2-1      | npm warn config `--include=optional` to include them.
+telegrambot-bot2-1      | npm warn config
+telegrambot-bot2-1      | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot2-1      | 
+telegrambot-bot2-1      | > workspace@1.0.0 start
+telegrambot-bot2-1      | > NODE_ENV=production tsx server/index.ts
+telegrambot-postgres-1  | 
+telegrambot-bot2-1      | 
+telegrambot-bot2-1      | 08:14:57 AM [express] 🚀 Server started on port 5000
+telegrambot-bot2-1      | 08:14:57 AM [express] ✅ Health check available at /health
+telegrambot-bot2-1      | 08:14:57 AM [express] ✅ API routes registered
+telegrambot-bot2-1      | 08:14:57 AM [express] 🖥️  Admin dashboard ready
+telegrambot-bot2-1      | 08:14:57 AM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot2-1      | Cleared webhook
+telegrambot-bot2-1      | 08:15:07 AM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot2-1      | 08:15:07 AM [express] ✅ Bot initialization completed successfully
+telegrambot-postgres-1  | PostgreSQL Database directory appears to contain a database; Skipping initialization
+telegrambot-postgres-1  | 
+telegrambot-postgres-1  | 2025-10-23 12:14:45.262 UTC [1] LOG:  starting PostgreSQL 16.10 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+telegrambot-postgres-1  | 2025-10-23 12:14:45.262 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+telegrambot-postgres-1  | 2025-10-23 12:14:45.262 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+telegrambot-postgres-1  | 2025-10-23 12:14:45.264 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+telegrambot-postgres-1  | 2025-10-23 12:14:45.269 UTC [28] LOG:  database system was shut down at 2025-10-23 11:53:54 UTC
+telegrambot-postgres-1  | 2025-10-23 12:14:45.277 UTC [1] LOG:  database system is ready to accept connections
+telegrambot-postgres-1  | 2025-10-23 12:14:55.210 UTC [38] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:15:05.250 UTC [46] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:15:15.291 UTC [54] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:15:25.350 UTC [62] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:15:35.391 UTC [69] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:15:45.448 UTC [77] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:15:55.489 UTC [84] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:16:05.529 UTC [92] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:16:15.589 UTC [99] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:16:25.650 UTC [107] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:16:35.709 UTC [114] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:16:45.748 UTC [122] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:16:55.789 UTC [129] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:17:05.847 UTC [137] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:17:15.890 UTC [144] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:17:25.948 UTC [152] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:17:35.995 UTC [159] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:17:46.055 UTC [167] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:17:56.116 UTC [175] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:18:06.177 UTC [183] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:18:16.220 UTC [191] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:18:26.281 UTC [199] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:18:36.341 UTC [206] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:18:46.380 UTC [214] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:18:56.420 UTC [228] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:19:06.481 UTC [236] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:19:16.542 UTC [243] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:19:26.603 UTC [251] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:19:36.643 UTC [258] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:19:45.354 UTC [26] LOG:  checkpoint starting: time
+telegrambot-postgres-1  | 2025-10-23 12:19:45.661 UTC [26] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.303 s, sync=0.002 s, total=0.307 s; sync files=5, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/1D605B0, redo lsn=0/1D60578
+telegrambot-postgres-1  | 2025-10-23 12:19:46.688 UTC [266] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:19:56.729 UTC [273] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:20:06.772 UTC [281] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:20:16.820 UTC [288] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:20:26.878 UTC [296] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:20:36.923 UTC [303] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:20:46.968 UTC [311] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:20:57.031 UTC [318] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:21:07.091 UTC [326] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:21:17.135 UTC [333] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:21:27.182 UTC [341] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:21:37.249 UTC [348] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:21:47.308 UTC [356] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:21:57.346 UTC [363] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:22:07.385 UTC [371] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:22:17.443 UTC [378] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:22:27.484 UTC [386] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:22:37.527 UTC [393] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:22:47.571 UTC [401] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:22:57.630 UTC [407] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:23:07.679 UTC [415] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:23:17.736 UTC [422] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:23:27.795 UTC [430] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:23:37.837 UTC [436] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:23:47.876 UTC [444] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:23:57.919 UTC [451] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:24:07.981 UTC [460] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:24:18.026 UTC [467] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:24:28.066 UTC [475] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:24:38.106 UTC [482] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:24:48.149 UTC [490] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:24:58.195 UTC [497] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:25:08.254 UTC [505] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:25:18.293 UTC [512] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:25:28.355 UTC [520] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:25:38.414 UTC [527] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:25:48.479 UTC [535] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:25:58.540 UTC [542] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:26:08.584 UTC [550] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:26:18.630 UTC [557] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:26:28.677 UTC [565] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:26:38.735 UTC [572] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:26:48.780 UTC [580] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:26:58.819 UTC [587] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:27:08.857 UTC [595] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:27:18.899 UTC [603] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:27:28.946 UTC [610] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:27:38.985 UTC [617] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:27:49.025 UTC [627] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:27:59.067 UTC [635] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:28:09.112 UTC [642] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:28:19.156 UTC [649] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:28:29.215 UTC [657] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:28:39.264 UTC [664] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:28:49.306 UTC [673] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:28:59.349 UTC [680] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:29:09.393 UTC [688] FATAL:  database "teleshopuser" does not exist
+telegrambot-bot1-1      | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot1-1      | npm warn config `--include=optional` to include them.
+telegrambot-bot1-1      | npm warn config
+telegrambot-bot1-1      | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot1-1      | 
+telegrambot-bot1-1      | > workspace@1.0.0 start
+telegrambot-bot1-1      | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1      | 
+telegrambot-bot1-1      | 08:33:48 AM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1      | 08:33:48 AM [express] ✅ Health check available at /health
+telegrambot-bot1-1      | 08:33:48 AM [express] ✅ API routes registered
+telegrambot-bot1-1      | 08:33:48 AM [express] 🖥️  Admin dashboard ready
+telegrambot-bot1-1      | 08:33:48 AM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1      | Cleared webhook
+telegrambot-bot1-1      | 08:33:54 AM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot1-1      | 08:33:54 AM [express] ✅ Bot initialization completed successfully
+telegrambot-postgres-1  | 2025-10-23 12:29:19.433 UTC [695] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:29:29.495 UTC [703] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:29:39.556 UTC [710] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:29:45.818 UTC [26] LOG:  checkpoint starting: time
+telegrambot-postgres-1  | 2025-10-23 12:29:46.427 UTC [26] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.604 s, sync=0.001 s, total=0.609 s; sync files=2, longest=0.001 s, average=0.001 s; distance=4 kB, estimate=4 kB; lsn=0/1D616C0, redo lsn=0/1D61688
+telegrambot-postgres-1  | 2025-10-23 12:29:49.603 UTC [718] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:29:59.648 UTC [725] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:30:09.695 UTC [733] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:30:19.755 UTC [740] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:30:29.797 UTC [748] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:30:39.834 UTC [755] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:30:49.878 UTC [763] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:30:59.926 UTC [770] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:31:09.985 UTC [778] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:31:20.027 UTC [784] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:31:30.086 UTC [792] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:31:40.144 UTC [799] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:31:50.188 UTC [807] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:32:00.232 UTC [814] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:32:10.292 UTC [822] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:32:20.349 UTC [829] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:32:30.398 UTC [837] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:32:40.448 UTC [844] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:32:50.507 UTC [852] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:33:00.569 UTC [859] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:33:10.616 UTC [867] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:33:20.675 UTC [874] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:33:30.746 UTC [882] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:33:40.814 UTC [889] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:33:50.882 UTC [898] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:34:00.930 UTC [905] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:34:10.977 UTC [913] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:34:21.026 UTC [920] FATAL:  database "teleshopuser" does not exist
+telegrambot-postgres-1  | 2025-10-23 12:34:31.071 UTC [928] FATAL:  database "teleshopuser" does not exist
