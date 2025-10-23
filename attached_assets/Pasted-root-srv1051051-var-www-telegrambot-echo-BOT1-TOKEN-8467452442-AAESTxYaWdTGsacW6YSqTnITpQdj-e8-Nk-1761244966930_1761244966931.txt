@@ -1,0 +1,40 @@
+root@srv1051051:/var/www/telegrambot# echo 'BOT1_TOKEN=8467452442:AAESTxYaWdTGsacW6YSqTnITpQdj-e8-Nkw' >> /var/www/telegrambot/.env
+root@srv1051051:/var/www/telegrambot# docker-compose restart bot1
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Restarting 1/1
+ ✔ Container telegrambot-bot1-1  Started                                                                          0.3s 
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot1 --tail=20
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+telegrambot-bot1-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot1-1  | 
+telegrambot-bot1-1  | ⚠️  No TELEGRAM_BOT_TOKEN found, using default bot ID
+telegrambot-bot1-1  | ✅ Initializing storage for Bot ID: default
+telegrambot-bot1-1  | 02:42:10 PM [express] 🔧 Setting up API routes...
+telegrambot-bot1-1  | 02:42:10 PM [express] ✅ API routes registered
+telegrambot-bot1-1  | 02:42:10 PM [express] 🔧 Setting up static file serving...
+telegrambot-bot1-1  | 02:42:10 PM [express] ✅ Static file serving configured
+telegrambot-bot1-1  | 02:42:10 PM [express] 🚀 Server started on port 5000
+telegrambot-bot1-1  | 02:42:10 PM [express] ✅ Health check available at / and /health
+telegrambot-bot1-1  | 02:42:10 PM [express] 🖥️  Admin dashboard ready
+telegrambot-bot1-1  | 02:42:10 PM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot1-1  | 02:42:10 PM [express] ⚠️  No bot token found, skipping bot initialization
+telegrambot-bot1-1  | 02:42:10 PM [express] ❌ Bot initialization step failed: No bot token configured
+telegrambot-bot1-1  | Full error: Error: No bot token configured
+telegrambot-bot1-1  |     at autoInitializeBot (/app/server/index.ts:183:13)
+telegrambot-bot1-1  |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+telegrambot-bot1-1  |     at async initializeBotWithTimeout (/app/server/index.ts:142:5)
+telegrambot-bot1-1  | 02:42:10 PM [express] ❌ Bot initialization failed: No bot token configured
+telegrambot-bot1-1  | 02:42:10 PM [express] 🔄 Server continues running with admin dashboard only
+root@srv1051051:/var/www/telegrambot# 
