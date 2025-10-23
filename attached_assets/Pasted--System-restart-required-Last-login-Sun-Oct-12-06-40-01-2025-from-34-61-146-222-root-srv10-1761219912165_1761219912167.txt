@@ -1,0 +1,72 @@
+*** System restart required ***
+Last login: Sun Oct 12 06:40:01 2025 from 34.61.146.222
+root@srv1051051:~# cd /var/www/telegrambot
+root@srv1051051:/var/www/telegrambot# docker exec -it telegrambot-postgres-1 psql -U postgres -d telegram_bot
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  role "postgres" does not exist
+root@srv1051051:/var/www/telegrambot# ^C
+root@srv1051051:/var/www/telegrambot# -- 1. Add bot_id columns to all tables
+ALTER TABLE products ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE operators ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE tracked_users ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE broadcasts ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE cart ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE wishlist ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE payment_methods ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE delivery_methods ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE bot_stats ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE pricing_tiers ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE product_ratings ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE operator_sessions ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE support_messages ADD COLUMN IF NOT EXISTS bot_id TEXT;
+ALTER TABLE ai_chat_suggestions ADD COLUMN IF NOT EXISTS bot_id TEXT;
+
+-- 2. Populate Bot 1's existing data with its Bot ID (8467452442)
+UPDATE products SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE categories SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE orders SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE operators SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE tracked_users SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE broadcasts SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE inquiries SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE cart SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE wishlist SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE payment_methods SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE delivery_methods SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE bot_settings SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE bot_stats SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE pricing_tiers SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE product_ratings SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE operator_sessions SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE support_messages SET bot_id = '8467452442' WHERE bot_id IS NULL;
+UPDATE ai_chat_suggestions SET bot_id = '8467452442' WHERE bot_id IS NULL;
+
+-- 3. Add NOT NULL constraints
+ALTER TABLE products ALTER COLUMN bot_id SET NOT NULL;
+ALTER TABLE categories ALTER COLUMN bot_id SET NOT NULL;
+END $$;F;_id);E product_ratings ADD CONSTRAINT product_ratings_bot_product_user_unique UNIQUE (bot_id, product_id, tele
+--: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+ALTER: command not found
+> ALTER TABLE products ADD COLUMN IF NOT EXISTS bot_id TEXT;
+> ^C
+root@srv1051051:/var/www/telegrambot# 
