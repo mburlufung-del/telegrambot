@@ -7,7 +7,7 @@ channel = "stable-24_05"
 packages = ["zip", "unzip", "openssh"]
 
 [deployment]
-deploymentTarget = "Autoscale"
+deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
