@@ -1,0 +1,156 @@
+ > [bot4 6/6] RUN npm run build:
+0.665 npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+0.665 npm warn config `--include=optional` to include them.
+0.665 npm warn config
+0.665 npm warn config       Default value does install optional deps unless otherwise omitted.
+0.715 
+0.715 > workspace@1.0.0 build
+0.715 > tsc && vite build
+0.715 
+18.99 server/seed-delivery-methods.ts(57,42): error TS2769: No overload matches this call.
+18.99   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; botId: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 11 more ...; maxTime?: number | ... 3 more ... | undefined; }): PgInsertBase<...>', gave the following error.
+18.99     Argument of type '{ createdAt: Date; updatedAt: Date; id: string; name: string; description: string; price: string; estimatedDays: string; requiresAddress: boolean; isActive: boolean; sortOrder: number; }' is not assignable to parameter of type '{ name: string | SQL<unknown> | Placeholder<string, any>; botId: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 11 more ...; maxTime?: number | ... 3 more ... | undefined; }'.
+18.99       Property 'botId' is missing in type '{ createdAt: Date; updatedAt: Date; id: string; name: string; description: string; price: string; estimatedDays: string; requiresAddress: boolean; isActive: boolean; sortOrder: number; }' but required in type '{ name: string | SQL<unknown> | Placeholder<string, any>; botId: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 11 more ...; maxTime?: number | ... 3 more ... | undefined; }'.
+18.99   Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; botId: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 11 more ...; maxTime?: number | ... 3 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+18.99     Object literal may only specify known properties, and 'createdAt' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; botId: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 11 more ...; maxTime?: number | ... 3 more ... | undefined; }[]'.
+------
+failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 2
+root@srv1051051:/var/www/telegrambot# docker-compose up -d
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT3_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+[+] Building 12.3s (31/59)                                                                              docker:default
+ => [bot9 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot10 internal] load build definition from Dockerfile                                                        0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot8 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot4 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot5 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot6 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot3 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot7 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot10 internal] load metadata for docker.io/library/node:20-alpine                                           0.3s
+ => [bot5 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot8 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot9 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot10 internal] load .dockerignore                                                                           0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot4 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot6 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot3 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot7 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot8 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39  0.0s
+ => [bot6 internal] load build context                                                                            0.0s
+ => => transferring context: 29.51kB                                                                              0.0s
+ => [bot9 internal] load build context                                                                            0.0s
+ => => transferring context: 29.51kB                                                                              0.0s
+ => [bot3 internal] load build context                                                                            0.0s
+ => => transferring context: 29.51kB                                                                              0.0s
+ => [bot5 internal] load build context                                                                            0.0s
+ => => transferring context: 29.51kB                                                                              0.0s
+ => [bot10 internal] load build context                                                                           0.0s
+ => => transferring context: 29.51kB                                                                              0.0s
+ => [bot7 internal] load build context                                                                            0.0s
+ => => transferring context: 29.51kB                                                                              0.0s
+ => CACHED [bot6 2/6] WORKDIR /app                                                                                0.0s
+ => CACHED [bot6 3/6] COPY package*.json ./                                                                       0.0s
+ => CACHED [bot6 4/6] RUN npm install                                                                             0.0s
+ => CACHED [bot4 5/6] COPY . .                                                                                    0.0s
+ => [bot4 internal] load build context                                                                            0.0s
+ => => transferring context: 29.51kB                                                                              0.0s
+ => [bot8 internal] load build context                                                                            0.0s
+ => => transferring context: 29.51kB                                                                              0.0s
+ => ERROR [bot9 6/6] RUN npm run build                                                                           11.8s
+------
+ > [bot9 6/6] RUN npm run build:
+0.240 npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+0.240 npm warn config `--include=optional` to include them.
+0.240 npm warn config
+0.240 npm warn config       Default value does install optional deps unless otherwise omitted.
+0.274 
+0.274 > workspace@1.0.0 build
+0.274 > tsc && vite build
+0.274 
+11.62 server/seed-delivery-methods.ts(57,42): error TS2769: No overload matches this call.
+11.62   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; botId: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 11 more ...; maxTime?: number | ... 3 more ... | undefined; }): PgInsertBase<...>', gave the following error.
+11.62     Argument of type '{ createdAt: Date; updatedAt: Date; id: string; name: string; description: string; price: string; estimatedDays: string; requiresAddress: boolean; isActive: boolean; sortOrder: number; }' is not assignable to parameter of type '{ name: string | SQL<unknown> | Placeholder<string, any>; botId: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 11 more ...; maxTime?: number | ... 3 more ... | undefined; }'.
+11.62       Property 'botId' is missing in type '{ createdAt: Date; updatedAt: Date; id: string; name: string; description: string; price: string; estimatedDays: string; requiresAddress: boolean; isActive: boolean; sortOrder: number; }' but required in type '{ name: string | SQL<unknown> | Placeholder<string, any>; botId: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 11 more ...; maxTime?: number | ... 3 more ... | undefined; }'.
+11.62   Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; botId: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 11 more ...; maxTime?: number | ... 3 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+11.62     Object literal may only specify known properties, and 'createdAt' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; botId: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 11 more ...; maxTime?: number | ... 3 more ... | undefined; }[]'.
+------
+failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 2
+root@srv1051051:/var/www/telegrambot# docker-compose ps
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT3_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+NAME                     IMAGE                                                                     COMMAND                  SERVICE    CREATED             STATUS                       PORTS
+telegrambot-bot1-1       sha256:7809aab62a6135986532a439d7c454ffed665125d927111014c3d0012f719cdf   "docker-entrypoint.s…"   bot1       47 minutes ago      Up 18 minutes                0.0.0.0:5001->5000/tcp, :::5001->5000/tcp
+telegrambot-bot2-1       sha256:b4e705343fd5135670c38a8e9efa68556f73fb4cbe34d778829756e4e232b6b1   "docker-entrypoint.s…"   bot2       About an hour ago   Up 18 minutes                0.0.0.0:5002->5000/tcp, :::5002->5000/tcp
+telegrambot-postgres-1   postgres:16-alpine                                                        "docker-entrypoint.s…"   postgres   About an hour ago   Up About an hour (healthy)   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot2 --tail=30
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT3_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+telegrambot-bot2-1  | npm warn config
+telegrambot-bot2-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot2-1  | 
+telegrambot-bot2-1  | > workspace@1.0.0 start
+telegrambot-bot2-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot2-1  | 
+telegrambot-bot2-1  | 08:59:13 AM [express] 🚀 Server started on port 5000
+telegrambot-bot2-1  | 08:59:13 AM [express] ✅ Health check available at /health
+telegrambot-bot2-1  | 08:59:13 AM [express] ✅ API routes registered
+telegrambot-bot2-1  | 08:59:13 AM [express] 🖥️  Admin dashboard ready
+telegrambot-bot2-1  | 08:59:13 AM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot2-1  | Cleared webhook
+telegrambot-bot2-1  | 08:59:20 AM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot2-1  | 08:59:20 AM [express] ✅ Bot initialization completed successfully
+telegrambot-bot2-1  | npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+telegrambot-bot2-1  | npm warn config `--include=optional` to include them.
+telegrambot-bot2-1  | npm warn config
+telegrambot-bot2-1  | npm warn config       Default value does install optional deps unless otherwise omitted.
+telegrambot-bot2-1  | 
+telegrambot-bot2-1  | > workspace@1.0.0 start
+telegrambot-bot2-1  | > NODE_ENV=production tsx server/index.ts
+telegrambot-bot2-1  | 
+telegrambot-bot2-1  | 09:02:48 AM [express] 🚀 Server started on port 5000
+telegrambot-bot2-1  | 09:02:48 AM [express] ✅ Health check available at /health
+telegrambot-bot2-1  | 09:02:48 AM [express] ✅ API routes registered
+telegrambot-bot2-1  | 09:02:48 AM [express] 🖥️  Admin dashboard ready
+telegrambot-bot2-1  | 09:02:48 AM [express] 🔍 Bot initialization starting in background...
+telegrambot-bot2-1  | Cleared webhook
+telegrambot-bot2-1  | 09:02:55 AM [express] 🚀 Telegram bot initialized and running
+telegrambot-bot2-1  | 09:02:55 AM [express] ✅ Bot initialization completed successfully
+root@srv1051051:/var/www/telegrambot# 
