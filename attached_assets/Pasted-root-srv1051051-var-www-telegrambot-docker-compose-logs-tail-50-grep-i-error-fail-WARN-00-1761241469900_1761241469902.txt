@@ -1,0 +1,36 @@
+root@srv1051051:/var/www/telegrambot# docker-compose logs --tail=50 | grep -i "error\|fail"
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+telegrambot-bot10-1  | 01:39:00 PM [express] ❌ Bot initialization step failed: No bot token configured
+telegrambot-bot10-1  | Full error: Error: No bot token configured
+telegrambot-bot10-1  | 01:39:00 PM [express] ❌ Bot initialization failed: No bot token configured
+telegrambot-bot6-1   | 01:39:00 PM [express] ❌ Bot initialization step failed: No bot token configured
+telegrambot-bot6-1   | Full error: Error: No bot token configured
+telegrambot-bot6-1   | 01:39:00 PM [express] ❌ Bot initialization failed: No bot token configured
+telegrambot-bot1-1   | 01:39:00 PM [express] ❌ Bot initialization step failed: No bot token configured
+telegrambot-bot1-1   | Full error: Error: No bot token configured
+telegrambot-bot1-1   | 01:39:00 PM [express] ❌ Bot initialization failed: No bot token configured
+telegrambot-bot7-1   | 01:39:00 PM [express] ❌ Bot initialization step failed: No bot token configured
+telegrambot-bot7-1   | Full error: Error: No bot token configured
+telegrambot-bot7-1   | 01:39:00 PM [express] ❌ Bot initialization failed: No bot token configured
+telegrambot-bot4-1   | 01:39:00 PM [express] ❌ Bot initialization step failed: No bot token configured
+telegrambot-bot4-1   | Full error: Error: No bot token configured
+telegrambot-bot4-1   | 01:39:00 PM [express] ❌ Bot initialization failed: No bot token configured
+telegrambot-bot9-1      | 01:38:59 PM [express] ❌ Bot initialization step failed: No bot token configured
+telegrambot-bot9-1      | Full error: Error: No bot token configured
+telegrambot-bot9-1      | 01:38:59 PM [express] ❌ Bot initialization failed: No bot token configured
+telegrambot-bot5-1      | 01:38:59 PM [express] ❌ Bot initialization step failed: No bot token configured
+telegrambot-bot5-1      | Full error: Error: No bot token configured
+telegrambot-bot5-1      | 01:38:59 PM [express] ❌ Bot initialization failed: No bot token configured
+telegrambot-bot8-1      | 01:39:00 PM [express] ❌ Bot initialization step failed: No bot token configured
+telegrambot-bot8-1      | Full error: Error: No bot token configured
+telegrambot-bot8-1      | 01:39:00 PM [express] ❌ Bot initialization failed: No bot token configured
+telegrambot-bot3-1      |     body: { ok: false, error_code: 401, description: 'Unauthorized' },
+telegrambot-bot2-1      | 01:39:10 PM [express] ❌ Bot initialization failed: Bot initialization timeout
+root@srv1051051:/var/www/telegrambot# docker-compose logs --tail=50 | grep -i "error\|fail"
