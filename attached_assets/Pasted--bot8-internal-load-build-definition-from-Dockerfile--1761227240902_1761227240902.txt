@@ -1,0 +1,158 @@
+ => [bot8 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot3 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot6 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot5 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot9 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot4 internal] load metadata for docker.io/library/node:20-alpine                                            0.7s
+ => [bot2 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot10 internal] load build definition from Dockerfile                                                        0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot4 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot7 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot1 internal] load build definition from Dockerfile                                                         0.0s
+ => => transferring dockerfile: 280B                                                                              0.0s
+ => [bot5 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot4 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot2 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot1 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot9 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot3 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot10 internal] load .dockerignore                                                                           0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot6 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot8 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot7 internal] load .dockerignore                                                                            0.0s
+ => => transferring context: 295B                                                                                 0.0s
+ => [bot6 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39  0.0s
+ => [bot4 internal] load build context                                                                            0.1s
+ => => transferring context: 29.35kB                                                                              0.0s
+ => [bot7 internal] load build context                                                                            0.0s
+ => => transferring context: 29.35kB                                                                              0.0s
+ => [bot2 internal] load build context                                                                            0.1s
+ => => transferring context: 29.35kB                                                                              0.1s
+ => [bot3 internal] load build context                                                                            0.0s
+ => => transferring context: 29.35kB                                                                              0.0s
+ => [bot9 internal] load build context                                                                            0.1s
+ => => transferring context: 29.35kB                                                                              0.1s
+ => [bot8 internal] load build context                                                                            0.1s
+ => => transferring context: 29.35kB                                                                              0.1s
+ => [bot5 internal] load build context                                                                            0.1s
+ => => transferring context: 29.35kB                                                                              0.1s
+ => CACHED [bot10 6/6] RUN npm run build                                                                          0.0s
+ => [bot1 internal] load build context                                                                            0.1s
+ => => transferring context: 29.35kB                                                                              0.0s
+ => [bot7] exporting to image                                                                                     0.0s
+ => => exporting layers                                                                                           0.0s
+ => => writing image sha256:7cf4d8f097a94fbbc71bd37be82223a7ac5c0a0b71f61c27b1c45fb93af7884c                      0.0s
+ => => naming to docker.io/library/telegrambot-bot7                                                               0.0s
+ => CACHED [bot6 2/6] WORKDIR /app                                                                                0.0s
+ => CACHED [bot4 3/6] COPY package*.json ./                                                                       0.0s
+ => CACHED [bot4 4/6] RUN npm install                                                                             0.0s
+ => CACHED [bot4 5/6] COPY . .                                                                                    0.0s
+ => [bot10 internal] load build context                                                                           0.0s
+ => => transferring context: 29.35kB                                                                              0.0s
+ => [bot3] exporting to image                                                                                     0.0s
+ => => exporting layers                                                                                           0.0s
+ => => writing image sha256:b35807224ae837e6402203c67366ad136c2491e9e3db8e29c900798085aeafb9                      0.0s
+ => => naming to docker.io/library/telegrambot-bot3                                                               0.0s
+ => [bot6 internal] load build context                                                                            0.1s
+ => => transferring context: 29.35kB                                                                              0.0s
+ => [bot4] exporting to image                                                                                     0.0s
+ => => exporting layers                                                                                           0.0s
+ => => writing image sha256:ab18f0076be4bd1fd78227823445778426ef5a9108e25d1eec5aaa9f71688290                      0.0s
+ => => naming to docker.io/library/telegrambot-bot4                                                               0.0s
+ => [bot8] exporting to image                                                                                     0.0s
+ => => exporting layers                                                                                           0.0s
+ => => writing image sha256:f217df86d6442417f0199707bbcaa08cb3d3e0c6eae173dc6b7de1072dd2b726                      0.0s
+ => => naming to docker.io/library/telegrambot-bot8                                                               0.0s
+ => [bot5] exporting to image                                                                                     0.0s
+ => => exporting layers                                                                                           0.0s
+ => => writing image sha256:c344bd8161dc5095e05e204d08afac3550341851fa17be3d8d58b2bb1caf64dd                      0.0s
+ => => naming to docker.io/library/telegrambot-bot5                                                               0.0s
+ => [bot9] exporting to image                                                                                     0.0s
+ => => exporting layers                                                                                           0.0s
+ => => writing image sha256:719a4308bff4390bdcad3f2fb597eedaa29e3bb024b17fffac4960c7b9d0b3af                      0.0s
+ => => naming to docker.io/library/telegrambot-bot9                                                               0.0s
+ => [bot2] exporting to image                                                                                     0.0s
+ => => exporting layers                                                                                           0.0s
+ => => writing image sha256:2da9a0be89f66d8f4784ae837bf321382ca85bc967615984d3075985313c8906                      0.0s
+ => => naming to docker.io/library/telegrambot-bot2                                                               0.0s
+ => CACHED [bot6 3/6] COPY package*.json ./                                                                       0.0s
+ => CACHED [bot6 4/6] RUN npm install                                                                             0.0s
+ => CACHED [bot6 5/6] COPY . .                                                                                    0.0s
+ => CACHED [bot6 6/6] RUN npm run build                                                                           0.0s
+ => [bot10] exporting to image                                                                                    0.0s
+ => => exporting layers                                                                                           0.0s
+ => => writing image sha256:38c7109c60ca77c3f620bea2f5e38e5ddcfea4c6b2f2026ee9a50e7989cc3aa4                      0.0s
+ => => naming to docker.io/library/telegrambot-bot10                                                              0.0s
+ => [bot6] exporting to image                                                                                     0.0s
+ => => exporting layers                                                                                           0.0s
+ => => writing image sha256:d5264a1a7bd7d0c38aed7c3fa02ebce4dbfbb7fccf44c48492cba5668c81228f                      0.0s
+ => => naming to docker.io/library/telegrambot-bot6                                                               0.0s
+ => [bot1] exporting to image                                                                                     0.0s
+ => => exporting layers                                                                                           0.0s
+ => => writing image sha256:4e94ecda8319c8a69cfdc8cb265aa91897513d6d5d6cc595c100f31f7a8b2b65                      0.0s
+ => => naming to docker.io/library/telegrambot-bot1                                                               0.0s
+root@srv1051051:/var/www/telegrambot# docker-compose config | grep -A 20 "bot2:"
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT3_TOKEN" variable is not set. Defaulting to a blank string. 
+  bot2:
+    build:
+      context: /var/www/telegrambot
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: true
+    environment:
+      DATABASE_URL: postgresql://teleshopuser:SecurePass123@postgres:5432/teleshop
+      NODE_ENV: production
+      PORT: "5000"
+      PUBLIC_URL: http://localhost:5002
+      TELEGRAM_BOT_TOKEN: 8061353646:AAHvaeFYPGp5z3Xs40q5RBiQ5bMpPE15SHI
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 5000
+        published: "5002"
+        protocol: tcp
+root@srv1051051:/var/www/telegrambot# docker exec telegrambot-bot2-1 env | grep TELEGRAM
+TELEGRAM_BOT_TOKEN=8061353646:AAHvaeFYPGp5z3Xs40q5RBiQ5bMpPE15SHI
+root@srv1051051:/var/www/telegrambot# docker-compose logs bot2 --tail=50 | grep -i "token\|initialized\|error"
+WARN[0000] The "BOT4_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT8_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT10_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT1_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT6_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT7_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT9_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT3_TOKEN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "BOT5_TOKEN" variable is not set. Defaulting to a blank string. 
+telegrambot-bot2-1  | Full error: error: duplicate key value violates unique constraint "bot_settings_key_unique"
+telegrambot-bot2-1  |   severity: 'ERROR',
+telegrambot-bot2-1  |   detail: 'Key (key)=(bot_token) already exists.',
+root@srv1051051:/var/www/telegrambot# 
