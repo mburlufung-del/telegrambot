@@ -90,12 +90,23 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'button.email_support': '📧 Email Support',
     'button.send_message': '💬 Send Message Instead',
     'button.back_operator': '🔙 Back to Operator Menu',
+    'button.listings': '📋 Listings',
+    'button.view_cart': '🛒 View Cart',
+    'button.add_to_cart': '🛒 Add to Cart',
+    'button.add_to_wishlist': '❤️ Add to Wishlist',
+    'button.rate_product': '⭐ Rate Product',
+    'button.view_session': '📋 View Session',
+    'button.end_session': '❌ End Session',
     
     // Error messages
     'error.general': '❌ An error occurred. Please try again.',
     'error.product_not_found': '❌ Product not found.',
     'error.out_of_stock': '❌ Product is out of stock.',
     'error.invalid_quantity': '❌ Invalid quantity.',
+    'error.cart_load_failed': '🛒 <b>Your Shopping Cart</b>\n\nUnable to load cart. Please try again.',
+    'error.orders_load_failed': '📦 <b>Your Orders</b>\n\nUnable to load orders. Please try again.',
+    'error.cart_empty_checkout': '🛒 Your cart is empty. Add items before checkout.',
+    'error.no_cart_items': '🛒 No items in cart to checkout.',
     
     // Success messages
     'success.cart_cleared': '✅ Cart cleared successfully.',
@@ -301,6 +312,13 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'button.email_support': '📧 Soporte por Email',
     'button.send_message': '💬 Enviar Mensaje en su Lugar',
     'button.back_operator': '🔙 Volver al Menú de Operador',
+    'button.listings': '📋 Listados',
+    'button.view_cart': '🛒 Ver Carrito',
+    'button.add_to_cart': '🛒 Añadir al Carrito',
+    'button.add_to_wishlist': '❤️ Añadir a Lista de Deseos',
+    'button.rate_product': '⭐ Valorar Producto',
+    'button.view_session': '📋 Ver Sesión',
+    'button.end_session': '❌ Finalizar Sesión',
     
     // Error messages
     'error.general': '❌ Ocurrió un error. Por favor, inténtalo de nuevo.',
@@ -512,6 +530,13 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'button.email_support': '📧 Support par Email',
     'button.send_message': '💬 Envoyer un Message à la Place',
     'button.back_operator': '🔙 Retour au Menu Opérateur',
+    'button.listings': '📋 Annonces',
+    'button.view_cart': '🛒 Voir le Panier',
+    'button.add_to_cart': '🛒 Ajouter au Panier',
+    'button.add_to_wishlist': '❤️ Ajouter aux Favoris',
+    'button.rate_product': '⭐ Noter le Produit',
+    'button.view_session': '📋 Voir la Session',
+    'button.end_session': '❌ Terminer la Session',
     
     // Error messages
     'error.general': '❌ Une erreur s\'est produite. Veuillez réessayer.',
@@ -723,6 +748,13 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'button.email_support': '📧 E-Mail Support',
     'button.send_message': '💬 Stattdessen Nachricht Senden',
     'button.back_operator': '🔙 Zurück zum Operator-Menü',
+    'button.listings': '📋 Angebote',
+    'button.view_cart': '🛒 Warenkorb Ansehen',
+    'button.add_to_cart': '🛒 In den Warenkorb',
+    'button.add_to_wishlist': '❤️ Zur Wunschliste',
+    'button.rate_product': '⭐ Produkt Bewerten',
+    'button.view_session': '📋 Sitzung Ansehen',
+    'button.end_session': '❌ Sitzung Beenden',
     
     // Error messages
     'error.general': '❌ Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
@@ -934,6 +966,13 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'button.email_support': '📧 E-mail Support',
     'button.send_message': '💬 In Plaats Daarvan Bericht Sturen',
     'button.back_operator': '🔙 Terug naar Operator Menu',
+    'button.listings': '📋 Aanbiedingen',
+    'button.view_cart': '🛒 Winkelwagen Bekijken',
+    'button.add_to_cart': '🛒 Toevoegen aan Winkelwagen',
+    'button.add_to_wishlist': '❤️ Toevoegen aan Verlanglijst',
+    'button.rate_product': '⭐ Product Beoordelen',
+    'button.view_session': '📋 Sessie Bekijken',
+    'button.end_session': '❌ Sessie Beëindigen',
     
     // Error messages
     'error.general': '❌ Er is een fout opgetreden. Probeer het opnieuw.',

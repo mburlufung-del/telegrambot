@@ -631,9 +631,9 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         await this.sendAutoVanishMessage(chatId, '✅ Message sent to operator!', {
           reply_markup: {
             inline_keyboard: [
-              [{ text: '📋 View Session', callback_data: `view_session_${activeSession.id}` }],
-              [{ text: '❌ End Session', callback_data: `end_session_${activeSession.id}` }],
-              [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
+              [{ text: await i18n.t(userId, 'button.view_session'), callback_data: `view_session_${activeSession.id}` }],
+              [{ text: await i18n.t(userId, 'button.end_session'), callback_data: `end_session_${activeSession.id}` }],
+              [{ text: await i18n.t(userId, 'button.main_menu'), callback_data: 'back_to_menu' }]
             ]
           }
         });
@@ -1084,8 +1084,8 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const message = '🛒 <b>Your Shopping Cart</b>\n\nUnable to load cart. Please try again.';
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Listings', callback_data: 'listings' }],
-          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.listings'), callback_data: 'listings' }],
+          [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
         ]
       };
       
@@ -1105,8 +1105,8 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         const message = '📦 <b>Your Orders</b>\n\nYou have no orders yet.\n\nStart shopping to create your first order!';
         const keyboard = {
           inline_keyboard: [
-            [{ text: '📋 Listings', callback_data: 'listings' }],
-            [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+            [{ text: await i18n.t(userId, 'button.listings'), callback_data: 'listings' }],
+            [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
           ]
         };
         
@@ -1141,9 +1141,9 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Listings', callback_data: 'listings' }],
-          [{ text: '🛒 View Cart', callback_data: 'carts' }],
-          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.listings'), callback_data: 'listings' }],
+          [{ text: await i18n.t(userId, 'button.view_cart'), callback_data: 'carts' }],
+          [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
         ]
       };
       
@@ -1158,8 +1158,8 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const message = '📦 <b>Your Orders</b>\n\nUnable to load orders. Please try again.';
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Listings', callback_data: 'listings' }],
-          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.listings'), callback_data: 'listings' }],
+          [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
         ]
       };
       
@@ -1178,8 +1178,8 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         const message = '❤️ <b>Your Wishlist</b>\n\nYour wishlist is empty.\n\nBrowse products and add items you love to your wishlist!';
         const keyboard = {
           inline_keyboard: [
-            [{ text: '📋 Listings', callback_data: 'listings' }],
-            [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+            [{ text: await i18n.t(userId, 'button.listings'), callback_data: 'listings' }],
+            [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
           ]
         };
         
@@ -1207,9 +1207,9 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Listings', callback_data: 'listings' }],
-          [{ text: '🛒 View Cart', callback_data: 'carts' }],
-          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.listings'), callback_data: 'listings' }],
+          [{ text: await i18n.t(userId, 'button.view_cart'), callback_data: 'carts' }],
+          [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
         ]
       };
       
@@ -1234,8 +1234,8 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Listings', callback_data: 'listings' }],
-          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.listings'), callback_data: 'listings' }],
+          [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
         ]
       };
 
@@ -1278,8 +1278,8 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
 
     const keyboard = {
       inline_keyboard: [
-        [{ text: '📋 Listings', callback_data: 'listings' }],
-        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        [{ text: await i18n.t(userId, 'button.listings'), callback_data: 'listings' }],
+        [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
       ]
     };
 
@@ -1304,7 +1304,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
         inline_keyboard: [
           [{ text: '💬 Continue Current Session', callback_data: `continue_session_${existingSession.id}` }],
           [{ text: '❌ End Current Session', callback_data: `end_session_${existingSession.id}` }],
-          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
         ]
       };
       
@@ -1343,10 +1343,10 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       
     const keyboard = {
       inline_keyboard: [
-        [{ text: '💬 Live Chat with Operator', callback_data: 'start_live_support' }],
-        [{ text: '📋 Submit Support Inquiry', callback_data: 'submit_inquiry' }],
-        [{ text: '📧 Email Support', callback_data: 'email_support' }],
-        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        [{ text: await i18n.t(userId, 'button.live_chat'), callback_data: 'start_live_support' }],
+        [{ text: await i18n.t(userId, 'button.submit_inquiry'), callback_data: 'submit_inquiry' }],
+        [{ text: await i18n.t(userId, 'button.email_support'), callback_data: 'email_support' }],
+        [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
       ]
     };
     
@@ -1417,7 +1417,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const keyboard = {
         inline_keyboard: [
           [{ text: '💬 View Session', callback_data: `view_session_${session.id}` }],
-          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
         ]
       };
       
@@ -1473,8 +1473,8 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const keyboard = {
         inline_keyboard: [
           ...(session.status === 'active' ? [[{ text: '💬 Send Message', callback_data: `send_message_${sessionId}` }]] : []),
-          [{ text: '❌ End Session', callback_data: `end_session_${sessionId}` }],
-          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.end_session'), callback_data: `end_session_${sessionId}` }],
+          [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
         ]
       };
       
@@ -1505,7 +1505,7 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
       const keyboard = {
         inline_keyboard: [
           [{ text: '⭐ Rate Support', callback_data: `rate_support_${sessionId}` }],
-          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
         ]
       };
       
@@ -1564,7 +1564,7 @@ ${businessHours}
     const keyboard = {
       inline_keyboard: [
         [{ text: '💬 Send Message to Support', callback_data: 'send_support_message' }],
-        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+        [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
       ]
     };
 
@@ -2025,18 +2025,18 @@ ${businessHours}
 
       // Main action buttons
       actionButtons.push([
-        { text: '🛒 Add to Cart', callback_data: `addcart_${productId}_1` },
-        { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}_1` }
+        { text: await i18n.t(userId, 'button.add_to_cart'), callback_data: `addcart_${productId}_1` },
+        { text: await i18n.t(userId, 'button.add_to_wishlist'), callback_data: `wishlist_${productId}_1` }
       ]);
     }
 
     // Rating and navigation
     actionButtons.push([
-      { text: '⭐ Rate Product', callback_data: `rate_product_${productId}` }
+      { text: await i18n.t(userId, 'button.rate_product'), callback_data: `rate_product_${productId}` }
     ]);
     actionButtons.push([
       { text: '🔙 Back to Category', callback_data: `category_${product.categoryId}` },
-      { text: '🏠 Main Menu', callback_data: 'back_to_menu' }
+      { text: await i18n.t(userId, 'button.main_menu'), callback_data: 'back_to_menu' }
     ]);
 
     const keyboard = { inline_keyboard: actionButtons };
@@ -2116,8 +2116,8 @@ ${businessHours}
       const keyboard = {
         inline_keyboard: [
           [
-            { text: '🛒 View Cart', callback_data: 'carts' },
-            { text: '📋 Listings', callback_data: 'listings' }
+            { text: await i18n.t(userId, 'button.view_cart'), callback_data: 'carts' },
+            { text: await i18n.t(userId, 'button.listings'), callback_data: 'listings' }
           ],
           [
             { text: '🔙 Back to Product', callback_data: `product_${productId}` }
@@ -2223,7 +2223,7 @@ ${businessHours}
           inline_keyboard: [
             [
               { text: '🔙 Back to Product', callback_data: `product_${productId}` },
-              { text: '🏠 Main Menu', callback_data: 'back_to_menu' }
+              { text: await i18n.t(userId, 'button.main_menu'), callback_data: 'back_to_menu' }
             ]
           ]
         };
@@ -2247,8 +2247,8 @@ ${businessHours}
       const message = '🗑️ <b>Cart Cleared</b>\n\nAll items have been removed from your cart.';
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📋 Listings', callback_data: 'listings' }],
-          [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.listings'), callback_data: 'listings' }],
+          [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
         ]
       };
       
@@ -2403,8 +2403,8 @@ ${businessHours}
 
     // Action buttons with current quantity
     quantityControls.push([
-      { text: '🛒 Add to Cart', callback_data: `addcart_${productId}_${currentQty}` },
-      { text: '❤️ Add to Wishlist', callback_data: `wishlist_${productId}_${currentQty}` }
+      { text: await i18n.t(userId, 'button.add_to_cart'), callback_data: `addcart_${productId}_${currentQty}` },
+      { text: await i18n.t(userId, 'button.add_to_wishlist'), callback_data: `wishlist_${productId}_${currentQty}` }
     ]);
 
     // Navigation buttons
@@ -2601,8 +2601,8 @@ Type your message below and send it:`;
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🔙 Back to Operator Menu', callback_data: 'operator' }],
-          [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.back_operator'), callback_data: 'operator' }],
+          [{ text: await i18n.t(userId, 'button.main_menu'), callback_data: 'back_to_menu' }]
         ]
       }
     });
@@ -2653,9 +2653,9 @@ Additional Details:
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
-          [{ text: '💬 Send Message Instead', callback_data: 'send_support_message' }],
-          [{ text: '🔙 Back to Operator Menu', callback_data: 'operator' }],
-          [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.send_message'), callback_data: 'send_support_message' }],
+          [{ text: await i18n.t(userId, 'button.back_operator'), callback_data: 'operator' }],
+          [{ text: await i18n.t(userId, 'button.main_menu'), callback_data: 'back_to_menu' }]
         ]
       }
     });
@@ -2688,9 +2688,9 @@ Additional Details:
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
-          [{ text: '💬 Contact Support', callback_data: 'send_support_message' }],
-          [{ text: '🔙 Back to Operator Menu', callback_data: 'operator' }],
-          [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.contact_support'), callback_data: 'send_support_message' }],
+          [{ text: await i18n.t(userId, 'button.back_operator'), callback_data: 'operator' }],
+          [{ text: await i18n.t(userId, 'button.main_menu'), callback_data: 'back_to_menu' }]
         ]
       }
     });
@@ -2732,8 +2732,8 @@ You can continue shopping while we prepare your response.`;
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '📋 Listings', callback_data: 'listings' }],
-            [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
+            [{ text: await i18n.t(userId, 'menu.listings'), callback_data: 'listings' }],
+            [{ text: await i18n.t(userId, 'button.main_menu'), callback_data: 'back_to_menu' }]
           ]
         }
       });
@@ -2743,7 +2743,7 @@ You can continue shopping while we prepare your response.`;
       await this.sendAutoVanishMessage(chatId, '❌ Error sending message. Please try again or contact support directly.', {
         reply_markup: {
           inline_keyboard: [
-            [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu' }]
+            [{ text: await i18n.t(userId, 'button.back_to_menu'), callback_data: 'back_to_menu' }]
           ]
         }
       });
@@ -2969,7 +2969,7 @@ Include your Order Number: ${orderNumber}`;
     const keyboard = {
       inline_keyboard: [
         [{ text: '✅ Payment Completed', callback_data: `complete_order_${orderNumber.replace('#', '')}` }],
-        [{ text: '👤 Contact Support', callback_data: 'operator' }],
+        [{ text: await i18n.t(userId, 'button.contact_support'), callback_data: 'operator' }],
         [{ text: '🔙 Change Payment Method', callback_data: `delivery_standard_${orderNumber.replace('#', '')}` }]
       ]
     };
@@ -2988,7 +2988,7 @@ Include your Order Number: ${orderNumber}`;
         await this.sendAutoVanishMessage(chatId, '🛒 No items in cart to checkout.', {
           reply_markup: {
             inline_keyboard: [
-              [{ text: '📋 Listings', callback_data: 'listings' }]
+              [{ text: await i18n.t(userId, 'button.listings'), callback_data: 'listings' }]
             ]
           }
         });
@@ -3059,10 +3059,10 @@ Include your Order Number: ${orderNumber}`;
 
       const keyboard = {
         inline_keyboard: [
-          [{ text: '📦 View My Orders', callback_data: 'orders' }],
-          [{ text: '👤 Contact Support', callback_data: 'operator' }],
-          [{ text: '📋 Listings', callback_data: 'listings' }],
-          [{ text: '🏠 Main Menu', callback_data: 'back_to_menu' }]
+          [{ text: await i18n.t(userId, 'button.view_orders'), callback_data: 'orders' }],
+          [{ text: await i18n.t(userId, 'button.contact_support'), callback_data: 'operator' }],
+          [{ text: await i18n.t(userId, 'menu.listings'), callback_data: 'listings' }],
+          [{ text: await i18n.t(userId, 'button.main_menu'), callback_data: 'back_to_menu' }]
         ]
       };
 
@@ -3076,8 +3076,8 @@ Include your Order Number: ${orderNumber}`;
       await this.sendAutoVanishMessage(chatId, '❌ Error processing order. Please contact support.', {
         reply_markup: {
           inline_keyboard: [
-            [{ text: '👤 Contact Support', callback_data: 'operator' }],
-            [{ text: '🔙 Back to Cart', callback_data: 'carts' }]
+            [{ text: await i18n.t(userId, 'button.contact_support'), callback_data: 'operator' }],
+            [{ text: await i18n.t(userId, 'cart.title'), callback_data: 'carts' }]
           ]
         }
       });
