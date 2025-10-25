@@ -80,6 +80,17 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'action.continue': '➡️ Continue',
     'action.save': '💾 Save',
     
+    // Button labels
+    'button.main_menu': '🏠 Main Menu',
+    'button.back_to_menu': '🔙 Back to Menu',
+    'button.view_orders': '📦 View My Orders',
+    'button.contact_support': '👤 Contact Support',
+    'button.live_chat': '💬 Live Chat with Operator',
+    'button.submit_inquiry': '📋 Submit Support Inquiry',
+    'button.email_support': '📧 Email Support',
+    'button.send_message': '💬 Send Message Instead',
+    'button.back_operator': '🔙 Back to Operator Menu',
+    
     // Error messages
     'error.general': '❌ An error occurred. Please try again.',
     'error.product_not_found': '❌ Product not found.',
@@ -279,6 +290,17 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'action.confirm': '✅ Confirmar',
     'action.continue': '➡️ Continuar',
     'action.save': '💾 Guardar',
+    
+    // Button labels
+    'button.main_menu': '🏠 Menú Principal',
+    'button.back_to_menu': '🔙 Volver al Menú',
+    'button.view_orders': '📦 Ver Mis Pedidos',
+    'button.contact_support': '👤 Contactar Soporte',
+    'button.live_chat': '💬 Chat en Vivo con Operador',
+    'button.submit_inquiry': '📋 Enviar Consulta de Soporte',
+    'button.email_support': '📧 Soporte por Email',
+    'button.send_message': '💬 Enviar Mensaje en su Lugar',
+    'button.back_operator': '🔙 Volver al Menú de Operador',
     
     // Error messages
     'error.general': '❌ Ocurrió un error. Por favor, inténtalo de nuevo.',
@@ -480,6 +502,17 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'action.continue': '➡️ Continuer',
     'action.save': '💾 Sauvegarder',
     
+    // Button labels
+    'button.main_menu': '🏠 Menu Principal',
+    'button.back_to_menu': '🔙 Retour au Menu',
+    'button.view_orders': '📦 Voir Mes Commandes',
+    'button.contact_support': '👤 Contacter le Support',
+    'button.live_chat': '💬 Chat en Direct avec Opérateur',
+    'button.submit_inquiry': '📋 Soumettre une Demande de Support',
+    'button.email_support': '📧 Support par Email',
+    'button.send_message': '💬 Envoyer un Message à la Place',
+    'button.back_operator': '🔙 Retour au Menu Opérateur',
+    
     // Error messages
     'error.general': '❌ Une erreur s\'est produite. Veuillez réessayer.',
     'error.product_not_found': '❌ Produit non trouvé.',
@@ -680,6 +713,17 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'action.continue': '➡️ Weiter',
     'action.save': '💾 Speichern',
     
+    // Button labels
+    'button.main_menu': '🏠 Hauptmenü',
+    'button.back_to_menu': '🔙 Zurück zum Menü',
+    'button.view_orders': '📦 Meine Bestellungen Ansehen',
+    'button.contact_support': '👤 Support Kontaktieren',
+    'button.live_chat': '💬 Live-Chat mit Mitarbeiter',
+    'button.submit_inquiry': '📋 Support-Anfrage Senden',
+    'button.email_support': '📧 E-Mail Support',
+    'button.send_message': '💬 Stattdessen Nachricht Senden',
+    'button.back_operator': '🔙 Zurück zum Operator-Menü',
+    
     // Error messages
     'error.general': '❌ Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
     'error.product_not_found': '❌ Produkt nicht gefunden.',
@@ -879,6 +923,17 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'action.confirm': '✅ Bevestigen',
     'action.continue': '➡️ Doorgaan',
     'action.save': '💾 Opslaan',
+    
+    // Button labels
+    'button.main_menu': '🏠 Hoofdmenu',
+    'button.back_to_menu': '🔙 Terug naar Menu',
+    'button.view_orders': '📦 Mijn Bestellingen Bekijken',
+    'button.contact_support': '👤 Contact Opnemen met Support',
+    'button.live_chat': '💬 Live Chat met Medewerker',
+    'button.submit_inquiry': '📋 Support-verzoek Indienen',
+    'button.email_support': '📧 E-mail Support',
+    'button.send_message': '💬 In Plaats Daarvan Bericht Sturen',
+    'button.back_operator': '🔙 Terug naar Operator Menu',
     
     // Error messages
     'error.general': '❌ Er is een fout opgetreden. Probeer het opnieuw.',
