@@ -230,8 +230,8 @@ function registerAllRoutes(app: Express): void {
         productData.isActive = true;
       }
       
-      // Ensure minimum order quantity defaults
-      if (!productData.minOrderQuantity || productData.minOrderQuantity < 1) {
+      // Only set minOrderQuantity default if not provided (allow 0 to be set explicitly)
+      if (productData.minOrderQuantity === undefined || productData.minOrderQuantity === null) {
         productData.minOrderQuantity = 1;
       }
       
