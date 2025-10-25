@@ -1357,19 +1357,19 @@ Use the buttons below to explore our catalog, manage your cart, or get support.`
   }
 
   private async handleStartLiveSupport(chatId: number, userId: string) {
-    const message = `💬 <b>Start Live Support Session</b>\n\n` +
-      `Please describe your issue or question. An operator will be assigned to help you.\n\n` +
-      `<b>Categories:</b>\n` +
-      `• General questions\n` +
-      `• Order inquiries\n` +
-      `• Product support\n` +
-      `• Payment issues\n` +
-      `• Delivery questions\n\n` +
-      `Type your message below:`;
+    const message = await i18n.t(userId, 'support.session_title') + '\n\n' +
+      await i18n.t(userId, 'support.session_description') + '\n\n' +
+      await i18n.t(userId, 'support.categories_title') + '\n' +
+      await i18n.t(userId, 'support.category_general') + '\n' +
+      await i18n.t(userId, 'support.category_order') + '\n' +
+      await i18n.t(userId, 'support.category_product') + '\n' +
+      await i18n.t(userId, 'support.category_payment') + '\n' +
+      await i18n.t(userId, 'support.category_delivery') + '\n\n' +
+      await i18n.t(userId, 'support.type_message');
       
     const keyboard = {
       inline_keyboard: [
-        [{ text: '🔙 Back to Support Options', callback_data: 'operator' }]
+        [{ text: await i18n.t(userId, 'support.back_to_options'), callback_data: 'operator' }]
       ]
     };
     
@@ -2662,35 +2662,27 @@ Additional Details:
   }
 
   private async handleFAQ(chatId: number, userId: string) {
-    const message = `❓ <b>Frequently Asked Questions</b>
-
-🛒 Ordering:
-• Q: How do I place an order?
-• A: Browse products, add to cart, then checkout
-
-• Q: Can I modify my order?
-• A: Contact support within 1 hour of ordering
-
-📦 Shipping:
-• Q: How long does shipping take?
-• A: 3-7 business days for standard shipping
-
-• Q: Do you ship internationally?
-• A: Currently shipping within the US only
-
-💳 Payment:
-• Q: What payment methods do you accept?
-• A: Credit cards, PayPal, bank transfer, and crypto
-
-🔄 Returns:
-• Q: What's your return policy?
-• A: 30-day returns for unopened products
-
-📱 Technical:
-• Q: Bot not responding?
-• A: Try /start command or contact support
-
-Need more help? Contact our support team!`;
+    const message = await i18n.t(userId, 'faq.title') + '\n\n' +
+      await i18n.t(userId, 'faq.ordering_title') + '\n' +
+      await i18n.t(userId, 'faq.how_to_order_q') + '\n' +
+      await i18n.t(userId, 'faq.how_to_order_a') + '\n\n' +
+      await i18n.t(userId, 'faq.modify_order_q') + '\n' +
+      await i18n.t(userId, 'faq.modify_order_a') + '\n\n' +
+      await i18n.t(userId, 'faq.shipping_title') + '\n' +
+      await i18n.t(userId, 'faq.shipping_time_q') + '\n' +
+      await i18n.t(userId, 'faq.shipping_time_a') + '\n\n' +
+      await i18n.t(userId, 'faq.international_q') + '\n' +
+      await i18n.t(userId, 'faq.international_a') + '\n\n' +
+      await i18n.t(userId, 'faq.payment_title') + '\n' +
+      await i18n.t(userId, 'faq.payment_methods_q') + '\n' +
+      await i18n.t(userId, 'faq.payment_methods_a') + '\n\n' +
+      await i18n.t(userId, 'faq.returns_title') + '\n' +
+      await i18n.t(userId, 'faq.return_policy_q') + '\n' +
+      await i18n.t(userId, 'faq.return_policy_a') + '\n\n' +
+      await i18n.t(userId, 'faq.technical_title') + '\n' +
+      await i18n.t(userId, 'faq.bot_not_responding_q') + '\n' +
+      await i18n.t(userId, 'faq.bot_not_responding_a') + '\n\n' +
+      await i18n.t(userId, 'faq.need_more_help');
 
     await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'HTML',
@@ -3048,26 +3040,22 @@ Include your Order Number: ${orderNumber}`;
       // Format total with user's preferred currency
       const formattedTotal = await i18n.formatPrice(userId, total);
       
-      const message = `🎉 <b>Order Confirmed!</b>
-
-<b>Order Number:</b> ${orderNumber}
-<b>Customer ID:</b> ${userId}
-<b>Total:</b> ${formattedTotal}
-<b>Status:</b> Completed
-
-📋 <b>Next Steps:</b>
-1. Payment verification (if applicable)
-2. Order processing (1-2 business days)
-3. Shipping/Pickup preparation
-4. Delivery tracking info
-
-📞 <b>Support Contact:</b>
-• Telegram: ${operatorContact}
-• Include your order number: ${orderNumber}
-
-<b>Estimated Processing:</b> 1-2 business days
-
-Thank you for shopping with us! 🛍️`;
+      const message = await i18n.t(userId, 'order.confirmation_title') + '\n\n' +
+        await i18n.t(userId, 'order.thank_you') + '\n\n' +
+        await i18n.t(userId, 'checkout.order_number_label', { orderNumber }) + '\n' +
+        await i18n.t(userId, 'order.customer_id', { userId }) + '\n' +
+        await i18n.t(userId, 'order.total_label', { total: formattedTotal }) + '\n' +
+        await i18n.t(userId, 'order.status_label') + '\n\n' +
+        await i18n.t(userId, 'order.next_steps') + '\n' +
+        await i18n.t(userId, 'order.step_payment') + '\n' +
+        await i18n.t(userId, 'order.step_processing') + '\n' +
+        await i18n.t(userId, 'order.step_shipping') + '\n' +
+        await i18n.t(userId, 'order.step_tracking') + '\n\n' +
+        await i18n.t(userId, 'order.support_contact_label') + '\n' +
+        `• Telegram: ${operatorContact}\n` +
+        await i18n.t(userId, 'order.include_order_number', { orderNumber }) + '\n\n' +
+        await i18n.t(userId, 'order.estimated_processing') + '\n\n' +
+        await i18n.t(userId, 'order.thank_you_shopping');
 
       const keyboard = {
         inline_keyboard: [
