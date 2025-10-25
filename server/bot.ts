@@ -1712,7 +1712,7 @@ ${businessHours}
       // If parent has products, add a button to view them
       if (activeProducts.length > 0) {
         subcategoryButtons.push([
-          { text: `📦 View Products in ${category.name} (${activeProducts.length})`, callback_data: `products_${categoryId}` }
+          { text: await i18n.t(userId, 'button.view_products_in', { category: category.name, count: activeProducts.length.toString() }), callback_data: `products_${categoryId}` }
         ]);
       }
       
@@ -1739,7 +1739,7 @@ ${businessHours}
       
       // Add back button
       subcategoryButtons.push([
-        { text: '🔙 Back to Categories', callback_data: 'listings' }
+        { text: await i18n.t(userId, 'button.back_to_categories'), callback_data: 'listings' }
       ]);
       
       const keyboard = { inline_keyboard: subcategoryButtons };
@@ -1757,7 +1757,7 @@ ${businessHours}
       const message = `📂 <b>${this.escapeHtml(category.name)}</b>\n\nNo products available in this category at the moment.`;
       const keyboard = {
         inline_keyboard: [
-          [{ text: '🔙 Back to Categories', callback_data: 'listings' }]
+          [{ text: await i18n.t(userId, 'button.back_to_categories'), callback_data: 'listings' }]
         ]
       };
       
@@ -1809,7 +1809,7 @@ ${businessHours}
 
     // Add navigation buttons
     productButtons.push([
-      { text: '🔙 Back to Categories', callback_data: 'listings' }
+      { text: await i18n.t(userId, 'button.back_to_categories'), callback_data: 'listings' }
     ]);
 
     const keyboard = { inline_keyboard: productButtons };
@@ -1835,7 +1835,7 @@ ${businessHours}
       const message = `📂 <b>${this.escapeHtml(category.name)}</b>\n\nNo products available in this category at the moment.`;
       const keyboard = {
         inline_keyboard: [
-          [{ text: '🔙 Back to Categories', callback_data: 'listings' }]
+          [{ text: await i18n.t(userId, 'button.back_to_categories'), callback_data: 'listings' }]
         ]
       };
       
@@ -1884,7 +1884,7 @@ ${businessHours}
     }
 
     productButtons.push([
-      { text: '🔙 Back to Category', callback_data: `category_${categoryId}` }
+      { text: await i18n.t(userId, 'button.back_to_category'), callback_data: `category_${categoryId}` }
     ]);
 
     const keyboard = { inline_keyboard: productButtons };
@@ -2035,7 +2035,7 @@ ${businessHours}
       { text: await i18n.t(userId, 'button.rate_product'), callback_data: `rate_product_${productId}` }
     ]);
     actionButtons.push([
-      { text: '🔙 Back to Category', callback_data: `category_${product.categoryId}` },
+      { text: await i18n.t(userId, 'button.back_to_category'), callback_data: `category_${product.categoryId}` },
       { text: await i18n.t(userId, 'button.main_menu'), callback_data: 'back_to_menu' }
     ]);
 
@@ -2071,7 +2071,7 @@ ${businessHours}
       if (product.stock < quantity) {
         const message = `❌ <b>Not enough stock</b>\n\nRequested: ${quantity}\nAvailable: ${product.stock}`;
         const keyboard = {
-          inline_keyboard: [[{ text: '🔙 Back to Product', callback_data: `product_${productId}` }]]
+          inline_keyboard: [[{ text: await i18n.t(userId, 'button.back_to_product'), callback_data: `product_${productId}` }]]
         };
         
         await this.sendAutoVanishMessage(chatId, message, {
@@ -2120,7 +2120,7 @@ ${businessHours}
             { text: await i18n.t(userId, 'button.listings'), callback_data: 'listings' }
           ],
           [
-            { text: '🔙 Back to Product', callback_data: `product_${productId}` }
+            { text: await i18n.t(userId, 'button.back_to_product'), callback_data: `product_${productId}` }
           ]
         ]
       };
@@ -2195,7 +2195,7 @@ ${businessHours}
             { text: '⭐⭐⭐⭐⭐', callback_data: `rate_product_${productId}_5` }
           ],
           [
-            { text: '🔙 Back to Product', callback_data: `product_${productId}` }
+            { text: await i18n.t(userId, 'button.back_to_product'), callback_data: `product_${productId}` }
           ]
         ]
       };
@@ -2222,7 +2222,7 @@ ${businessHours}
         const keyboard = {
           inline_keyboard: [
             [
-              { text: '🔙 Back to Product', callback_data: `product_${productId}` },
+              { text: await i18n.t(userId, 'button.back_to_product'), callback_data: `product_${productId}` },
               { text: await i18n.t(userId, 'button.main_menu'), callback_data: 'back_to_menu' }
             ]
           ]
@@ -2333,7 +2333,7 @@ ${businessHours}
       }
 
       // Add back button
-      keyboard.inline_keyboard.push([{ text: '🔙 Back to Cart', callback_data: 'cart' }]);
+      keyboard.inline_keyboard.push([{ text: await i18n.t(userId, 'button.back_to_cart'), callback_data: 'cart' }]);
 
       await this.sendAutoVanishMessage(chatId, message, {
         parse_mode: 'HTML',
@@ -2409,7 +2409,7 @@ ${businessHours}
 
     // Navigation buttons
     quantityControls.push([
-      { text: '🔙 Back to Product', callback_data: `product_${productId}` }
+      { text: await i18n.t(userId, 'button.back_to_product'), callback_data: `product_${productId}` }
     ]);
 
     const keyboard = { inline_keyboard: quantityControls };
@@ -2908,7 +2908,7 @@ Select your preferred payment option:`;
     }
 
     // Add back button
-    keyboard.inline_keyboard.push([{ text: '🔙 Back to Delivery', callback_data: 'start_checkout' }]);
+    keyboard.inline_keyboard.push([{ text: await i18n.t(userId, 'button.back_to_delivery'), callback_data: 'start_checkout' }]);
 
     await this.sendAutoVanishMessage(chatId, message, {
       parse_mode: 'HTML',

@@ -97,6 +97,12 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'button.rate_product': '⭐ Rate Product',
     'button.view_session': '📋 View Session',
     'button.end_session': '❌ End Session',
+    'button.back_to_categories': '🔙 Back to Categories',
+    'button.back_to_category': '🔙 Back to Category',
+    'button.back_to_product': '🔙 Back to Product',
+    'button.back_to_cart': '🔙 Back to Cart',
+    'button.back_to_delivery': '🔙 Back to Delivery',
+    'button.view_products_in': '📦 View Products in {category} ({count})',
     
     // Error messages
     'error.general': '❌ An error occurred. Please try again.',
@@ -319,6 +325,12 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'button.rate_product': '⭐ Valorar Producto',
     'button.view_session': '📋 Ver Sesión',
     'button.end_session': '❌ Finalizar Sesión',
+    'button.back_to_categories': '🔙 Volver a Categorías',
+    'button.back_to_category': '🔙 Volver a Categoría',
+    'button.back_to_product': '🔙 Volver al Producto',
+    'button.back_to_cart': '🔙 Volver al Carrito',
+    'button.back_to_delivery': '🔙 Volver a Entrega',
+    'button.view_products_in': '📦 Ver Productos en {category} ({count})',
     
     // Error messages
     'error.general': '❌ Ocurrió un error. Por favor, inténtalo de nuevo.',
@@ -537,6 +549,12 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'button.rate_product': '⭐ Noter le Produit',
     'button.view_session': '📋 Voir la Session',
     'button.end_session': '❌ Terminer la Session',
+    'button.back_to_categories': '🔙 Retour aux Catégories',
+    'button.back_to_category': '🔙 Retour à la Catégorie',
+    'button.back_to_product': '🔙 Retour au Produit',
+    'button.back_to_cart': '🔙 Retour au Panier',
+    'button.back_to_delivery': '🔙 Retour à la Livraison',
+    'button.view_products_in': '📦 Voir Produits dans {category} ({count})',
     
     // Error messages
     'error.general': '❌ Une erreur s\'est produite. Veuillez réessayer.',
@@ -755,6 +773,12 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'button.rate_product': '⭐ Produkt Bewerten',
     'button.view_session': '📋 Sitzung Ansehen',
     'button.end_session': '❌ Sitzung Beenden',
+    'button.back_to_categories': '🔙 Zurück zu Kategorien',
+    'button.back_to_category': '🔙 Zurück zur Kategorie',
+    'button.back_to_product': '🔙 Zurück zum Produkt',
+    'button.back_to_cart': '🔙 Zurück zum Warenkorb',
+    'button.back_to_delivery': '🔙 Zurück zur Lieferung',
+    'button.view_products_in': '📦 Produkte in {category} anzeigen ({count})',
     
     // Error messages
     'error.general': '❌ Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
@@ -973,6 +997,12 @@ const messageCatalogs: Record<string, Record<string, string>> = {
     'button.rate_product': '⭐ Product Beoordelen',
     'button.view_session': '📋 Sessie Bekijken',
     'button.end_session': '❌ Sessie Beëindigen',
+    'button.back_to_categories': '🔙 Terug naar Categorieën',
+    'button.back_to_category': '🔙 Terug naar Categorie',
+    'button.back_to_product': '🔙 Terug naar Product',
+    'button.back_to_cart': '🔙 Terug naar Winkelwagen',
+    'button.back_to_delivery': '🔙 Terug naar Levering',
+    'button.view_products_in': '📦 Producten in {category} bekijken ({count})',
     
     // Error messages
     'error.general': '❌ Er is een fout opgetreden. Probeer het opnieuw.',
